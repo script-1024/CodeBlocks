@@ -276,3 +276,4 @@ C:\Users\script1024\source\repos\CodeBlocks\obj\x64\Debug\net8.0-windows10.0.226
 C:\Users\script1024\source\repos\CodeBlocks\obj\x64\Debug\net8.0-windows10.0.22621.0\win10-x64\Controls\CodeBlock.xbf
 C:\Users\script1024\source\repos\CodeBlocks\bin\x64\Debug\net8.0-windows10.0.22621.0\win10-x64\Controls\CodeBlock.xbf
 C:\Users\script1024\source\repos\CodeBlocks\bin\x64\Debug\net8.0-windows10.0.22621.0\win10-x64\mscordaccore_amd64_amd64_8.0.224.6711.dll
+C:\Users\script1024\source\repos\CodeBlocks\obj\x64\Debug\net8.0-windows10.0.22621.0\win10-x64\CodeBlocks.sourcelink.json

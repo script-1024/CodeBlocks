@@ -6,6 +6,7 @@ namespace CodeBlocks.Core
     public static class Utils
     {
         public static Visibility ToVisibility(bool value) => (value) ? Visibility.Visible : Visibility.Collapsed;
+        public static double GetMax(double a, double b) => (a > b) ? a : b;
         public static bool GetFlag(int source, int bit) => ((source >> bit) & 1) == 1;
     }
 

@@ -5,8 +5,6 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using CodeBlocks.Core;
 using CodeBlocks.Controls;
-using WinRT;
-using System.Data.SqlTypes;
 
 namespace CodeBlocks.Pages
 {
@@ -82,7 +80,7 @@ namespace CodeBlocks.Pages
             if (!isInitialized) InitializePage();
         }
 
-        double offsetX; double offsetY;
+        Point origin;
         private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var thisBlock = sender as CodeBlock;
@@ -91,7 +89,7 @@ namespace CodeBlocks.Pages
 
             // 允许拖拽
             e.Handled = true;
-            offsetX = e.Position.X; offsetY = e.Position.Y;
+            origin = e.Position;
         }
 
         private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -101,12 +99,11 @@ namespace CodeBlocks.Pages
             double newY = Canvas.GetTop(thisBlock) + e.Delta.Translation.Y;
 
             // 移动方块
-            //thisBlock.TrySetPosition(newX, newY);
             Canvas.SetLeft(thisBlock, newX);
             Canvas.SetTop(thisBlock, newY);
 
             // 碰撞检查
-            if (checkbox.IsChecked == true) CodeBlock_CheckCollisions(thisBlock, e);
+            if (checkbox.IsChecked == true) CodeBlock_CheckCollisions(thisBlock);
         }
 
         private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -119,79 +116,28 @@ namespace CodeBlocks.Pages
             }
         }
 
-        private void CodeBlock_CheckCollisions(CodeBlock thisBlock, ManipulationDeltaRoutedEventArgs e)
+        private void CodeBlock_CheckCollisions(CodeBlock thisBlock)
         {
+            var self = new Point(Canvas.GetLeft(thisBlock), Canvas.GetTop(thisBlock));
+            var selfW = thisBlock.Size.Width;
+            var selfH = thisBlock.Size.Height;
+
             // 碰撞检查
             foreach (var uiElement in RootCanvas.Children)
             {
-                if (uiElement == thisBlock || uiElement == ghostBlock || uiElement == TrashCan) continue; // Skip
-                Point self = new Point(Canvas.GetLeft(thisBlock), Canvas.GetTop(thisBlock));
-                Point target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
-                var dx = target.X - self.X;
-                var dy = target.Y - self.Y;
-                double distance = Math.Sqrt(dx*dx + dy*dy);
+                if (uiElement == thisBlock || uiElement == ghostBlock) continue; // Skip
+                var target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
 
-                
-                var targetX = Canvas.GetLeft(uiElement);
-                var targetY = Canvas.GetTop(uiElement);
-                var selfW = thisBlock.Size.Width;
-                var selfH = thisBlock.Size.Height;
-
-                if (uiElement == TrashCan) // 删除块
+                if (uiElement == TrashCan)
                 {
-                    //var dx = Math.Abs((targetX + 30) - (selfX + selfW / 2));
-                    //var dy = Math.Abs((targetY + 30) - (selfY + selfH / 2));
-                    if (distance < 50)
-                    {
-                        CodeBlock_Remove(thisBlock);
-                        return;
-                    }
-                }
-                
-                if (uiElement is CodeBlock otherBlock)
-                {
-                    var targetW = otherBlock.Size.Width;
-                    var targetH = otherBlock.Size.Height;
-                    dx = target.X - self.X;
-                    dy = target.Y - self.Y;
-                    if (dx < 0) dx += targetW;
-                    if (dy < 0) dy += targetH;
+                    // 计算中心点距离
+                    var dx = target.X + 30 - self.X - selfW / 2;
+                    var dy = target.Y + 30 - self.Y - selfH / 2;
+                    var distance = Math.Sqrt(dx * dx + dy * dy);
 
-                    // 检查是否需要自动吸附
-                    double delta = 20; // 自动吸附距离阈值
-                    if (dx < selfW + delta && dy < selfH + delta)
-                    {
-                        // 设置示意矩形
-                        double rectX = self.X; double rectY = self.Y;
-                        if (self.X >= targetX - delta && self.X < targetX + delta)
-                        {
-                            // 水平对齐:中央
-                            rectX = targetX;
-                            if (self.Y < targetY + targetH / 2)
-                            { rectY = targetY - selfH + 12; }   // 垂直对齐:上方
-                            else
-                            { rectY = targetY + targetH - 12; } // 垂直对齐:下方
-                        }
-                        else if (self.X < targetX && self.Y >= targetY - delta && self.Y < targetY + delta)
-                        {
-                            // 水平对齐:左侧, 垂直对齐:中央
-                            rectX = targetX - selfW + 12;
-                            rectY = targetY;
-                        }
-                        else if (self.X >= targetX + targetW && self.Y >= targetY - delta && self.Y < targetY + delta)
-                        {
-                            // 水平对齐:右侧, 垂直对齐:中央
-                            rectX = targetX + targetW - 12;
-                            rectY = targetY;
-                        }
-                        else continue;
-
-                        Canvas.SetLeft(ghostBlock, rectX);
-                        Canvas.SetTop(ghostBlock, rectY);
-                        ghostBlock.Visibility = Visibility.Visible;
-                        break;
-                    }
-                    else ghostBlock.Visibility = Visibility.Collapsed;
+                    // 距离小于 取较大值(宽, 高) 的四分之一 --> 方块已和垃圾桶重叠;
+                    var threshold = Utils.GetMax(selfW, selfH) / 4;
+                    if (distance < threshold) CodeBlock_Remove(thisBlock);
                 }
             }
         }
