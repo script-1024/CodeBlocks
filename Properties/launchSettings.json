@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "CodeBlocks (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "CodeBlocks (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

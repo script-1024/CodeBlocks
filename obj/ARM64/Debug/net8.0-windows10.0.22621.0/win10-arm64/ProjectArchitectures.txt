@@ -1,0 +1,1 @@
+C:\Users\script1024\source\repos\CodeBlocks\CodeBlocks.csproj;arm64
