@@ -4,7 +4,6 @@
     <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <RootNamespace>CodeBlocks</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
@@ -13,11 +12,12 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <DefaultLanguage>zh-Hans</DefaultLanguage>
   </PropertyGroup>
   
   <ItemGroup>
     <None Remove="Controls\CodeBlock.xaml" />
-    <None Remove="Controls\ContentCard.xaml" />
+    <None Remove="Controls\ContentBar.xaml" />
     <None Remove="Pages\CodingPage.xaml" />
     <None Remove="Pages\HomePage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
@@ -34,9 +34,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Strings\zh-Hans.resw" />
+    <Content Include="Strings\zh-Hant.resw" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Fonts\HarmonyOS_Sans_B.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
     <PackageReference Include="PInvoke.User32" Version="0.7.124" />
+    <PackageReference Include="WinUI3Localizer" Version="2.1.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -47,6 +59,19 @@
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\CodeBlock.xaml">
@@ -69,7 +94,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\ContentCard.xaml">
+    <Page Update="Controls\ContentBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

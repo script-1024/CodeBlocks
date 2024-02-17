@@ -592,6 +592,9 @@
     <AppxPackagedFile Include="C:\Users\script1024\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.22621.31\lib\net6.0\WinRT.Runtime.dll">
       <PackagePath>WinRT.Runtime.dll</PackagePath>
     </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\script1024\.nuget\packages\microsoft.extensions.logging.abstractions\7.0.1\lib\net7.0\Microsoft.Extensions.Logging.Abstractions.dll">
+      <PackagePath>Microsoft.Extensions.Logging.Abstractions.dll</PackagePath>
+    </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\script1024\.nuget\packages\microsoft.windowsappsdk\1.4.240211001\lib\net6.0-windows10.0.18362.0\Microsoft.InteractiveExperiences.Projection.dll">
       <PackagePath>Microsoft.InteractiveExperiences.Projection.dll</PackagePath>
     </AppxPackagedFile>
@@ -649,8 +652,14 @@
     <AppxPackagedFile Include="C:\Users\script1024\.nuget\packages\validation\2.4.15\lib\netstandard1.3\Validation.dll">
       <PackagePath>Validation.dll</PackagePath>
     </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\script1024\.nuget\packages\winui3localizer\2.1.0\lib\net7.0-windows10.0.19041\WinUI3Localizer.dll">
+      <PackagePath>WinUI3Localizer.dll</PackagePath>
+    </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\script1024\.nuget\packages\microsoft.windowsappsdk\1.4.240211001\runtimes\win10-x64\native\Microsoft.WindowsAppRuntime.Bootstrap.dll">
       <PackagePath>Microsoft.WindowsAppRuntime.Bootstrap.dll</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\script1024\.nuget\packages\winui3localizer\2.1.0\lib\net7.0-windows10.0.19041\WinUI3Localizer.pri">
+      <PackagePath>WinUI3Localizer.pri</PackagePath>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\script1024\source\repos\CodeBlocks\Assets\LockScreenLogo.scale-200.png">
       <PackagePath>Assets\LockScreenLogo.scale-200.png</PackagePath>
@@ -672,6 +681,12 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\script1024\source\repos\CodeBlocks\Assets\Wide310x150Logo.scale-200.png">
       <PackagePath>Assets\Wide310x150Logo.scale-200.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\script1024\source\repos\CodeBlocks\Strings\zh-Hans.resw">
+      <PackagePath>Strings\zh-Hans.resw</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\script1024\source\repos\CodeBlocks\Strings\zh-Hant.resw">
+      <PackagePath>Strings\zh-Hant.resw</PackagePath>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

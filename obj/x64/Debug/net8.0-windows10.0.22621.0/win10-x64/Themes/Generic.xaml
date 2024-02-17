@@ -4,10 +4,10 @@
     xmlns:local="using:CodeBlocks"
     xmlns:ctrl="using:CodeBlocks.Controls">
 
-    <Style TargetType="ctrl:ContentCard">
+    <Style TargetType="ctrl:ContentBar">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ctrl:ContentCard">
+                <ControlTemplate TargetType="ctrl:ContentBar">
                     <Border
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
@@ -18,10 +18,10 @@
         </Setter>
     </Style>
 
-    <Style TargetType="ctrl:BaseCodeBlock">
+    <Style TargetType="ctrl:CodeBlock">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ctrl:BaseCodeBlock">
+                <ControlTemplate TargetType="ctrl:CodeBlock">
                     <Border
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"

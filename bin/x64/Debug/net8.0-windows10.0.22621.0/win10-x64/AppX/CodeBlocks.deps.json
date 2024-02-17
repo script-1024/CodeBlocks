@@ -12,6 +12,7 @@
           "Microsoft.Windows.SDK.BuildTools": "10.0.22621.2428",
           "Microsoft.WindowsAppSDK": "1.4.240211001",
           "PInvoke.User32": "0.7.124",
+          "WinUI3Localizer": "2.1.0",
           "runtimepack.Microsoft.NETCore.App.Runtime.win-x64": "8.0.2",
           "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.22621.31"
         },
@@ -751,6 +752,14 @@
           }
         }
       },
+      "Microsoft.Extensions.Logging.Abstractions/7.0.1": {
+        "runtime": {
+          "lib/net7.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "assemblyVersion": "7.0.0.0",
+            "fileVersion": "7.0.723.27404"
+          }
+        }
+      },
       "Microsoft.Windows.SDK.BuildTools/10.0.22621.2428": {},
       "Microsoft.WindowsAppSDK/1.4.240211001": {
         "dependencies": {
@@ -877,6 +886,19 @@
             "fileVersion": "2.4.15.30595"
           }
         }
+      },
+      "WinUI3Localizer/2.1.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "7.0.1",
+          "Microsoft.Windows.SDK.BuildTools": "10.0.22621.2428",
+          "Microsoft.WindowsAppSDK": "1.4.240211001"
+        },
+        "runtime": {
+          "lib/net7.0-windows10.0.19041/WinUI3Localizer.dll": {
+            "assemblyVersion": "2.1.0.0",
+            "fileVersion": "2.1.0.0"
+          }
+        }
       }
     }
   },
@@ -895,6 +917,13 @@
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""
+    },
+    "Microsoft.Extensions.Logging.Abstractions/7.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pkeBFx0vqMW/A3aUVHh7MPu3WkBhaVlezhSZeb1c9XD0vUReYH1TLFSy5MxJgZfmz5LZzYoErMorlYZiwpOoNA==",
+      "path": "microsoft.extensions.logging.abstractions/7.0.1",
+      "hashPath": "microsoft.extensions.logging.abstractions.7.0.1.nupkg.sha512"
     },
     "Microsoft.Windows.SDK.BuildTools/10.0.22621.2428": {
       "type": "package",
@@ -958,6 +987,13 @@
       "sha512": "sha512-KQFOtJKKhaXzuSiZhkFaFzQEdYsA+EN/XqKZDYwsGDOrS0Nxu6qzCvNTsDF4xtkiZbBA6u7I59QnsuP2O2fZgg==",
       "path": "validation/2.4.15",
       "hashPath": "validation.2.4.15.nupkg.sha512"
+    },
+    "WinUI3Localizer/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+taxQ5RrALgMJwhXc3RbfjgbSf1JyZ//Uo9eU8rKVkNtDhgMzO+RSGi5MQ+Ghc6tRa7+1zkMzbo7Vqvidr7zZA==",
+      "path": "winui3localizer/2.1.0",
+      "hashPath": "winui3localizer.2.1.0.nupkg.sha512"
     }
   },
   "runtimes": {

@@ -56,6 +56,10 @@
             "PInvoke.User32": {
               "target": "Package",
               "version": "[0.7.124, )"
+            },
+            "WinUI3Localizer": {
+              "target": "Package",
+              "version": "[2.1.0, )"
             }
           },
           "imports": [

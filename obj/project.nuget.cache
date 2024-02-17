@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "0SiMlxSBXTqyfzDJeNc18xviq9JtaCENn/Qvz1dTaZOOYx1CBZmH5YjwvhTnAG1vIw5XlctaJcesaVzsXZawBA==",
+  "dgSpecHash": "N1FG35BlLBVPOI8SnB8X8B3HZ3T2AJxhRYEE6oX5t0i1VF40/ejYMx5e5KpqFJIKHyHsQqcS34ezVjtPlPO6zA==",
   "success": true,
   "projectFilePath": "C:\\Users\\script1024\\source\\repos\\CodeBlocks\\CodeBlocks.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\script1024\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\7.0.1\\microsoft.extensions.logging.abstractions.7.0.1.nupkg.sha512",
     "C:\\Users\\script1024\\.nuget\\packages\\microsoft.windows.sdk.buildtools\\10.0.22621.2428\\microsoft.windows.sdk.buildtools.10.0.22621.2428.nupkg.sha512",
     "C:\\Users\\script1024\\.nuget\\packages\\microsoft.windowsappsdk\\1.4.240211001\\microsoft.windowsappsdk.1.4.240211001.nupkg.sha512",
     "C:\\Users\\script1024\\.nuget\\packages\\pinvoke.kernel32\\0.7.124\\pinvoke.kernel32.0.7.124.nupkg.sha512",
@@ -13,6 +14,7 @@
     "C:\\Users\\script1024\\.nuget\\packages\\system.memory\\4.5.4\\system.memory.4.5.4.nupkg.sha512",
     "C:\\Users\\script1024\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
     "C:\\Users\\script1024\\.nuget\\packages\\validation\\2.4.15\\validation.2.4.15.nupkg.sha512",
+    "C:\\Users\\script1024\\.nuget\\packages\\winui3localizer\\2.1.0\\winui3localizer.2.1.0.nupkg.sha512",
     "C:\\Users\\script1024\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x86\\8.0.2\\microsoft.netcore.app.runtime.win-x86.8.0.2.nupkg.sha512",
     "C:\\Users\\script1024\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.22621.31\\microsoft.windows.sdk.net.ref.10.0.22621.31.nupkg.sha512",
     "C:\\Users\\script1024\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x86\\8.0.2\\microsoft.aspnetcore.app.runtime.win-x86.8.0.2.nupkg.sha512",

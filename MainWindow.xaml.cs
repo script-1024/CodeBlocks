@@ -27,7 +27,7 @@ namespace CodeBlocks
             {
                 Navi.SelectedItem = Navi.MenuItems[0];
                 var settingsItem = Navi.SettingsItem as NavigationViewItem;
-                settingsItem.Content = "設定";
+                settingsItem.Content = "设置";
                 Navigate(typeof(HomePage));
             };
         }

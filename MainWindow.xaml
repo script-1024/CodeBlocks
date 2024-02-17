@@ -10,24 +10,41 @@
     mc:Ignorable="d">
 
     <Grid x:Name="RootGrid">
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="48"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
+        
         <StackPanel x:Name="TitleBar" Grid.Row="0" Orientation="Horizontal">
-            <BitmapIcon Margin="16,0,0,0" UriSource="ms-appx:///Assets/StoreLogo.png" Height="24"/>
+            <BitmapIcon Margin="16,0,0,0" UriSource="Assets\StoreLogo.png" Height="24"/>
             <TextBlock x:Name="TitleBar_Name" Margin="16,16,0,0" Text="Code Blocks" FontSize="12"/>
             <TextBlock x:Name="TitleBar_VersionTag" Margin="8,16,0,0" Text="Beta" FontSize="12" Foreground="Gray"/>
         </StackPanel>
-        <NavigationView x:Name="Navi" Grid.Row="1" IsBackButtonVisible="Collapsed" OpenPaneLength="180" SelectionChanged="Navi_SelectionChanged">
+
+        <NavigationView
+            x:Name="Navi"
+            Grid.Row="1"
+            OpenPaneLength="180"
+            IsBackButtonVisible="Collapsed"
+            SelectionChanged="Navi_SelectionChanged">
+
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Name="Navi_Home" Icon="Home" Content="首頁" Tag="HomePage"/>
-                <NavigationViewItem x:Name="Navi_Coding" Content="程式" Tag="CodingPage">
+
+                <NavigationViewItem x:Name="Navi_Home" Content="首页" Tag="HomePage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE80F;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                
+                <NavigationViewItem x:Name="Navi_Coding" Content="编程" Tag="CodingPage">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEA86;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                
             </NavigationView.MenuItems>
+
             <Frame x:Name="ContentFrame" Background="Transparent"/>
         </NavigationView>
     </Grid>

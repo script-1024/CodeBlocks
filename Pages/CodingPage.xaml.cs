@@ -12,6 +12,13 @@ namespace CodeBlocks.Pages
     {
         private bool isInitialized = false;
         private CheckBox checkbox;
+        TextBlock labelTestResult = new() { Text = "[计算结果]\nunknown" };
+
+        public CodingPage()
+        {
+            InitializeComponent();
+            if (!isInitialized) InitializePage();
+        }
 
         private void InitializePage()
         {
@@ -30,11 +37,13 @@ namespace CodeBlocks.Pages
             RootCanvas.Children.Add(labelVariant);
             RootCanvas.Children.Add(labelSlots);
             RootCanvas.Children.Add(checkbox);
+            RootCanvas.Children.Add(labelTestResult);
             Canvas.SetLeft(labelWidth, 10); Canvas.SetTop(labelWidth, 60);
             Canvas.SetLeft(labelHeight, 10); Canvas.SetTop(labelHeight, 100);
             Canvas.SetLeft(labelVariant, 10); Canvas.SetTop(labelVariant, 140);
             Canvas.SetLeft(labelSlots, 10); Canvas.SetTop(labelSlots, 180);
             Canvas.SetLeft(checkbox, 10); Canvas.SetTop(checkbox, 220);
+            Canvas.SetLeft(labelTestResult, 10); Canvas.SetTop(labelTestResult, 260);
 
             var inputWidth = new TextBox() { Width = 60, Text = "200" };
             var inputHeight = new TextBox() { Width = 60, Text = "66" };
@@ -68,28 +77,17 @@ namespace CodeBlocks.Pages
 
         private void CodeBlock_AddManipulationEvents(CodeBlock thisBlock)
         {
-            thisBlock.ManipulationMode = ManipulationModes.All;
+            thisBlock.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             thisBlock.ManipulationStarted += CodeBlock_ManipulationStarted;
             thisBlock.ManipulationDelta += CodeBlock_ManipulationDelta;
             thisBlock.ManipulationCompleted += CodeBlock_ManipulationCompleted;
         }
 
-        public CodingPage()
-        {
-            InitializeComponent();
-            if (!isInitialized) InitializePage();
-        }
-
-        Point origin;
         private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var thisBlock = sender as CodeBlock;
             ghostBlock.CopyFrom(thisBlock);
             ghostBlock.Visibility = Visibility.Collapsed;
-
-            // 允许拖拽
-            e.Handled = true;
-            origin = e.Position;
         }
 
         private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -97,6 +95,12 @@ namespace CodeBlocks.Pages
             var thisBlock = sender as CodeBlock;
             double newX = Canvas.GetLeft(thisBlock) + e.Delta.Translation.X;
             double newY = Canvas.GetTop(thisBlock) + e.Delta.Translation.Y;
+            var maxX = RootCanvas.ActualWidth - thisBlock.Size.Width;
+            var maxY = RootCanvas.ActualHeight - thisBlock.Size.Height;
+
+            // 边界检查
+            newX = (newX < 0) ? 0 : (newX > maxX) ? maxX : newX;
+            newY = (newY < 0) ? 0 : (newY > maxY) ? maxY : newY;
 
             // 移动方块
             Canvas.SetLeft(thisBlock, newX);
@@ -121,6 +125,7 @@ namespace CodeBlocks.Pages
             var self = new Point(Canvas.GetLeft(thisBlock), Canvas.GetTop(thisBlock));
             var selfW = thisBlock.Size.Width;
             var selfH = thisBlock.Size.Height;
+            bool isAligned = false;
 
             // 碰撞检查
             foreach (var uiElement in RootCanvas.Children)
@@ -136,8 +141,75 @@ namespace CodeBlocks.Pages
                     var distance = Math.Sqrt(dx * dx + dy * dy);
 
                     // 距离小于 取较大值(宽, 高) 的四分之一 --> 方块已和垃圾桶重叠;
-                    var threshold = Utils.GetMax(selfW, selfH) / 4;
-                    if (distance < threshold) CodeBlock_Remove(thisBlock);
+                    var threshold = Utils.GetBigger(selfW, selfH) * 0.25;
+                    if (distance < threshold)
+                    {
+                        CodeBlock_Remove(thisBlock);
+                        return;
+                    }
+                }
+
+                if (uiElement is CodeBlock targetBlock)
+                {
+                    // 获取自身的相对方位
+                    var rq = thisBlock.GetRelativeQuadrant(targetBlock);
+
+                    labelTestResult.Text =
+                        $"[相对方位]\n" +
+                        $"({rq.x}, {rq.y})\n\n" +
+                        $"[相同边距离]\n" +
+                        $"dx: {rq.dx}\n" +
+                        $"dy: {rq.dy}\n\n" +
+                        $"[间隔]\n" +
+                        "水平: " + ((rq.dx == 0) ? 0 : rq.dx - selfW + 12) + "\n" +
+                        "垂直: " + ((rq.dy == 0) ? 0 : rq.dy - selfH + 12);
+
+                    // 在四个角落 不和目标相邻 --> 跳过
+                    if (rq.x * rq.y != 0)
+                    {
+                        ghostBlock.Visibility = Visibility.Collapsed;
+                        continue;
+                    }
+
+                    // 取得方块资料值
+                    int selfVar = thisBlock.MetaData.Variant;
+                    int targetVar = targetBlock.MetaData.Variant;
+
+                    // 在左侧时不可吸附 --> 跳过
+                    if (rq.x == -1 && (!Utils.GetFlag(targetVar, 0) || !Utils.GetFlag(selfVar, 2))) continue;
+
+                    // 在上方时不可吸附 --> 跳过
+                    if (rq.y == -1 && (!Utils.GetFlag(targetVar, 1) || !Utils.GetFlag(selfVar, 3))) continue;
+
+                    // 在右侧时不可吸附 --> 跳过
+                    if (rq.x == 1 && (!Utils.GetFlag(targetVar, 2) || !Utils.GetFlag(selfVar, 0))) continue;
+
+                    // 在下方时不可吸附 --> 跳过
+                    if (rq.y == 1 && (!Utils.GetFlag(targetVar, 3) || !Utils.GetFlag(selfVar, 1))) continue;
+
+                    // 开始尝试自动吸附
+                    int threshold = 30;
+                    if (rq.dx > 0 && (rq.dx - selfW + 12) < threshold)
+                    {
+                        self.X -= (rq.dx - selfW + 12) * rq.x;
+                        self.Y = target.Y;
+                        isAligned = true;
+                    }
+                    else if (rq.dy > 0 && (rq.dy - selfH + 12) < threshold)
+                    {
+                        self.Y -= (rq.dy - selfH + 12) * rq.y;
+                        self.X = target.X;
+                        isAligned = true;
+                    }
+
+                    if (isAligned)
+                    {
+                        Canvas.SetLeft(ghostBlock, self.X);
+                        Canvas.SetTop(ghostBlock, self.Y);
+                        ghostBlock.Visibility = Visibility.Visible;
+                        return;
+                    }
+                    else ghostBlock.Visibility = Visibility.Collapsed;
                 }
             }
         }

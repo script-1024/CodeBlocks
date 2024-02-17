@@ -11,7 +11,7 @@
     <Page Update="Pages\CodingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Controls\ContentCard.xaml">
+    <Page Update="Controls\ContentBar.xaml">
       <SubType>Designer</SubType>
     </Page>
     <None Update="MainWindow.xaml">

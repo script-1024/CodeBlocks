@@ -1,9 +1,9 @@
 ﻿using Windows.UI;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
 using CodeBlocks.Core;
-using static System.Reflection.Metadata.BlobBuilder;
+using Windows.Foundation;
+using System;
 
 namespace CodeBlocks.Controls
 {
@@ -15,6 +15,7 @@ namespace CodeBlocks.Controls
         private Color borderColor;
         private BlockMetaData metaData;
         private CodeBlockPainter painter;
+        // private --- adjacentBlocks;
 
         public CodeBlock()
         {
@@ -88,21 +89,45 @@ namespace CodeBlocks.Controls
             return new CodeBlock()
             {
                 MetaData = MetaData,
-                BlockColor = BlockColor,
-                Size = Size
+                BlockColor = BlockColor
             };
         }
 
         public void CopyFrom(CodeBlock other)
         {
             this.MetaData = other.MetaData;
-            this.Size = other.Size;
         }
 
         public void MoveTo(CodeBlock other)
         {
             Canvas.SetLeft(this, Canvas.GetLeft(other));
             Canvas.SetTop(this, Canvas.GetTop(other));
+        }
+
+        public (int x, int y, double dx, double dy) GetRelativeQuadrant(CodeBlock targetBlock)
+        {
+            //  x,  y 定义: 右下为正，左上为负，中间为零
+            // dx, dy 定义: 相同边的距离
+            (int x, int y, double dx, double dy) rq = (0, 0, 0, 0);
+
+            Point self = new(Canvas.GetLeft(this), Canvas.GetTop(this));
+            Point target = new(Canvas.GetLeft(targetBlock), Canvas.GetTop(targetBlock));
+            int targetW = targetBlock.Size.Width;
+            int targetH = targetBlock.Size.Height;
+
+            if (self.X + 12 > target.X + targetW * 0.5) rq.x = 1;
+            if (self.X + width * 0.5 < target.X + 12) rq.x = -1;
+
+            if (self.Y + 12 > target.Y + targetH * 0.5) rq.y = 1;
+            if (self.Y + height * 0.5 < target.Y + 12) rq.y = -1;
+
+            if (rq.x > 0) rq.dx = (self.X + width) - (target.X + targetW);
+            else if (rq.x < 0) rq.dx = target.X - self.X;
+
+            if (rq.y > 0) rq.dy = (self.Y + height) - (target.Y + targetH);
+            else if (rq.y < 0) rq.dy = target.Y - self.Y;
+
+            return rq;
         }
     }
 }
