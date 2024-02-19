@@ -8,3 +8,8 @@ Navi:
     Item.Home: Home
     Item.Coding: Coding
     Item.Settings: Settings
+
+Settings:
+    VersionInfo.Title: Version
+    LanguageConfig.Title: Language
+    LanguageConfig.Description: Change the application's display language.

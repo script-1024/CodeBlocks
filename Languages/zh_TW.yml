@@ -8,3 +8,8 @@ Navi:
     Item.Home: 首頁
     Item.Coding: 編寫程式
     Item.Settings: 設定
+
+Settings:
+    VersionInfo.Title:  版本編號
+    LanguageConfig.Title: 語言
+    LanguageConfig.Description: 修改此軟體的顯示語言
