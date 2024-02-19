@@ -1,0 +1,10 @@
+﻿# en_US.yml - English Language Profile
+
+Profile:
+    Identifier: en_US
+    DisplayName: English
+
+Navi:
+    Item.Home: Home
+    Item.Coding: Coding
+    Item.Settings: Settings

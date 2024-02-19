@@ -4,9 +4,13 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:CodeBlocks.Pages"
+    xmlns:ctrl="using:CodeBlocks.Controls"
     NavigationCacheMode="Required">
 
     <StackPanel x:Name="RootPanel" Background="Transparent">
-        
+        <ctrl:ContentBar x:Name="VersionInfo"/>
+        <ctrl:ContentBar x:Name="LangConfig" IconGlyph="&#xF2B7;">
+            <ComboBox x:Name="ComboBox_Language"/>
+        </ctrl:ContentBar>
     </StackPanel>
 </Page>

@@ -18,6 +18,9 @@
   <ItemGroup>
     <None Remove="Controls\CodeBlock.xaml" />
     <None Remove="Controls\ContentBar.xaml" />
+    <None Remove="Languages\en_US.yml" />
+    <None Remove="Languages\zh_CN.yml" />
+    <None Remove="Languages\zh_TW.yml" />
     <None Remove="Pages\CodingPage.xaml" />
     <None Remove="Pages\HomePage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
@@ -34,21 +37,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Strings\zh-Hans.resw" />
-    <Content Include="Strings\zh-Hant.resw" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Include="Fonts\HarmonyOS_Sans_B.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Content Include="Languages\en_US.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Languages\zh_CN.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Languages\zh_TW.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
     <PackageReference Include="PInvoke.User32" Version="0.7.124" />
-    <PackageReference Include="WinUI3Localizer" Version="2.1.0" />
+    <PackageReference Include="YamlDotNet" Version="15.1.1" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

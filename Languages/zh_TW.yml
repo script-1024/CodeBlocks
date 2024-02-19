@@ -1,0 +1,10 @@
+﻿# zh_TW.yml - 繁體中文語言檔案
+
+Profile:
+    Identifier: zh_TW
+    DisplayName: 繁體中文
+
+Navi:
+    Item.Home: 首頁
+    Item.Coding: 編寫程式
+    Item.Settings: 設定

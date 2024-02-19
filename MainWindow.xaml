@@ -31,13 +31,13 @@
 
             <NavigationView.MenuItems>
 
-                <NavigationViewItem x:Name="Navi_Home" Content="首页" Tag="HomePage">
+                <NavigationViewItem x:Name="Navi_Home" Tag="HomePage">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE80F;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 
-                <NavigationViewItem x:Name="Navi_Coding" Content="编程" Tag="CodingPage">
+                <NavigationViewItem x:Name="Navi_Coding" Tag="CodingPage">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEA86;"/>
                     </NavigationViewItem.Icon>

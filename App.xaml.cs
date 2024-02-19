@@ -1,10 +1,9 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
-using System.Threading.Tasks;
-using System;
+﻿using System;
 using Windows.Storage;
-using WinUI3Localizer;
-using System.IO;
+using Microsoft.UI.Xaml;
+using System.Collections.Generic;
+using Microsoft.Windows.ApplicationModel.Resources;
+using CodeBlocks.Core;
 
 namespace CodeBlocks
 {
@@ -13,57 +12,35 @@ namespace CodeBlocks
         public App()
         {
             InitializeComponent();
-            
+            Localizer.ReloadLanguageProfiles();
+            CurrentLanguage = ApplicationData.Current.LocalSettings.Values["Language"] as string ?? "English";
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            m_window = new MainWindow();
+            var m_window = new MainWindow();
             m_window.Activate();
         }
 
-        internal Window m_window;
+        private readonly ResourceMap strings = new ResourceManager().MainResourceMap;
 
-        private async Task InitializeLocalizer()
+        public static string Version = "Beta 1.0";
+        public static string CurrentLanguage;
+        public static string[] SupportedLangList;
+        public static Dictionary<string, string> LanguageIdentifiers = new();
+        public static readonly string AppPath = AppDomain.CurrentDomain.BaseDirectory;
+
+        public delegate void LanguageChangedEventHandler();
+        public event LanguageChangedEventHandler OnLanguageChanged;
+        public void LanguageChanged()
         {
-            // Initialize a "Strings" folder in the "LocalFolder" for the packaged app.
-            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
-            StorageFolder stringsFolder = await localFolder.CreateFolderAsync(
-              "Strings",
-               CreationCollisionOption.OpenIfExists);
-
-            // Create string resources file from app resources if doesn't exists.
-            string resourceFileName = "Resources.resw";
-            await CreateStringResourceFileIfNotExists(stringsFolder, "zh-Hans", resourceFileName);
-            await CreateStringResourceFileIfNotExists(stringsFolder, "zh-Hant", resourceFileName);
-
-            ILocalizer localizer = await new LocalizerBuilder()
-                .AddStringResourcesFolderForLanguageDictionaries(stringsFolder.Path)
-                .SetOptions(options =>
-                {
-                    options.DefaultLanguage = "zh-Hans";
-                })
-                .Build();
+            OnLanguageChanged.Invoke();
         }
 
-        private static async Task CreateStringResourceFileIfNotExists(StorageFolder stringsFolder, string language, string resourceFileName)
+        public string GetLocalized(string key)
         {
-            StorageFolder languageFolder = await stringsFolder.CreateFolderAsync(
-                language,
-                CreationCollisionOption.OpenIfExists);
-
-            if (await languageFolder.TryGetItemAsync(resourceFileName) is null)
-            {
-                string resourceFilePath = Path.Combine(stringsFolder.Name, language, resourceFileName);
-                StorageFile resourceFile = await LoadStringResourcesFileFromAppResource(resourceFilePath);
-                _ = await resourceFile.CopyAsync(languageFolder);
-            }
-        }
-
-        private static async Task<StorageFile> LoadStringResourcesFileFromAppResource(string filePath)
-        {
-            Uri resourcesFileUri = new($"ms-appx:///{filePath}");
-            return await StorageFile.GetFileFromApplicationUriAsync(resourcesFileUri);
+            if (string.IsNullOrWhiteSpace(key)) return string.Empty;
+            return strings.TryGetValue(key).ValueAsString ?? string.Empty;
         }
     }
 }
