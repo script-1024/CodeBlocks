@@ -13,6 +13,8 @@
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <DefaultLanguage>zh-Hans</DefaultLanguage>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PublishAot>False</PublishAot>
   </PropertyGroup>
   
   <ItemGroup>
