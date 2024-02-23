@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Canvas x:Name="RootCanvas">
+    <Canvas>
         <Path x:Name="BlockBorder" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
     </Canvas>
 </UserControl>
