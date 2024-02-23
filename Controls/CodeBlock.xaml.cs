@@ -4,6 +4,8 @@ using Microsoft.UI.Xaml.Controls;
 using CodeBlocks.Core;
 using Windows.Foundation;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CodeBlocks.Controls
 {
@@ -15,13 +17,13 @@ namespace CodeBlocks.Controls
         private Color borderColor;
         private BlockMetaData metaData;
         private CodeBlockPainter painter;
-        // private --- adjacentBlocks;
 
         public CodeBlock()
         {
             InitializeComponent();
             painter = new CodeBlockPainter();
             metaData = new BlockMetaData();
+            RelatedBlocks.Right = new();
             if (fillColor == default) BlockColor = Color.FromArgb(255, 80, 80, 80);
         }
 
@@ -38,10 +40,8 @@ namespace CodeBlocks.Controls
             this.height = height;
             metaData.Size = (width, height);
             painter.MetaData = metaData;
-            SetBorder(painter.DrawBlockBorder());
+            BlockBorder.Data = painter.DrawBlockBorder();
         }
-
-        private void SetBorder(PathGeometry geo) => BlockBorder.Data = geo;
 
         private void SetColor(Color value)
         {
@@ -84,6 +84,22 @@ namespace CodeBlocks.Controls
             }
         }
 
+        public CodeBlock ParentBlock;
+        public (CodeBlock Bottom, List<CodeBlock> Right) RelatedBlocks;
+
+        public bool IsRelatedBlock(CodeBlock target)
+        {
+            if (RelatedBlocks.Bottom == target || RelatedBlocks.Right.Contains(target)) return true;
+            else return false;
+        }
+
+        public int GetRelatedBlockCount()
+        {
+            int count = RelatedBlocks.Right.Count;
+            if (RelatedBlocks.Bottom != null) count++;
+            return count;
+        }
+
         public CodeBlock Copy()
         {
             return new CodeBlock()
@@ -98,10 +114,60 @@ namespace CodeBlocks.Controls
             this.MetaData = other.MetaData;
         }
 
-        public void MoveTo(CodeBlock other)
+        public void MoveTo(CodeBlock other, double dx = 0, double dy = 0)
         {
-            Canvas.SetLeft(this, Canvas.GetLeft(other));
-            Canvas.SetTop(this, Canvas.GetTop(other));
+            double x = Canvas.GetLeft(other) + dx;
+            double y = Canvas.GetTop(other) + dy;
+            SetPosition(x, y);
+        }
+
+        public void SetPosition(double x, double y, bool isRelative = false)
+        {
+            if (isRelative)
+            {
+                x += Canvas.GetLeft(this);
+                y += Canvas.GetTop(this);
+            }
+
+            // 移动方块
+            Canvas.SetLeft(this, x);
+            Canvas.SetTop(this, y);
+
+            // 移动下方方块
+            if (RelatedBlocks.Bottom != null)
+            {
+                RelatedBlocks.Bottom.SetPosition(x, y + height - 12);
+            }
+            
+            // 移动右侧方块
+            foreach (var block in RelatedBlocks.Right)
+            {
+                block.SetPosition(x + width - 12, y);
+                y += 54;
+            }
+        }
+
+        public bool HasBeenRemoved = false;
+        public async Task RemoveAsync(Canvas rootCanvas)
+        {
+            rootCanvas.Children.Remove(this);
+            HasBeenRemoved = true;
+
+            if (RelatedBlocks.Right.Count > 0)
+            {
+                foreach (var block in RelatedBlocks.Right)
+                {
+                    block.RemoveAsync(rootCanvas);
+                }
+                RelatedBlocks.Right.Clear();
+            }
+
+            var bottom = RelatedBlocks.Bottom;
+            while (bottom != null)
+            {
+                await bottom.RemoveAsync(rootCanvas);
+                bottom = bottom.RelatedBlocks.Bottom;
+            }
         }
 
         public (int x, int y, double dx, double dy) GetRelativeQuadrant(CodeBlock targetBlock)
