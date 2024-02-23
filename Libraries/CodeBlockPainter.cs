@@ -129,28 +129,16 @@ namespace CodeBlocks.Core
             pathFigure.Segments.Add(line);
         }
 
-        public void SetData(BlockMetaData metaData)
-        {
-            MetaData = metaData;
-            //Width = metaData.Size.Width;
-            //Height = metaData.Size.Height;
-        }
-
+        /*
         public PathGeometry DrawBlockBorder()
         {
             if (MetaData.Type == BlockType.StackBlock) return DrawStackBlock();
             else return null;
         }
+        */
 
-        public PathGeometry DrawBlockBorder(BlockMetaData metaData)
+        public PathGeometry DrawBlockBorder()
         {
-            SetData(metaData);
-            return DrawBlockBorder();
-        }
-
-        public PathGeometry DrawStackBlock()
-        {
-            x = h + r; y = 0;
             Width = MetaData.Size.Width;
             Height = MetaData.Size.Height;
             int slots = MetaData.Slots;
@@ -160,15 +148,28 @@ namespace CodeBlocks.Core
             bool hasBottom = Utils.GetFlag(MetaData.Variant, 3);
             var pathGeo = new PathGeometry();
 
-            // 从左上角开始 
+            // 从左上角开始
+            if (MetaData.Type == BlockType.StackBlock) { x = h + r; y = 0; }
+            else if (MetaData.Type == BlockType.HatBlock) { x = h; y = r*2; }
             pathFigure = new PathFigure();
             pathFigure.StartPoint = new Point(x, y);
 
             // 上边
-            if (hasTop)
+            if (MetaData.Type == BlockType.StackBlock)
             {
-                DrawLine(w - r, 0); // 左半部分
-                DrawTopOrDownCurve(1); // 圆弧部分
+                if (hasTop)
+                {
+                    DrawLine(w - r, 0); // 左半部分
+                    DrawTopOrDownCurve(1); // 凹口
+                }
+            }
+            else if (MetaData.Type == BlockType.HatBlock)
+            {
+                ArcSegment arc = new ArcSegment();
+                arc.Size = new Size(80, 75);
+                arc.Point = new Point(x += 120, y = 0);
+                arc.SweepDirection = SweepDirection.Clockwise;
+                pathFigure.Segments.Add(arc);
             }
             DrawLine(Width - r, y, false); // 其余部分
 
@@ -179,7 +180,7 @@ namespace CodeBlocks.Core
                 DrawLine(0, w - r); // 上半部分
                 while (slots >= 1)
                 {
-                    DrawLeftOrRightCurve(1); // 圆弧部分
+                    DrawLeftOrRightCurve(1); // 凹口
                     if (--slots >= 1) DrawLine(0, w*2);
                 }
             }
@@ -190,7 +191,7 @@ namespace CodeBlocks.Core
             if (hasBottom)
             {
                 DrawLine(h + w * 2, y, false); // 右半部分
-                DrawTopOrDownCurve(-1, 1); // 圆弧部分
+                DrawTopOrDownCurve(-1, 1); // 凸起
             }
             DrawLine(h + r, y, false); // 其余部分
 
@@ -199,11 +200,18 @@ namespace CodeBlocks.Core
             if (hasLeft)
             {
                 DrawLine(x, w * 2, false); // 下半部分
-                DrawLeftOrRightCurve(-1, 1); // 圆弧部分
+                DrawLeftOrRightCurve(-1, 1); // 凸起
             }
-            DrawLine(x, r, false); // 其余部分
 
-            DrawCorner(1, -1); // 左上角
+            if (MetaData.Type == BlockType.StackBlock)
+            {
+                DrawLine(x, r, false); // 其余部分
+                DrawCorner(1, -1); // 左上角
+            }
+            else if (MetaData.Type == BlockType.HatBlock)
+            {
+                DrawLine(x, r*2, false); // 其余部分
+            }
 
             pathGeo.Figures.Add(pathFigure);
             return pathGeo;
