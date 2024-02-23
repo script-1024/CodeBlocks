@@ -24,27 +24,18 @@ namespace CodeBlocks.Core
         public static bool IsBrightColor(Color color)
         {
             double rl = GetRelativeLuminance(color);
-            if (rl >= 0.2) return true;
+            if (rl >= 0.08) return true;
             return false;
         }
 
         public static Color GetBorderColor(Color color)
         {
-            byte delta = 30;
             byte a = color.A; byte r = color.R; byte g = color.G; byte b = color.B;
 
-            if (IsBrightColor(color))
-            {
-                if (r >= delta) r -= delta;
-                if (g >= delta) g -= delta;
-                if (b >= delta) b -= delta;
-            }
-            else
-            {
-                if (r <= 255 - delta) r += delta;
-                if (g <= 255 - delta) g += delta;
-                if (b <= 255 - delta) b += delta;
-            }
+            r = (byte)(r * 0.75);
+            g = (byte)(g * 0.75);
+            b = (byte)(b * 0.75);
+
             return Color.FromArgb(a, r, g, b);
         }
         public static Color ToWindowsUIColor(System.Drawing.Color color)
