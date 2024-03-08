@@ -1,81 +1,45 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Windows.Foundation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Foundation;
 using CodeBlocks.Core;
 using CodeBlocks.Controls;
-using System.Threading.Tasks.Dataflow;
-using System.Threading.Tasks;
 
 namespace CodeBlocks.Pages
 {
     public sealed partial class CodingPage : Page
     {
-        private bool isInitialized = false;
-        private CheckBox checkbox;
-        TextBlock labelTestResult = new() { Text = "[计算结果]\nunknown" };
+        private readonly App app = Application.Current as App;
+        private string GetLocalizedString(string key) => app.Localizer.GetString(key);
 
         public CodingPage()
         {
             InitializeComponent();
-            if (!isInitialized) InitializePage();
+            InitializePage();
         }
 
         private void InitializePage()
         {
-            isInitialized = true;
-            var button = new Button() { Content = "New Block" };
-            RootCanvas.Children.Add(button);
-            Canvas.SetLeft(button, 10); Canvas.SetTop(button, 10);
+            var hButton = new Button() { Content = "New Hat Block" };
+            var pButton = new Button() { Content = "New Process Block" };
+            RootCanvas.Children.Add(hButton);
+            RootCanvas.Children.Add(pButton);
+            Canvas.SetLeft(hButton, 10); Canvas.SetTop(hButton, 10);
+            Canvas.SetLeft(pButton, 10); Canvas.SetTop(pButton, 50);
 
-            var labelWidth = new TextBlock() { Text = "Width: " };
-            var labelHeight = new TextBlock() { Text = "Height: " };
-            var labelVariant = new TextBlock() { Text = "Variant: " };
-            var labelSlots = new TextBlock() { Text = "Slots: " };
-            checkbox = new CheckBox() { Content = "碰撞检查", IsChecked = true };
-            RootCanvas.Children.Add(labelWidth);
-            RootCanvas.Children.Add(labelHeight);
-            RootCanvas.Children.Add(labelVariant);
-            RootCanvas.Children.Add(labelSlots);
-            RootCanvas.Children.Add(checkbox);
-            RootCanvas.Children.Add(labelTestResult);
-            Canvas.SetLeft(labelWidth, 10); Canvas.SetTop(labelWidth, 60);
-            Canvas.SetLeft(labelHeight, 10); Canvas.SetTop(labelHeight, 100);
-            Canvas.SetLeft(labelVariant, 10); Canvas.SetTop(labelVariant, 140);
-            Canvas.SetLeft(labelSlots, 10); Canvas.SetTop(labelSlots, 180);
-            Canvas.SetLeft(checkbox, 10); Canvas.SetTop(checkbox, 220);
-            Canvas.SetLeft(labelTestResult, 10); Canvas.SetTop(labelTestResult, 260);
-
-            var inputWidth = new TextBox() { Width = 60, Text = "200" };
-            var inputHeight = new TextBox() { Width = 60, Text = "66" };
-            var inputVariant = new TextBox() { Width = 60, Text = "315" };
-            var inputSlots = new TextBox() { Width = 60, Text = "1" };
-            RootCanvas.Children.Add(inputWidth);
-            RootCanvas.Children.Add(inputHeight);
-            RootCanvas.Children.Add(inputVariant);
-            RootCanvas.Children.Add(inputSlots);
-            Canvas.SetLeft(inputWidth, 75); Canvas.SetTop(inputWidth, 55);
-            Canvas.SetLeft(inputHeight, 75); Canvas.SetTop(inputHeight, 95);
-            Canvas.SetLeft(inputVariant, 75); Canvas.SetTop(inputVariant, 135);
-            Canvas.SetLeft(inputSlots, 75); Canvas.SetTop(inputSlots, 175);
-
-            var colorPicker = new ColorPicker() { ColorSpectrumShape=ColorSpectrumShape.Ring, IsMoreButtonVisible=true };
-            RootCanvas.Children.Add(colorPicker);
-            Canvas.SetLeft(colorPicker, 600); Canvas.SetTop(colorPicker, 10);
-
-            button.Click += (_, _) =>
+            hButton.Click += (_, _) =>
             {
-                var w = int.Parse(inputWidth.Text);
-                var h = int.Parse(inputHeight.Text);
-                var v = int.Parse(inputVariant.Text) % 100;
-                var t = int.Parse(inputVariant.Text) / 100;
-                var s = int.Parse(inputSlots.Text);
-                var block = new CodeBlock()
-                {
-                    BlockColor = colorPicker.Color,
-                    MetaData = new() { Type = (BlockType)t, Size = (w, h), Variant = v, Slots = s}
-                };
+                var block = new HatBlock() { Size = (180, 58) };
+
+                RootCanvas.Children.Add(block);
+                CodeBlock_AddManipulationEvents(block);
+            };
+
+            pButton.Click += (_, _) =>
+            {
+                var block = new ProcessBlock() { Size = (120, 58) };
 
                 RootCanvas.Children.Add(block);
                 CodeBlock_AddManipulationEvents(block);
@@ -88,7 +52,7 @@ namespace CodeBlocks.Pages
             Canvas.SetTop(TrashCan, RootCanvas.ActualHeight - 120);
         }
 
-        private void CodeBlock_AddManipulationEvents(CodeBlock thisBlock)
+        public void CodeBlock_AddManipulationEvents(CodeBlock thisBlock)
         {
             thisBlock.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             thisBlock.ManipulationStarted += CodeBlock_ManipulationStarted;
@@ -99,7 +63,7 @@ namespace CodeBlocks.Pages
         private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var thisBlock = sender as CodeBlock;
-            Canvas.SetZIndex(thisBlock, Canvas.GetZIndex(thisBlock) + 5);
+            thisBlock.SetZIndex(+5, true);
             ghostBlock.CopyFrom(thisBlock);
             ghostBlock.Visibility = Visibility.Collapsed;
 
@@ -107,15 +71,11 @@ namespace CodeBlocks.Pages
             if (parentBlock != null)
             {
                 thisBlock.ParentBlock = null;
-                if (parentBlock.RelatedBlocks.Bottom == thisBlock)
-                {
-                    parentBlock.RelatedBlocks.Bottom = null;
-                }
-                else
-                {
-                    parentBlock.RelatedBlocks.Right.Remove(thisBlock);
-                }
+                if (thisBlock.DependentSlot == -1) { parentBlock.BottomBlock = null; }
+                else { parentBlock.RightBlocks[thisBlock.DependentSlot-1] = null; }
             }
+
+            thisBlock.DependentSlot = 0;
         }
 
         private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -136,13 +96,13 @@ namespace CodeBlocks.Pages
             thisBlock.SetPosition(newX, newY);
 
             // 碰撞检查
-            if (checkbox.IsChecked == true) CodeBlock_CheckCollisions(thisBlock);
+            CodeBlock_CheckCollisions(thisBlock);
         }
 
         private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             var thisBlock = sender as CodeBlock;
-            Canvas.SetZIndex(thisBlock, Canvas.GetZIndex(thisBlock) - 5);
+            thisBlock.SetZIndex(-5, true);
 
             if (ghostBlock.Visibility == Visibility.Visible)
             {
@@ -152,30 +112,26 @@ namespace CodeBlocks.Pages
 
                 // 移动其他子块
                 var parentBlock = thisBlock.ParentBlock;
-                var rq = thisBlock.GetRelativeQuadrant(parentBlock);
-                if (rq.y == 1) // 自己在下方
+                if (thisBlock.DependentSlot == -1) // 自己在下方
                 {
-                    if (parentBlock.RelatedBlocks.Bottom == null)
-                    {
-                        parentBlock.RelatedBlocks.Bottom = thisBlock;
-                    }
+                    if (parentBlock.BottomBlock == null) { parentBlock.BottomBlock = thisBlock; }
                     else
                     {
                         // 定位到队列的尾端
-                        var endBlock = thisBlock.RelatedBlocks.Bottom ?? thisBlock;
-                        while (endBlock.RelatedBlocks.Bottom != null) endBlock = endBlock.RelatedBlocks.Bottom;
-                        
-                        var bottomBlock = parentBlock.RelatedBlocks.Bottom;
-                        parentBlock.RelatedBlocks.Bottom = thisBlock;
+                        var endBlock = thisBlock;
+                        while (endBlock.BottomBlock != null) endBlock = endBlock.BottomBlock;
+
+                        var bottomBlock = parentBlock.BottomBlock;
+                        parentBlock.BottomBlock = thisBlock;
                         bottomBlock.ParentBlock = endBlock;
-                        endBlock.RelatedBlocks.Bottom = bottomBlock;
-                        bottomBlock.MoveTo(endBlock, 0, endBlock.Size.Height - 12);
+                        endBlock.BottomBlock = bottomBlock;
+                        bottomBlock.MoveTo(endBlock, 0, endBlock.Size.Height - 10);
                     }
                 }
-                else if (rq.x == 1) // 自己在右侧
+                else if (thisBlock.DependentSlot > 0) // 自己在右侧
                 {
-                    var right = parentBlock.RelatedBlocks.Right;
-                    right.Add(thisBlock);
+                    var right = parentBlock.RightBlocks;
+                    right[thisBlock.DependentSlot-1] = thisBlock;
                 }
             }
         }
@@ -196,8 +152,8 @@ namespace CodeBlocks.Pages
                 if (uiElement == TrashCan)
                 {
                     // 计算中心点距离
-                    var dx = target.X + 30 - self.X - selfW / 2;
-                    var dy = target.Y + 30 - self.Y - selfH / 2;
+                    var dx = target.X + 26 - self.X - selfW / 2;
+                    var dy = target.Y + 26 - self.Y - selfH / 2;
                     var distance = Math.Sqrt(dx * dx + dy * dy);
 
                     // 距离小于 取较大值(宽, 高) 的四分之一 --> 方块已和垃圾桶重叠;
@@ -211,21 +167,8 @@ namespace CodeBlocks.Pages
 
                 if (uiElement is CodeBlock targetBlock)
                 {
-                    // 不要吸附自己的子块
-                    if (thisBlock.IsRelatedBlock(targetBlock)) continue;
-
                     // 获取自身的相对方位
                     var rq = thisBlock.GetRelativeQuadrant(targetBlock);
-
-                    labelTestResult.Text =
-                        $"[相对方位]\n" +
-                        $"({rq.x}, {rq.y})\n\n" +
-                        $"[相同边距离]\n" +
-                        $"dx: {rq.dx}\n" +
-                        $"dy: {rq.dy}\n\n" +
-                        $"[间隔]\n" +
-                        "水平: " + ((rq.dx == 0) ? 0 : rq.dx - selfW + 12) + "\n" +
-                        "垂直: " + ((rq.dy == 0) ? 0 : rq.dy - selfH + 12);
 
                     // 在四个角落 不和目标相邻 --> 跳过
                     if (rq.x * rq.y != 0)
@@ -239,10 +182,10 @@ namespace CodeBlocks.Pages
                     int targetVar = targetBlock.MetaData.Variant;
 
                     // 在左侧时不可吸附 --> 跳过
-                    if (rq.x == -1/* && (!Utils.GetFlag(targetVar, 0) || !Utils.GetFlag(selfVar, 2))*/) continue;
+                    if (rq.x == -1) continue;
 
                     // 在上方时不可吸附 --> 跳过
-                    if (rq.y == -1/* && (!Utils.GetFlag(targetVar, 1) || !Utils.GetFlag(selfVar, 3))*/) continue;
+                    if (rq.y == -1) continue;
 
                     // 在右侧时不可吸附 --> 跳过
                     if (rq.x == 1 && (!Utils.GetFlag(targetVar, 2) || !Utils.GetFlag(selfVar, 0))) continue;
@@ -252,16 +195,19 @@ namespace CodeBlocks.Pages
 
                     // 开始尝试自动吸附
                     int threshold = 30;
-                    if (rq.dx > 0 && (rq.dx - selfW + 12) < threshold)
+                    int slot = (int)((self.Y - target.Y) / 48);
+                    if (rq.dx > 0 && (rq.dx - selfW + 10) < threshold)
                     {
-                        self.X -= (rq.dx - selfW + 12) * rq.x;
-                        self.Y = target.Y;
+                        self.X -= (rq.dx - selfW + 10) * rq.x;
+                        self.Y = target.Y + slot * 48;
+                        thisBlock.DependentSlot = slot+1;
                         isAligned = true;
                     }
-                    else if (rq.dy > 0 && (rq.dy - selfH + 12) < threshold)
+                    else if (rq.dy > 0 && (rq.dy - selfH + 10) < threshold)
                     {
-                        self.Y -= (rq.dy - selfH + 12) * rq.y;
+                        self.Y -= (rq.dy - selfH + 10) * rq.y;
                         self.X = target.X;
+                        thisBlock.DependentSlot = -1;
                         isAligned = true;
                     }
 
@@ -270,11 +216,6 @@ namespace CodeBlocks.Pages
                         thisBlock.ParentBlock = targetBlock;
                         ghostBlock.SetPosition(self.X, self.Y);
                         ghostBlock.Visibility = Visibility.Visible;
-                        if (rq.x == 1)
-                        {
-                            var right = targetBlock.RelatedBlocks.Right;
-                            ghostBlock.SetPosition(0, 54 * right.Count, true);
-                        }
                         return;
                     }
                     else ghostBlock.Visibility = Visibility.Collapsed;
@@ -292,10 +233,10 @@ namespace CodeBlocks.Pages
             {
                 var dialog = new ContentDialog()
                 {
-                    Title = "移除确认",
-                    Content = "即将移除多个程式块，是否继续？",
-                    CloseButtonText = "取消",
-                    PrimaryButtonText = "确认",
+                    Title = GetLocalizedString("Messages.RemovingMultipleBlocks.Title"),
+                    Content = GetLocalizedString("Messages.RemovingMultipleBlocks.Description"),
+                    CloseButtonText = GetLocalizedString("Messages.Button.Cancel"),
+                    PrimaryButtonText = GetLocalizedString("Messages.Button.Yes"),
                     DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = this.XamlRoot
                 };
@@ -308,7 +249,7 @@ namespace CodeBlocks.Pages
                 else
                 {
                     thisBlock.HasBeenRemoved = false;
-                    thisBlock.SetPosition(-60, -60, true);
+                    thisBlock.SetPosition(-100, -100, true);
                 }
             }
         }
