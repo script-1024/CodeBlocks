@@ -13,6 +13,7 @@ Navi:
 Settings:
     VersionInfo:
         Title: 版本号
+
     LanguageConfig:
         Title: 语言
         Description: 更改此应用的显示语言
@@ -25,6 +26,7 @@ Messages:
         Cancel: 取消
         Giveup: 舍弃
         Confirm: 确认
+
     RemovingMultipleBlocks:
         Title: 操作确认
         Description: 即将移除多个程式块，是否继续？
@@ -34,11 +36,27 @@ ContentMenu:
         Copy: 复制
 
 Blocks:
+    ValueBlock:
+        Text: 
+            Tip: 文本
+        Number:
+            Tip: 数值
+        Boolean:
+            Tip: 逻辑
+
     HatBlock:
         FunctionEntry:
+            Tip: 函数的进入点，命令将从此处开始执行。
             Text: 当函数被呼叫
-            Tip: 函数的进入点，命令从此处开始执行
+
     ProcessBlock:
+        Execute:
+            Tip: 以指定的身份、位置、朝向、条件执行任意命令，并保存执行结果。所有的分支子命令皆为可选项。
+            Run: 执行命令 (&cmd)
+            As: 将执行者设为 (&executor)
+            At: 在 (&location)
+            Conditons: 条件 (&condition)
+
         Say:
-            Text: 说出  (&text)
-            Tip: 以当前执行者身份在聊天栏说出指定文本
+            Tip: 作为当前执行者在聊天中向所有玩家广播信息。
+            Text: 说出 (&text)

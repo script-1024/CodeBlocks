@@ -18,10 +18,10 @@
         </Setter>
     </Style>
 
-    <Style TargetType="ctrl:CodeBlock">
+    <Style TargetType="ctrl:BlockControl">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ctrl:CodeBlock">
+                <ControlTemplate TargetType="ctrl:BlockControl">
                     <Border
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"

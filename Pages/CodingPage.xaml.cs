@@ -24,14 +24,17 @@ namespace CodeBlocks.Pages
         {
             var hButton = new Button() { Content = "New Hat Block" };
             var pButton = new Button() { Content = "New Process Block" };
+            var vButton = new Button() { Content = "New Value Block" };
             RootCanvas.Children.Add(hButton);
             RootCanvas.Children.Add(pButton);
+            RootCanvas.Children.Add(vButton);
             Canvas.SetLeft(hButton, 10); Canvas.SetTop(hButton, 10);
             Canvas.SetLeft(pButton, 10); Canvas.SetTop(pButton, 50);
+            Canvas.SetLeft(vButton, 10); Canvas.SetTop(vButton, 90);
 
             hButton.Click += (_, _) =>
             {
-                var block = new HatBlock() { Size = (180, 58) };
+                var block = new HatBlock() { };
 
                 RootCanvas.Children.Add(block);
                 CodeBlock_AddManipulationEvents(block);
@@ -39,7 +42,15 @@ namespace CodeBlocks.Pages
 
             pButton.Click += (_, _) =>
             {
-                var block = new ProcessBlock() { Size = (120, 58) };
+                var block = new ProcessBlock() { };
+
+                RootCanvas.Children.Add(block);
+                CodeBlock_AddManipulationEvents(block);
+            };
+
+            vButton.Click += (_, _) =>
+            {
+                var block = new ValueBlock() { Size = (90, 58) };
 
                 RootCanvas.Children.Add(block);
                 CodeBlock_AddManipulationEvents(block);
@@ -52,7 +63,7 @@ namespace CodeBlocks.Pages
             Canvas.SetTop(TrashCan, RootCanvas.ActualHeight - 120);
         }
 
-        public void CodeBlock_AddManipulationEvents(CodeBlock thisBlock)
+        public void CodeBlock_AddManipulationEvents(BaseBlock thisBlock)
         {
             thisBlock.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             thisBlock.ManipulationStarted += CodeBlock_ManipulationStarted;
@@ -62,7 +73,7 @@ namespace CodeBlocks.Pages
 
         private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            var thisBlock = sender as CodeBlock;
+            var thisBlock = sender as BaseBlock;
             thisBlock.SetZIndex(+5, true);
             ghostBlock.CopyFrom(thisBlock);
             ghostBlock.Visibility = Visibility.Collapsed;
@@ -80,7 +91,7 @@ namespace CodeBlocks.Pages
 
         private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            var thisBlock = sender as CodeBlock;
+            var thisBlock = sender as BaseBlock;
             if (thisBlock.HasBeenRemoved) return;
 
             double newX = Canvas.GetLeft(thisBlock) + e.Delta.Translation.X;
@@ -101,7 +112,7 @@ namespace CodeBlocks.Pages
 
         private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            var thisBlock = sender as CodeBlock;
+            var thisBlock = sender as BaseBlock;
             thisBlock.SetZIndex(-5, true);
 
             if (ghostBlock.Visibility == Visibility.Visible)
@@ -136,7 +147,7 @@ namespace CodeBlocks.Pages
             }
         }
 
-        private void CodeBlock_CheckCollisions(CodeBlock thisBlock)
+        private void CodeBlock_CheckCollisions(BaseBlock thisBlock)
         {
             var self = new Point(Canvas.GetLeft(thisBlock), Canvas.GetTop(thisBlock));
             var selfW = thisBlock.Size.Width;
@@ -165,7 +176,7 @@ namespace CodeBlocks.Pages
                     }
                 }
 
-                if (uiElement is CodeBlock targetBlock)
+                if (uiElement is BaseBlock targetBlock)
                 {
                     // 获取自身的相对方位
                     var rq = thisBlock.GetRelativeQuadrant(targetBlock);
@@ -223,7 +234,7 @@ namespace CodeBlocks.Pages
             }
         }
 
-        private async Task CodeBlock_RemoveAsync(CodeBlock thisBlock)
+        private async Task CodeBlock_RemoveAsync(BaseBlock thisBlock)
         {
             thisBlock.HasBeenRemoved = true;
             int count = thisBlock.GetRelatedBlockCount();

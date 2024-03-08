@@ -13,6 +13,7 @@ Navi:
 Settings:
     VersionInfo:
         Title: Version
+        
     LanguageConfig:
         Title: Language
         Description: Change the language that this app displays in.
@@ -25,6 +26,7 @@ Messages:
         Cancel: Cancel
         Giveup: Give up
         Confirm: Confirm
+
     RemovingMultipleBlocks:
         Title: Operation Confirmation
         Description: Multiple blocks will be removed. Do you want to continue?
@@ -32,3 +34,14 @@ Messages:
 ContentMenu:
     CodeBlock:
         Copy: Copy
+
+Blocks:
+    HatBlock:
+        FunctionEntry:
+            Tip: The entry point of the function, where commands will be executed.
+            Text: When function called
+
+    ProcessBlock:
+        Say:
+            Tip: Broadcasts message in the chat as the current executor to all players.
+            Text: Say (&text)

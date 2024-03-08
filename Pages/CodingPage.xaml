@@ -12,7 +12,7 @@
     SizeChanged="Page_SizeChanged">
 
     <Canvas x:Name="RootCanvas">
-        <ctrl:CodeBlock x:Name="ghostBlock" BlockColor="Gray" Visibility="Collapsed"/>
+        <ctrl:BaseBlock x:Name="ghostBlock" BlockColor="Gray" Visibility="Collapsed"/>
         <Viewbox x:Name="TrashCan" Width="60" Height="60">
             <SymbolIcon Symbol="Delete"/>
         </Viewbox>

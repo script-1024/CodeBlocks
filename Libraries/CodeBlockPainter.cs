@@ -17,21 +17,6 @@ namespace CodeBlocks.Core
         public int Slots;
         public (int Width, int Height) Size;
         public static readonly BlockMetaData Null = new BlockMetaData() { Type = 0, Content = "", Variant = 0, Slots = 0, Size = (0, 0) };
-
-        public override readonly bool Equals([NotNullWhen(true)] object obj) => (obj is BlockMetaData other) ? this == other : false;
-        public override readonly int GetHashCode() => base.GetHashCode();
-
-        public static bool operator ==(BlockMetaData left, BlockMetaData right)
-        {
-            if (left.Type != right.Type) return false;
-            if (left.Slots != right.Slots) return false;
-            if (left.Variant != right.Variant) return false;
-            if (left.Size.Width != right.Size.Width) return false;
-            if (left.Size.Height != right.Size.Height) return false;
-            return true;
-        }
-
-        public static bool operator !=(BlockMetaData left, BlockMetaData right) => !(left == right);
     }
 
     public class CodeBlockPainter
@@ -128,14 +113,6 @@ namespace CodeBlocks.Core
             pathFigure.Segments.Add(line);
         }
 
-        /*
-        public PathGeometry DrawBlockBorder()
-        {
-            if (MetaData.Type == BlockType.StackBlock) return DrawStackBlock();
-            else return null;
-        }
-        */
-
         public PathGeometry DrawBlockBorder()
         {
             Width = MetaData.Size.Width;
@@ -148,8 +125,9 @@ namespace CodeBlocks.Core
             var pathGeo = new PathGeometry();
 
             // 从左上角开始
-            if (MetaData.Type == BlockType.ProcessBlock) { x = h + r; y = 0; }
-            else if (MetaData.Type == BlockType.HatBlock) { x = h; y = r/2; }
+            if (MetaData.Type == BlockType.ValueBlock || MetaData.Type == BlockType.ProcessBlock) { x = h + r; y = 0; }
+            else if (MetaData.Type == BlockType.HatBlock) { x = h; y = r / 2; }
+
             pathFigure = new PathFigure();
             pathFigure.StartPoint = new Point(x, y);
 
@@ -187,7 +165,7 @@ namespace CodeBlocks.Core
 
             // 下边
             DrawCorner(-1, 1); // 右下角
-            if (hasBottom)
+            if (hasBottom && MetaData.Type != BlockType.ValueBlock)
             {
                 DrawLine(h + w * 2, y, false); // 右半部分
                 DrawTopOrDownCurve(-1, 1); // 凸起
@@ -202,7 +180,7 @@ namespace CodeBlocks.Core
                 DrawLeftOrRightCurve(-1, 1); // 凸起
             }
 
-            if (MetaData.Type == BlockType.ProcessBlock)
+            if (MetaData.Type == BlockType.ValueBlock || MetaData.Type == BlockType.ProcessBlock)
             {
                 DrawLine(x, r, false); // 其余部分
                 DrawCorner(1, -1); // 左上角

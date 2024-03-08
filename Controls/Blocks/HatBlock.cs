@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Controls
 {
-    public class HatBlock : CodeBlock
+    public class HatBlock : BaseBlock
     {
         public HatBlock() : base()
         {

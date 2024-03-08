@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Controls
 {
-    public class ProcessBlock : CodeBlock
+    public class ProcessBlock : BaseBlock
     {
         public ProcessBlock() : base()
         {
