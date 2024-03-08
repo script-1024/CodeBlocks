@@ -6,7 +6,6 @@
     xmlns:local="using:CodeBlocks.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:l="using:WinUI3Localizer" 
     Margin="15,15,15,0"
     Height="72">
 

@@ -1,14 +1,12 @@
-﻿using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
+﻿using Windows.Foundation;
+using Microsoft.UI.Xaml.Media;
 using System.Diagnostics.CodeAnalysis;
-using Windows.Foundation;
-using Windows.Graphics.Printing;
 
 namespace CodeBlocks.Core
 {
     public enum BlockType
     {
-        Undefined = 0, ValueBlock = 1, HatBlock = 2, StackBlock = 3, SurroundBlock = 4, CapBlock = 5
+        Undefined = 0, ValueBlock = 1, HatBlock = 2, ProcessBlock = 3, BranchBlock = 4
     }
 
     public struct BlockMetaData
@@ -26,6 +24,7 @@ namespace CodeBlocks.Core
         public static bool operator ==(BlockMetaData left, BlockMetaData right)
         {
             if (left.Type != right.Type) return false;
+            if (left.Slots != right.Slots) return false;
             if (left.Variant != right.Variant) return false;
             if (left.Size.Width != right.Size.Width) return false;
             if (left.Size.Height != right.Size.Height) return false;
@@ -42,8 +41,8 @@ namespace CodeBlocks.Core
         public BlockMetaData MetaData;
 
         private int x, y;
-        private int w = 18;
-        private int h = 12;
+        private int w = 16;
+        private int h = 10;
         private int r = 5;
         private PathFigure pathFigure;
 
@@ -149,13 +148,13 @@ namespace CodeBlocks.Core
             var pathGeo = new PathGeometry();
 
             // 从左上角开始
-            if (MetaData.Type == BlockType.StackBlock) { x = h + r; y = 0; }
-            else if (MetaData.Type == BlockType.HatBlock) { x = h; y = r*2; }
+            if (MetaData.Type == BlockType.ProcessBlock) { x = h + r; y = 0; }
+            else if (MetaData.Type == BlockType.HatBlock) { x = h; y = r/2; }
             pathFigure = new PathFigure();
             pathFigure.StartPoint = new Point(x, y);
 
             // 上边
-            if (MetaData.Type == BlockType.StackBlock)
+            if (MetaData.Type == BlockType.ProcessBlock)
             {
                 if (hasTop)
                 {
@@ -166,8 +165,8 @@ namespace CodeBlocks.Core
             else if (MetaData.Type == BlockType.HatBlock)
             {
                 ArcSegment arc = new ArcSegment();
-                arc.Size = new Size(80, 75);
-                arc.Point = new Point(x += 120, y = 0);
+                arc.Size = new Size(70, 70);
+                arc.Point = new Point(x += 100, y = 0);
                 arc.SweepDirection = SweepDirection.Clockwise;
                 pathFigure.Segments.Add(arc);
             }
@@ -203,14 +202,14 @@ namespace CodeBlocks.Core
                 DrawLeftOrRightCurve(-1, 1); // 凸起
             }
 
-            if (MetaData.Type == BlockType.StackBlock)
+            if (MetaData.Type == BlockType.ProcessBlock)
             {
                 DrawLine(x, r, false); // 其余部分
                 DrawCorner(1, -1); // 左上角
             }
             else if (MetaData.Type == BlockType.HatBlock)
             {
-                DrawLine(x, r*2, false); // 其余部分
+                DrawLine(x, r/2, false); // 其余部分
             }
 
             pathGeo.Figures.Add(pathFigure);
