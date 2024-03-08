@@ -43,4 +43,26 @@ namespace CodeBlocks.Core
             return Color.FromArgb(color.A, color.R, color.G, color.B);
         }
     }
+
+    public static class TextHelper
+    {
+        public static double CalculateStringWidth(string str)
+        {
+            double totalWidth = 0;
+            foreach (char c in str)
+            {
+                if (IsFullWidth(c)) totalWidth += 1;
+                else totalWidth += 0.5;
+            }
+            return totalWidth;
+        }
+
+        public static bool IsFullWidth(char c)
+        {
+            return
+                c >= 0x4E00 && c <= 0x9FFF || // 中文字符
+                c >= 0xFF01 && c <= 0xFF5E || // 全角字符
+                c == 0x3000; // 全角空格
+        }
+    }
 }
