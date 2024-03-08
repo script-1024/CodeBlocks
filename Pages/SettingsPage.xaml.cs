@@ -4,13 +4,14 @@ using CodeBlocks.Controls;
 using Windows.Storage;
 using Microsoft.UI.Xaml;
 using CodeBlocks.Core;
+using System;
 
 namespace CodeBlocks.Pages
 {
     public sealed partial class SettingsPage : Page
     {
-        private bool isInitialized = false;
-        private App app = Application.Current as App;
+        private readonly App app = Application.Current as App;
+        private string GetLocalizedString(string key) => app.Localizer.GetString(key);
 
         public SettingsPage()
         {
@@ -21,24 +22,21 @@ namespace CodeBlocks.Pages
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            if (!isInitialized) InitializePage();
+            InitializePage();
         }
 
         private void GetLocalized()
         {
-            Localizer localizer = new();
-            VersionInfo.Title = localizer.GetString("Settings", "VersionInfo.Title");
-            LangConfig.Title = localizer.GetString("Settings", "LanguageConfig.Title");
-            LangConfig.Description = localizer.GetString("Settings", "LanguageConfig.Description");
+            VersionInfo.Title = GetLocalizedString("Settings.VersionInfo.Title");
+            LangConfig.Title = GetLocalizedString("Settings.LanguageConfig.Title");
+            LangConfig.Description = GetLocalizedString("Settings.LanguageConfig.Description");
         }
 
         private void InitializePage()
         {
-            isInitialized = true;
-
             VersionInfo.Description = App.Version;
 
-            ComboBox_Language.ItemsSource = App.SupportedLangList;
+            ComboBox_Language.ItemsSource = App.SupportedLanguagesByName;
             ComboBox_Language.SelectedItem = App.CurrentLanguage;
             ComboBox_Language.SelectionChanged += (s, e) =>
             {

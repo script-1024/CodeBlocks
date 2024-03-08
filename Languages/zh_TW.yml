@@ -5,11 +5,40 @@ Profile:
     DisplayName: 繁體中文
 
 Navi:
-    Item.Home: 首頁
-    Item.Coding: 編寫程式
-    Item.Settings: 設定
+    Item:
+        Home: 首頁
+        Coding: 編寫程式
+        Settings: 設定
 
 Settings:
-    VersionInfo.Title:  版本編號
-    LanguageConfig.Title: 語言
-    LanguageConfig.Description: 修改此軟體的顯示語言
+    VersionInfo:
+        Title:  版本編號
+    LanguageConfig:
+        Title: 語言
+        Description: 更改此應用程式的顯示語言
+
+Messages:
+    Button:
+        No: 否
+        Yes: 是
+        Save: 保存
+        Cancel: 取消
+        Giveup: 捨棄
+        Confirm: 確定
+    RemovingMultipleBlocks:
+        Title: 操作確認
+        Description: 即將移除多個程式塊，是否繼續？
+
+ContentMenu:
+    CodeBlock:
+        Copy: 複製
+
+Blocks:
+    HatBlock:
+        FunctionEntry:
+            Text: 當函數被呼叫
+            Tip: 函數的進入點，指令從此處開始執行
+    ProcessBlock:
+        Say:
+            Text: 說出 (&text)
+            Tip: 以當前執行者身份在聊天欄說出指定文字

@@ -5,11 +5,30 @@ Profile:
     DisplayName: English
 
 Navi:
-    Item.Home: Home
-    Item.Coding: Coding
-    Item.Settings: Settings
+    Item:
+        Home: Home
+        Coding: Code
+        Settings: Settings
 
 Settings:
-    VersionInfo.Title: Version
-    LanguageConfig.Title: Language
-    LanguageConfig.Description: Change the application's display language.
+    VersionInfo:
+        Title: Version
+    LanguageConfig:
+        Title: Language
+        Description: Change the language that this app displays in.
+
+Messages:
+    Button:
+        No: "No"
+        Yes: "Yes"
+        Save: Save
+        Cancel: Cancel
+        Giveup: Give up
+        Confirm: Confirm
+    RemovingMultipleBlocks:
+        Title: Operation Confirmation
+        Description: Multiple blocks will be removed. Do you want to continue?
+
+ContentMenu:
+    CodeBlock:
+        Copy: Copy

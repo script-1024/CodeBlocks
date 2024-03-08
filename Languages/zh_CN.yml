@@ -5,11 +5,40 @@ Profile:
     DisplayName: 简体中文
 
 Navi:
-    Item.Home: 首页
-    Item.Coding: 编程
-    Item.Settings: 设置
+    Item:
+        Home: 首页
+        Coding: 编程
+        Settings: 设置
 
 Settings:
-    VersionInfo.Title: 版本号
-    LanguageConfig.Title: 语言
-    LanguageConfig.Description: 更改软件的显示语言
+    VersionInfo:
+        Title: 版本号
+    LanguageConfig:
+        Title: 语言
+        Description: 更改此应用的显示语言
+
+Messages:
+    Button:
+        No: 否
+        Yes: 是
+        Save: 保存
+        Cancel: 取消
+        Giveup: 舍弃
+        Confirm: 确认
+    RemovingMultipleBlocks:
+        Title: 操作确认
+        Description: 即将移除多个程式块，是否继续？
+
+ContentMenu:
+    CodeBlock:
+        Copy: 复制
+
+Blocks:
+    HatBlock:
+        FunctionEntry:
+            Text: 当函数被呼叫
+            Tip: 函数的进入点，命令从此处开始执行
+    ProcessBlock:
+        Say:
+            Text: 说出  (&text)
+            Tip: 以当前执行者身份在聊天栏说出指定文本

@@ -12,8 +12,10 @@ namespace CodeBlocks
         public App()
         {
             InitializeComponent();
-            Localizer.ReloadLanguageProfiles();
             CurrentLanguage = ApplicationData.Current.LocalSettings.Values["Language"] as string ?? "English";
+            
+            Localizer.ReloadLanguageFiles();
+            this.Localizer = new();
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -22,25 +24,21 @@ namespace CodeBlocks
             m_window.Activate();
         }
 
-        private readonly ResourceMap strings = new ResourceManager().MainResourceMap;
-
-        public static string Version = "Beta 1.0";
         public static string CurrentLanguage;
-        public static string[] SupportedLangList;
-        public static Dictionary<string, string> LanguageIdentifiers = new();
+        public static string[] SupportedLanguagesByName;
+
+        public static readonly string Version = "Beta 1.0";
+        public static readonly Dictionary<string, string> LoadedLanguages = new();
         public static readonly string AppPath = AppDomain.CurrentDomain.BaseDirectory;
 
         public delegate void LanguageChangedEventHandler();
         public event LanguageChangedEventHandler OnLanguageChanged;
         public void LanguageChanged()
         {
+            this.Localizer = new();
             OnLanguageChanged.Invoke();
         }
 
-        public string GetLocalized(string key)
-        {
-            if (string.IsNullOrWhiteSpace(key)) return string.Empty;
-            return strings.TryGetValue(key).ValueAsString ?? string.Empty;
-        }
+        public Localizer Localizer { get; private set; }
     }
 }
