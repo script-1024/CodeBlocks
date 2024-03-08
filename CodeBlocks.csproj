@@ -18,7 +18,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <None Remove="Controls\CodeBlock.xaml" />
+    <None Remove="Controls\Blocks\BlockControl.xaml" />
     <None Remove="Controls\ContentBar.xaml" />
     <None Remove="Languages\en_US.yml" />
     <None Remove="Languages\zh_CN.yml" />
@@ -39,9 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Fonts\HarmonyOS_Sans_B.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
+    <Content Include="Fonts\HarmonyOS_Sans_B.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Languages\en_US.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -70,6 +70,9 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Controls\Blocks\BlockControl.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -83,7 +86,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\CodeBlock.xaml">
+    <Page Update="Controls\BlockControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

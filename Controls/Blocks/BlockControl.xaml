@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="CodeBlocks.Controls.CodeBlock"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Canvas x:Name="RootCanvas">
+        <Path x:Name="border" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+        <TextBlock x:Name="description" Foreground="White" FontSize="20" FontFamily="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
+    </Canvas>
+</UserControl>

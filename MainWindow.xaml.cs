@@ -11,15 +11,14 @@ namespace CodeBlocks
     public sealed partial class MainWindow : Window
     {
         private IntPtr wndHandle;
-        private App app = Application.Current as App;
+        private readonly App app = Application.Current as App;
         public NavigationViewItem Navi_Settings;
 
         private void GetLocalized()
         {
-            Localizer localizer = new();
-            Navi_Home.Content = localizer.GetString("Navi", "Item.Home");
-            Navi_Coding.Content = localizer.GetString("Navi", "Item.Coding");
-            Navi_Settings.Content = localizer.GetString("Navi", "Item.Settings");
+            Navi_Home.Content = app.Localizer.GetString("Navi.Item.Home");
+            Navi_Coding.Content = app.Localizer.GetString("Navi.Item.Coding");
+            Navi_Settings.Content = app.Localizer.GetString("Navi.Item.Settings");
         }
 
         public MainWindow()
