@@ -2,7 +2,6 @@
 using Windows.Storage;
 using Microsoft.UI.Xaml;
 using System.Collections.Generic;
-using Microsoft.Windows.ApplicationModel.Resources;
 using CodeBlocks.Core;
 
 namespace CodeBlocks
@@ -18,16 +17,17 @@ namespace CodeBlocks
             this.Localizer = new();
         }
 
+        public MainWindow m_window;
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            var m_window = new MainWindow();
+            m_window = new();
             m_window.Activate();
         }
 
         public static string CurrentLanguage;
         public static string[] SupportedLanguagesByName;
 
-        public static readonly string Version = "Beta 1.0.1 Build 0308";
+        public static readonly string Version = "Beta 1.0.3 Build 0318";
         public static readonly Dictionary<string, string> LoadedLanguages = new();
         public static readonly string AppPath = AppDomain.CurrentDomain.BaseDirectory;
 

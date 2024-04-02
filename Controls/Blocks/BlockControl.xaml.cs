@@ -18,27 +18,23 @@ namespace CodeBlocks.Controls
         public BlockControl()
         {
             InitializeComponent();
-            BlockBorder = border;
             if (fillColor == default) BlockColor = Color.FromArgb(255, 80, 80, 80);
-            BlockDescription = description;
         }
 
         private void SetColor(Color value)
         {
             var fillBrush = new SolidColorBrush(value);
             var borderBrush = new SolidColorBrush(borderColor);
-            border.Stroke = borderBrush;
-            border.StrokeThickness = 2;
-            border.Fill = fillBrush;
+            BlockBorder.Stroke = borderBrush;
+            BlockBorder.StrokeThickness = 2;
+            BlockBorder.Fill = fillBrush;
         }
 
         #region "Properties"
         public int DependentSlot;
-        public BaseBlock ParentBlock;
-        public BaseBlock BottomBlock;
-        public BaseBlock[] RightBlocks = [];
-        public readonly Path BlockBorder;
-        public readonly TextBlock BlockDescription;
+        public CodeBlock ParentBlock;
+        public CodeBlock BottomBlock;
+        public CodeBlock[] RightBlocks = [];
         public Dictionary<string, int> ValueIndex { get; private set; } = new();
         
         public Color BlockColor
@@ -52,6 +48,5 @@ namespace CodeBlocks.Controls
             }
         }
         #endregion
-
     }
 }

@@ -13,6 +13,7 @@ namespace CodeBlocks.Pages
     {
         private readonly App app = Application.Current as App;
         private string GetLocalizedString(string key) => app.Localizer.GetString(key);
+        public bool Edited = false;
 
         public CodingPage()
         {
@@ -34,48 +35,50 @@ namespace CodeBlocks.Pages
 
             hButton.Click += (_, _) =>
             {
-                var block = new HatBlock() { };
-
-                RootCanvas.Children.Add(block);
-                CodeBlock_AddManipulationEvents(block);
+                var block = new HatBlock(BlockCreated);
             };
 
             pButton.Click += (_, _) =>
             {
-                var block = new ProcessBlock() { };
-
-                RootCanvas.Children.Add(block);
-                CodeBlock_AddManipulationEvents(block);
+                var block = new ProcessBlock(BlockCreated);
             };
 
             vButton.Click += (_, _) =>
             {
-                var block = new ValueBlock() { Size = (90, 58) };
-
-                RootCanvas.Children.Add(block);
-                CodeBlock_AddManipulationEvents(block);
+                var block = new ValueBlock(BlockCreated) { Size = (90, 58), ValueType = BlockValueType.Text };
             };
+        }
+
+        private void BlockCreated(CodeBlock block, BlockCreatedEventArgs e)
+        {
+            RootCanvas.Children.Add(block);
+            Canvas.SetLeft(block, e.Position.X);
+            Canvas.SetTop(block, e.Position.Y);
+
+            block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            block.ManipulationStarted += CodeBlock_ManipulationStarted;
+            block.ManipulationDelta += CodeBlock_ManipulationDelta;
+            block.ManipulationCompleted += CodeBlock_ManipulationCompleted;
         }
 
         private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Canvas.SetLeft(TrashCan, RootCanvas.ActualWidth - 120);
             Canvas.SetTop(TrashCan, RootCanvas.ActualHeight - 120);
-        }
 
-        public void CodeBlock_AddManipulationEvents(BaseBlock thisBlock)
-        {
-            thisBlock.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            thisBlock.ManipulationStarted += CodeBlock_ManipulationStarted;
-            thisBlock.ManipulationDelta += CodeBlock_ManipulationDelta;
-            thisBlock.ManipulationCompleted += CodeBlock_ManipulationCompleted;
+            var grid = Scroller.Parent as Grid;
+            if (grid == null) return;
+            Scroller.Width = grid.ActualWidth;
+            Scroller.Height = grid.ActualHeight - 48;
         }
 
         private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            var thisBlock = sender as BaseBlock;
+            Edited = true;
+
+            var thisBlock = sender as CodeBlock;
             thisBlock.SetZIndex(+5, true);
-            ghostBlock.CopyFrom(thisBlock);
+            ghostBlock.CopyDataFrom(thisBlock);
             ghostBlock.Visibility = Visibility.Collapsed;
 
             var parentBlock = thisBlock.ParentBlock;
@@ -91,7 +94,7 @@ namespace CodeBlocks.Pages
 
         private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            var thisBlock = sender as BaseBlock;
+            var thisBlock = sender as CodeBlock;
             if (thisBlock.HasBeenRemoved) return;
 
             double newX = Canvas.GetLeft(thisBlock) + e.Delta.Translation.X;
@@ -112,7 +115,7 @@ namespace CodeBlocks.Pages
 
         private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            var thisBlock = sender as BaseBlock;
+            var thisBlock = sender as CodeBlock;
             thisBlock.SetZIndex(-5, true);
 
             if (ghostBlock.Visibility == Visibility.Visible)
@@ -147,7 +150,7 @@ namespace CodeBlocks.Pages
             }
         }
 
-        private void CodeBlock_CheckCollisions(BaseBlock thisBlock)
+        private void CodeBlock_CheckCollisions(CodeBlock thisBlock)
         {
             var self = new Point(Canvas.GetLeft(thisBlock), Canvas.GetTop(thisBlock));
             var selfW = thisBlock.Size.Width;
@@ -176,7 +179,7 @@ namespace CodeBlocks.Pages
                     }
                 }
 
-                if (uiElement is BaseBlock targetBlock)
+                if (uiElement is CodeBlock targetBlock)
                 {
                     // 获取自身的相对方位
                     var rq = thisBlock.GetRelativeQuadrant(targetBlock);
@@ -234,7 +237,7 @@ namespace CodeBlocks.Pages
             }
         }
 
-        private async Task CodeBlock_RemoveAsync(BaseBlock thisBlock)
+        private async Task CodeBlock_RemoveAsync(CodeBlock thisBlock)
         {
             thisBlock.HasBeenRemoved = true;
             int count = thisBlock.GetRelatedBlockCount();

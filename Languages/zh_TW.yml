@@ -4,19 +4,20 @@ Profile:
     Identifier: zh_TW
     DisplayName: 繁體中文
 
-Navi:
-    Item:
-        Home: 首頁
-        Coding: 編寫程式
-        Settings: 設定
-
 Settings:
+    Title: 設定
+
     VersionInfo:
         Title: 版本編號
 
     LanguageConfig:
         Title: 語言
         Description: 更改此應用程式的顯示語言
+
+MenuBar:
+    File:
+        Title: 檔案
+        Exit: 離開
 
 Messages:
     Button:
@@ -39,8 +40,10 @@ Blocks:
     ValueBlock:
         Text: 
             Tip: 文字
+            PlaceholderText: 空文本
         Number:
             Tip: 數值
+            PlaceholderText: 0
         Boolean:
             Tip: 邏輯
 

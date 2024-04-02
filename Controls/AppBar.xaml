@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="CodeBlocks.Controls.AppBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Background="{ThemeResource LayerFillColorDefaultBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="120"/>
+        </Grid.ColumnDefinitions>
+        
+        <StackPanel x:Name="Header" x:FieldModifier="public" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+            <MenuBar x:Name="Menu">
+                <MenuBarItem Title="File" Tag="File">
+                    <MenuFlyoutItem Text="Exit" Tag="Exit"/>
+                </MenuBarItem>
+            </MenuBar>
+        </StackPanel>
+
+        <StackPanel x:Name="Footer" x:FieldModifier="public" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <AppBarButton x:Name="SettingsButton" Icon="Setting" LabelPosition="Collapsed" Width="42" Click="SettingsButton_Click"/>
+        </StackPanel>
+        
+    </Grid>
+</UserControl>

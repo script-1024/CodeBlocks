@@ -4,12 +4,25 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using System;
+using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
 namespace CodeBlocks.Controls
 {
-    public class BaseBlock : BlockControl
+    public class BlockCreatedEventArgs : EventArgs
+    {
+        public readonly CodeBlock Source;
+        public readonly (double X, double Y) Position;
+        public static readonly BlockCreatedEventArgs Null = new(null, (0, 0));
+
+        public BlockCreatedEventArgs(CodeBlock source, (double X, double Y) position) : base()
+        {
+            Source = source; Position = position;
+        }
+    }
+
+    public class CodeBlock : BlockControl
     {
         private int width;
         private int height;
@@ -19,25 +32,31 @@ namespace CodeBlocks.Controls
         private readonly CodeBlockPainter painter = new();
         private readonly App app = Application.Current as App;
 
-        public BaseBlock() : base()
+        public CodeBlock(BlockCreatedEventHandler createdEventHandler, BlockCreatedEventArgs args = null) : base()
         {
             metaData = BlockMetaData.Null;
             app.OnLanguageChanged += Localize_Block;
             app.OnLanguageChanged += Localize_Menu;
             InitializeMenu();
+
+            OnBlockCreated += createdEventHandler;
+            OnBlockCreated?.Invoke(this, (args == null) ? BlockCreatedEventArgs.Null : args);
         }
+
+        public CodeBlock() : this(null, null) { }
+
+    public delegate void BlockCreatedEventHandler(CodeBlock sender, BlockCreatedEventArgs e);
+        public event BlockCreatedEventHandler OnBlockCreated;
 
         private void InitializeMenu()
         {
-            this.RightTapped += (s, e) => { ContentMenu.ShowAt(this, e.GetPosition(this)); };
+            this.ContextFlyout = ContentMenu;
             var item_copy = new MenuFlyoutItem() { Tag = "Copy", Icon = new FontIcon() { Glyph = "\uE8C8" } };
             item_copy.Click += (_, _) =>
             {
-                var canvas = this.Parent as Canvas;
-                var block = Copy();
-                canvas.Children.Add(block);
-                block.SetPosition(Canvas.GetLeft(this) + 50, Canvas.GetTop(this) + 50);
-                (canvas.Parent as CodingPage).CodeBlock_AddManipulationEvents(block);
+                var left = Canvas.GetLeft(this) + 50;
+                var top = Canvas.GetTop(this) + 50;
+                var block = Copy(new(this, (left, top)));
             };
             ContentMenu.Items.Add(item_copy);
             Localize_Menu();
@@ -62,7 +81,7 @@ namespace CodeBlocks.Controls
                 else
                 {
                     BlockDescription.Inlines.Add(new Run() { Text = part });
-                    textWidth = (int)(TextHelper.CalculateStringWidth(part) * 20);
+                    textWidth = (int)(TextHelper.CalculateStringWidth(part) * BlockDescription.FontSize);
                     if (textWidth > maxWidth) maxWidth = textWidth;
                 }
             }
@@ -135,25 +154,25 @@ namespace CodeBlocks.Controls
             return count;
         }
 
-        public BaseBlock Copy()
+        public CodeBlock Copy(BlockCreatedEventArgs args)
         {
-            var block = new BaseBlock() { MetaData = this.MetaData, BlockColor = this.BlockColor, TranslationKey = this.TranslationKey };
+            var block = new CodeBlock(this.OnBlockCreated, args) { MetaData = this.MetaData, BlockColor = this.BlockColor, TranslationKey = this.TranslationKey };
             for (int i = 0; i < this.RightBlocks.Length; i++)
             {
                 if (this.RightBlocks[i] == null) block.RightBlocks[i] = null;
-                else block.RightBlocks[i] = this.RightBlocks[i].Copy();
+                else block.RightBlocks[i] = this.RightBlocks[i].Copy(BlockCreatedEventArgs.Null);
             }
             Canvas.SetLeft(block.BlockDescription, Canvas.GetLeft(BlockDescription));
             Canvas.SetTop(block.BlockDescription, Canvas.GetTop(BlockDescription));
             return block;
         }
 
-        public void CopyFrom(BaseBlock other)
+        public void CopyDataFrom(CodeBlock other)
         {
             this.MetaData = other.metaData;
         }
 
-        public void MoveTo(BaseBlock other, double dx = 0, double dy = 0)
+        public void MoveTo(CodeBlock other, double dx = 0, double dy = 0)
         {
             double x = Canvas.GetLeft(other) + dx;
             double y = Canvas.GetTop(other) + dy;
@@ -213,7 +232,7 @@ namespace CodeBlocks.Controls
             }
         }
 
-        public (int x, int y, double dx, double dy) GetRelativeQuadrant(BaseBlock targetBlock)
+        public (int x, int y, double dx, double dy) GetRelativeQuadrant(CodeBlock targetBlock)
         {
             //  x,  y 定义: 右下为正，左上为负，中间为零
             // dx, dy 定义: 相同边的距离

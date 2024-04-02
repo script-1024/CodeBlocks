@@ -4,12 +4,6 @@ Profile:
     Identifier: en_US
     DisplayName: English
 
-Navi:
-    Item:
-        Home: Home
-        Coding: Code
-        Settings: Settings
-
 Settings:
     VersionInfo:
         Title: Version
@@ -36,6 +30,16 @@ ContentMenu:
         Copy: Copy
 
 Blocks:
+    ValueBlock:
+        Text: 
+            Tip: Text
+            PlaceholderText: Empty
+        Number:
+            Tip: Number
+            PlaceholderText: 0
+        Boolean:
+            Tip: Boolean
+
     HatBlock:
         FunctionEntry:
             Tip: The entry point of the function, where commands will be executed.

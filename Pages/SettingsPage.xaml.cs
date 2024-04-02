@@ -5,6 +5,7 @@ using Windows.Storage;
 using Microsoft.UI.Xaml;
 using CodeBlocks.Core;
 using System;
+using Microsoft.UI.Windowing;
 
 namespace CodeBlocks.Pages
 {
@@ -16,17 +17,13 @@ namespace CodeBlocks.Pages
         public SettingsPage()
         {
             InitializeComponent();
-            app.OnLanguageChanged += GetLocalized;
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
             InitializePage();
+            app.OnLanguageChanged += GetLocalized;
         }
 
         private void GetLocalized()
         {
+            Title.Text = GetLocalizedString("Settings.Title");
             VersionInfo.Title = GetLocalizedString("Settings.VersionInfo.Title");
             LangConfig.Title = GetLocalizedString("Settings.LanguageConfig.Title");
             LangConfig.Description = GetLocalizedString("Settings.LanguageConfig.Description");
@@ -46,6 +43,14 @@ namespace CodeBlocks.Pages
             };
 
             GetLocalized();
+        }
+
+        private void AppBarButton_Click(object sender, RoutedEventArgs e)
+        {
+            var wnd = app.m_window;
+            wnd.RootGrid.Children.Remove(this);
+            wnd.Tab.Visibility = Visibility.Visible;
+            wnd.UpdateDragRects();
         }
     }
 }

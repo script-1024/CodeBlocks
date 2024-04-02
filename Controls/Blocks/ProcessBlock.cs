@@ -4,15 +4,17 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Controls
 {
-    public class ProcessBlock : BaseBlock
+    public class ProcessBlock : CodeBlock
     {
-        public ProcessBlock() : base()
+        public ProcessBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(handler, args)
         {
             BlockColor = Color.FromArgb(255, 255, 200, 0);
             MetaData = new() { Type = BlockType.ProcessBlock, Variant = 10, Size = this.Size };
             TranslationKey = "Blocks.ProcessBlock.Say.Text";
-            Canvas.SetLeft(BlockDescription, 22);
-            Canvas.SetTop(BlockDescription, 12);
+            Canvas.SetLeft(BlockDescription, 24);
+            Canvas.SetTop(BlockDescription, 14);
         }
+
+        public ProcessBlock() : this(null, null) { }
     }
 }

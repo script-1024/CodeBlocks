@@ -8,6 +8,15 @@
     NavigationCacheMode="Required">
 
     <StackPanel x:Name="RootPanel" Background="Transparent">
+        <StackPanel x:Name="TitleBar" Orientation="Horizontal">
+            <AppBarButton Icon="Back" Margin="10,2,0,0" LabelPosition="Collapsed" Width="42" Click="AppBarButton_Click"/>
+            <BitmapIcon Margin="10,2,0,0" UriSource="Assets\StoreLogo.png" Height="24"/>
+            <TextBlock x:Name="TitleBar_Name" Margin="16,16,0,0" Text="Code Blocks" FontSize="12"/>
+            <TextBlock x:Name="TitleBar_VersionTag" Margin="8,16,0,0" Text="Beta" FontSize="12" Foreground="Gray"/>
+        </StackPanel>
+        
+        <TextBlock x:Name="Title" Margin="48,24,0,24" FontSize="40"/>
+
         <ctrl:ContentBar x:Name="VersionInfo"/>
         <ctrl:ContentBar x:Name="LangConfig" IconGlyph="&#xF2B7;">
             <ComboBox x:Name="ComboBox_Language"/>

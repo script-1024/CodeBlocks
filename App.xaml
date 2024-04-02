@@ -13,14 +13,10 @@
             <!-- Other app resources here -->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
-                    <Style TargetType="NavigationViewItem">
+                    <Style TargetType="TextBlock">
                         <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
-                        <Setter Property="FontSize" Value="15"/>
                     </Style>
                     <Style TargetType="Button">
-                        <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
-                    </Style>
-                    <Style TargetType="TextBlock">
                         <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
                     </Style>
                     <Style TargetType="TextBox">
