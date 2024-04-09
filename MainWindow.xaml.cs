@@ -8,27 +8,25 @@ using CodeBlocks.Core;
 using Microsoft.UI;
 using Windows.Graphics;
 using Microsoft.UI.Windowing;
-using static ABI.System.Collections.Generic.IReadOnlyDictionary_Delegates;
-using Microsoft.UI.Input;
-using Windows.UI.ViewManagement;
+using System.Threading.Tasks;
 
 namespace CodeBlocks
 {
     public sealed partial class MainWindow : Window
     {
         private IntPtr wndHandle;
+        private bool isFileSaved = false;
+        private bool isFileOpened = false;
+        private readonly MessageDialog dialog = new();
         private readonly App app = Application.Current as App;
-        public NavigationViewItem Navi_Settings;
 
         private string GetLocalizedString(string key) => (Application.Current as App).Localizer.GetString(key);
-        private void GetLocalized()
-        {
-            
-        }
+        private void GetLocalized() { }
         
         public MainWindow()
         {
             InitializeComponent();
+            this.Closed += Window_Closed;
             wndHandle = WindowNative.GetWindowHandle(this);
             app.OnLanguageChanged += GetLocalized;
 
@@ -58,6 +56,25 @@ namespace CodeBlocks
             AppWindow.TitleBar.SetDragRectangles([right]);
         }
 
+        public void Close(bool forceQuit)
+        {
+            if (forceQuit) this.Closed -= Window_Closed; // 取消订阅 Closed 事件
+            this.Close(); // 关闭窗口。如果 forceQuit == false，则此函数的表现和无参数 Close() 方法一致
+        }
+
+        private async Task<bool> AskUserToCloseWindowAsync()
+        {
+            if (!isFileOpened || isFileSaved) return true;
+            else return await dialog.ShowAsync("ClosingWindow", DialogVariant.SaveGiveupCancel) == ContentDialogResult.Primary;
+        }
+
+        private async void Window_Closed(object sender, WindowEventArgs args)
+        {
+            args.Handled = true;
+            bool result = await AskUserToCloseWindowAsync();
+            if (result) { args.Handled = false; Close(true); }
+        }
+
         private void AddNewTab(string header = "")
         {
             TabViewItem item = new() { Margin = new(0,12,0,0) };
@@ -69,7 +86,7 @@ namespace CodeBlocks
                 frame.Height = AppWindow.Size.Height - 50;
             };
 
-            this.SizeChanged += (_, _) => resize();  resize(); // 立即调整一次大小
+            this.SizeChanged += (_, _) => resize(); resize(); // 立即调整一次大小
             frame.Navigate(typeof(CodingPage));
             item.Content = frame;
 
