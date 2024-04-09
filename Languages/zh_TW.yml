@@ -17,24 +17,31 @@ Settings:
 MenuBar:
     File:
         Title: 檔案
+        ShowBlockEditor: 開啟 [程式塊編輯器]
         Exit: 離開
 
 Messages:
     Button:
-        No: 否
         Yes: 是
-        Save: 保存
+        No: 否
         Cancel: 取消
-        Giveup: 捨棄
         Confirm: 確定
+        Save: 保存並退出
+        Giveup: 捨棄所有編輯
 
     RemovingMultipleBlocks:
         Title: 操作確認
         Description: 即將移除多個程式塊，是否繼續？
 
+    ClosingWindow:
+        Title: 關閉視窗
+        Description: 尚未保存檔案，是否繼續？
+
 ContentMenu:
     CodeBlock:
         Copy: 複製
+        Delete: 刪除此程式塊
+        DeleteAll: 刪除後續所有程式塊
 
 Blocks:
     ValueBlock:

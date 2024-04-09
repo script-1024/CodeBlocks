@@ -34,6 +34,7 @@
     <Application Id="App"
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
+      
       <uap:VisualElements
         DisplayName="CodeBlocks"
         Description="CodeBlocks"
@@ -45,6 +46,26 @@
         <uap:InitialRotationPreference>
           <uap:Rotation Preference="landscape"/></uap:InitialRotationPreference>
       </uap:VisualElements>
+      
+      <Extensions>
+      
+        <uap:Extension Category="windows.fileTypeAssociation">
+      
+          <uap:FileTypeAssociation Name="code_block_definition_file">
+      
+            <uap:SupportedFileTypes>
+      
+              <uap:FileType ContentType="application/x-codeblockdef">.cbd</uap:FileType>
+            </uap:SupportedFileTypes>
+      
+            <uap:DisplayName>Code Block Definition File</uap:DisplayName>
+      
+            <uap:EditFlags OpenIsSafe="true"/>
+      
+            <uap:Logo>Assets\cbd_file.png</uap:Logo>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

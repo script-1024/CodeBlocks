@@ -29,7 +29,7 @@ namespace CodeBlocks.Core
                 if (dict[item] is Dictionary<object, object> nextDict) dict = nextDict;
                 else return dict[item].ToString();
             }
-            return key; // fail
+            return key; // failed
         }
 
         public static void ReloadLanguageFiles()

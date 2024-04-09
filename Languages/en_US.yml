@@ -14,12 +14,12 @@ Settings:
 
 Messages:
     Button:
-        No: "No"
         Yes: "Yes"
-        Save: Save
+        No: "No"
         Cancel: Cancel
-        Giveup: Give up
         Confirm: Confirm
+        Save: Save
+        Giveup: Give up
 
     RemovingMultipleBlocks:
         Title: Operation Confirmation
