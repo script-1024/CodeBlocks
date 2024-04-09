@@ -1,5 +1,4 @@
 using CodeBlocks.Pages;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -13,7 +12,19 @@ namespace CodeBlocks.Controls
         {
             this.InitializeComponent();
             app.OnLanguageChanged += GetLocalized;
+            SubscribeClickEvent();
             GetLocalized();
+        }
+
+        private void SubscribeClickEvent()
+        {
+            foreach (MenuBarItem menuItem in Menu.Items)
+            {
+                foreach (MenuFlyoutItem flyoutItem in menuItem.Items)
+                {
+                    flyoutItem.Click += FlyoutItem_Click;
+                }
+            }
         }
 
         private void GetLocalized()
@@ -28,9 +39,26 @@ namespace CodeBlocks.Controls
             }
         }
 
+        private void FlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            var thisItem = sender as MenuFlyoutItem;
+            if (thisItem == null) return;
+            switch (thisItem.Tag)
+            {
+                case "ShowBlockEditor":
+                    var editor = new BlockEditor();
+                    editor.Activate();
+                    break;
+                case "Exit":
+                    app.MainWindow.Close();
+                    break;
+                default: return;
+            }
+        }
+
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            var wnd = (Application.Current as App).m_window;
+            var wnd = (Application.Current as App).MainWindow;
             wnd.Tab.Visibility = Visibility.Collapsed;
             wnd.RootGrid.Children.Add(new SettingsPage());
             wnd.UpdateDragRects(48);

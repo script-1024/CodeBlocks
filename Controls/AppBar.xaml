@@ -12,8 +12,9 @@
         
         <StackPanel x:Name="Header" x:FieldModifier="public" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
             <MenuBar x:Name="Menu">
-                <MenuBarItem Title="File" Tag="File">
-                    <MenuFlyoutItem Text="Exit" Tag="Exit"/>
+                <MenuBarItem Tag="File">
+                    <MenuFlyoutItem Tag="ShowBlockEditor"/>
+                    <MenuFlyoutItem Tag="Exit"/>
                 </MenuBarItem>
             </MenuBar>
         </StackPanel>
@@ -21,6 +22,5 @@
         <StackPanel x:Name="Footer" x:FieldModifier="public" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
             <AppBarButton x:Name="SettingsButton" Icon="Setting" LabelPosition="Collapsed" Width="42" Click="SettingsButton_Click"/>
         </StackPanel>
-        
     </Grid>
 </UserControl>
