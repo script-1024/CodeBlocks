@@ -6,19 +6,29 @@
     xmlns:ctrl="using:CodeBlocks.Controls"
     NavigationCacheMode="Required"
     SizeChanged="Page_SizeChanged">
-    <Grid>
+    
+    <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="48"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <ctrl:AppBar Grid.Row="0"/>
-        <ScrollView x:Name="Scroller" Grid.Row="1">
-            <Canvas x:Name="RootCanvas">
-                <ctrl:CodeBlock x:Name="ghostBlock" BlockColor="Gray" Visibility="Collapsed"/>
-                <Viewbox x:Name="TrashCan" Width="60" Height="60">
-                    <SymbolIcon Symbol="Delete"/>
-                </Viewbox>
-            </Canvas>
-        </ScrollView>
+        <Canvas x:Name="UICanvas" Grid.Row="1" Background="White">
+            <ScrollViewer x:Name="Scroller" ZoomMode="Enabled" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+                <Canvas x:Name="BlockCanvas" Width="6000" Height="6000">
+                    <ctrl:CodeBlock x:Name="ghostBlock" BlockColor="Gray" Visibility="Collapsed"/>
+                </Canvas>
+            </ScrollViewer>
+            
+            <Viewbox x:Name="ZoomIn" Width="40" Height="40">
+                <SymbolIcon Symbol="ZoomIn"/>
+            </Viewbox>
+            <Viewbox x:Name="ZoomOut" Width="40" Height="40">
+                <SymbolIcon Symbol="ZoomOut"/>
+            </Viewbox>
+            <Viewbox x:Name="TrashCan" Width="60" Height="60" Canvas.ZIndex="-1">
+                <SymbolIcon Symbol="Delete"/>
+            </Viewbox>
+        </Canvas>
     </Grid>
 </Page>

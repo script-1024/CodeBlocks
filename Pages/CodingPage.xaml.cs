@@ -6,11 +6,16 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Controls;
 using CodeBlocks.Core;
 using CodeBlocks.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 
 namespace CodeBlocks.Pages
 {
     public sealed partial class CodingPage : Page
     {
+        private float zoomFactor = 1.0f;
+        private bool isCanvasScrolling = false;
+        private readonly MessageDialog dialog = new();
         private readonly App app = Application.Current as App;
         private string GetLocalizedString(string key) => app.Localizer.GetString(key);
         public bool Edited = false;
@@ -19,16 +24,20 @@ namespace CodeBlocks.Pages
         {
             InitializeComponent();
             InitializePage();
+            this.Loaded += Page_Loaded;
         }
 
         private void InitializePage()
         {
+            UICanvas.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            UICanvas.ManipulationDelta += BlockCanvas_ManipulationDelta;
+
             var hButton = new Button() { Content = "New Hat Block" };
             var pButton = new Button() { Content = "New Process Block" };
             var vButton = new Button() { Content = "New Value Block" };
-            RootCanvas.Children.Add(hButton);
-            RootCanvas.Children.Add(pButton);
-            RootCanvas.Children.Add(vButton);
+            UICanvas.Children.Add(hButton);
+            UICanvas.Children.Add(pButton);
+            UICanvas.Children.Add(vButton);
             Canvas.SetLeft(hButton, 10); Canvas.SetTop(hButton, 10);
             Canvas.SetLeft(pButton, 10); Canvas.SetTop(pButton, 50);
             Canvas.SetLeft(vButton, 10); Canvas.SetTop(vButton, 90);
@@ -36,22 +45,66 @@ namespace CodeBlocks.Pages
             hButton.Click += (_, _) =>
             {
                 var block = new HatBlock(BlockCreated);
+                Canvas.SetLeft(block, 50); Canvas.SetTop(block, 50);
             };
 
             pButton.Click += (_, _) =>
             {
                 var block = new ProcessBlock(BlockCreated);
+                Canvas.SetLeft(block, 50);
+                Canvas.SetTop(block, 50);
             };
 
             vButton.Click += (_, _) =>
             {
                 var block = new ValueBlock(BlockCreated) { Size = (90, 58), ValueType = BlockValueType.Text };
+                Canvas.SetLeft(block, 50);
+                Canvas.SetTop(block, 50);
             };
+
+            //ZoomIn.KeyUp += (_, _) => {app.MainWindow.Title = zoomFactor.ToString(); zoomFactor += 2f; Scroller.ZoomBy(zoomFactor, new((float)(Scroller.ActualWidth / 2), (float)(Scroller.ActualHeight / 2))); };
+            //ZoomOut.KeyUp += (_, _) => { zoomFactor -= 2f; Scroller.ZoomBy(zoomFactor, new((float)(Scroller.ActualWidth / 2), (float)(Scroller.ActualHeight / 2))); };
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            dialog.XamlRoot = this.XamlRoot;
+
+            // 默认 Scroller 水平和垂直置中
+            var centerX = (BlockCanvas.ActualWidth - Scroller.ActualWidth) / 2;
+            var centerY = (BlockCanvas.ActualHeight - Scroller.ActualHeight) / 2;
+            Scroller.ChangeView(centerX, centerY, null, true);
+
+            Scroller.PointerPressed += (_, _) => isCanvasScrolling = true;
+            Scroller.PointerReleased += (_, _) => isCanvasScrolling = false;
+        }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Canvas.SetLeft(ZoomIn, UICanvas.ActualWidth - 90);
+            Canvas.SetTop(ZoomIn, UICanvas.ActualHeight - 230);
+            Canvas.SetLeft(ZoomOut, UICanvas.ActualWidth - 90);
+            Canvas.SetTop(ZoomOut, UICanvas.ActualHeight - 180);
+            Canvas.SetLeft(TrashCan, UICanvas.ActualWidth - 100);
+            Canvas.SetTop(TrashCan, UICanvas.ActualHeight - 100);
+
+            Scroller.Width = UICanvas.ActualWidth;
+            Scroller.Height = UICanvas.ActualHeight - 12;
+        }
+
+        private void BlockCanvas_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (isCanvasScrolling)
+            {
+                var newX = Scroller.HorizontalOffset - e.Delta.Translation.X;
+                var newY = Scroller.VerticalOffset - e.Delta.Translation.Y;
+                Scroller.ChangeView(newX, newY, null, true);
+            }
         }
 
         private void BlockCreated(CodeBlock block, BlockCreatedEventArgs e)
         {
-            RootCanvas.Children.Add(block);
+            BlockCanvas.Children.Add(block);
             Canvas.SetLeft(block, e.Position.X);
             Canvas.SetTop(block, e.Position.Y);
 
@@ -59,17 +112,6 @@ namespace CodeBlocks.Pages
             block.ManipulationStarted += CodeBlock_ManipulationStarted;
             block.ManipulationDelta += CodeBlock_ManipulationDelta;
             block.ManipulationCompleted += CodeBlock_ManipulationCompleted;
-        }
-
-        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Canvas.SetLeft(TrashCan, RootCanvas.ActualWidth - 120);
-            Canvas.SetTop(TrashCan, RootCanvas.ActualHeight - 120);
-
-            var grid = Scroller.Parent as Grid;
-            if (grid == null) return;
-            Scroller.Width = grid.ActualWidth;
-            Scroller.Height = grid.ActualHeight - 48;
         }
 
         private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -99,8 +141,10 @@ namespace CodeBlocks.Pages
 
             double newX = Canvas.GetLeft(thisBlock) + e.Delta.Translation.X;
             double newY = Canvas.GetTop(thisBlock) + e.Delta.Translation.Y;
-            var maxX = RootCanvas.ActualWidth - thisBlock.Size.Width;
-            var maxY = RootCanvas.ActualHeight - thisBlock.Size.Height;
+            var maxX = BlockCanvas.ActualWidth - thisBlock.Size.Width;
+            var maxY = BlockCanvas.ActualHeight - thisBlock.Size.Height;
+            var minX = Canvas.GetLeft(BlockCanvas);
+            var minY = Canvas.GetTop(BlockCanvas);
 
             // 边界检查
             newX = (newX < 0) ? 0 : (newX > maxX) ? maxX : newX;
@@ -158,16 +202,16 @@ namespace CodeBlocks.Pages
             bool isAligned = false;
 
             // 碰撞检查
-            foreach (var uiElement in RootCanvas.Children)
+            foreach (var uiElement in BlockCanvas.Children)
             {
-                if (uiElement == thisBlock || uiElement == ghostBlock) continue; // Skip
-                var target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
+                if (uiElement == ghostBlock) continue; // Skip
 
-                if (uiElement == TrashCan)
                 {
+                    // 判断是否和垃圾桶重叠
+
                     // 计算中心点距离
-                    var dx = target.X + 26 - self.X - selfW / 2;
-                    var dy = target.Y + 26 - self.Y - selfH / 2;
+                    var dx = Canvas.GetLeft(TrashCan) + 26 - self.X - selfW / 2;
+                    var dy = Canvas.GetTop(TrashCan) + 26 - self.Y - selfH / 2;
                     var distance = Math.Sqrt(dx * dx + dy * dy);
 
                     // 距离小于 取较大值(宽, 高) 的四分之一 --> 方块已和垃圾桶重叠;
@@ -178,6 +222,9 @@ namespace CodeBlocks.Pages
                         return;
                     }
                 }
+
+                if (uiElement == thisBlock) continue;
+                var target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
 
                 if (uiElement is CodeBlock targetBlock)
                 {
@@ -242,23 +289,13 @@ namespace CodeBlocks.Pages
             thisBlock.HasBeenRemoved = true;
             int count = thisBlock.GetRelatedBlockCount();
             if (ghostBlock.Visibility == Visibility.Visible) ghostBlock.Visibility = Visibility.Collapsed;
-            if (count == 0) RootCanvas.Children.Remove(thisBlock);
+            if (count == 0) BlockCanvas.Children.Remove(thisBlock);
             else
             {
-                var dialog = new ContentDialog()
-                {
-                    Title = GetLocalizedString("Messages.RemovingMultipleBlocks.Title"),
-                    Content = GetLocalizedString("Messages.RemovingMultipleBlocks.Description"),
-                    CloseButtonText = GetLocalizedString("Messages.Button.Cancel"),
-                    PrimaryButtonText = GetLocalizedString("Messages.Button.Yes"),
-                    DefaultButton = ContentDialogButton.Primary,
-                    XamlRoot = this.XamlRoot
-                };
-
-                var result = await dialog.ShowAsync();
+                var result = await dialog.ShowAsync("RemovingMultipleBlocks", DialogVariant.YesCancel);
                 if (result == ContentDialogResult.Primary)
                 {
-                    await thisBlock.RemoveAsync(RootCanvas);
+                    await thisBlock.RemoveAsync(BlockCanvas);
                 }
                 else
                 {
