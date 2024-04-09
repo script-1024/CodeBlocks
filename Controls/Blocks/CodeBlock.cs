@@ -51,14 +51,33 @@ namespace CodeBlocks.Controls
         private void InitializeMenu()
         {
             this.ContextFlyout = ContentMenu;
+
             var item_copy = new MenuFlyoutItem() { Tag = "Copy", Icon = new FontIcon() { Glyph = "\uE8C8" } };
             item_copy.Click += (_, _) =>
             {
-                var left = Canvas.GetLeft(this) + 50;
-                var top = Canvas.GetTop(this) + 50;
+                var left = Canvas.GetLeft(this) + 30;
+                var top = Canvas.GetTop(this) + 30;
                 var block = Copy(new(this, (left, top)));
             };
             ContentMenu.Items.Add(item_copy);
+
+            var item_del = new MenuFlyoutItem() { Tag = "Delete", Icon = new FontIcon() { Glyph = "\uE74D" } };
+            item_del.Click += async (_, _) => await RemoveAsync(this.Parent as Canvas, false);
+            ContentMenu.Items.Add(item_del);
+
+            var item_delAll = new MenuFlyoutItem() { Tag = "DeleteAll", Icon = new FontIcon() { Glyph = "\uE74D" } };
+            item_delAll.Click += async (_, _) =>
+            {
+                if (GetRelatedBlockCount() > 0)
+                {
+                    var dialog = new MessageDialog() { XamlRoot = app.MainWindow.Content.XamlRoot };
+                    var result = await dialog.ShowAsync("RemovingMultipleBlocks", DialogVariant.YesCancel);
+                    if (result != ContentDialogResult.Primary) return;
+                }
+
+                await RemoveAsync(this.Parent as Canvas);
+            };
+            ContentMenu.Items.Add(item_delAll);
             Localize_Menu();
         }
 
@@ -214,21 +233,25 @@ namespace CodeBlocks.Controls
         }
 
         public bool HasBeenRemoved = false;
-        public async Task RemoveAsync(Canvas rootCanvas)
+        public async Task RemoveAsync(Canvas rootCanvas, bool deleteAll = true)
         {
+            if (rootCanvas == null) return;
             rootCanvas.Children.Remove(this);
             HasBeenRemoved = true;
 
             foreach (var block in RightBlocks)
             {
-                if (block != null) block.RemoveAsync(rootCanvas);
+                if (block != null)
+                {
+                    if (deleteAll) block.RemoveAsync(rootCanvas);
+                    else block.ParentBlock = null;
+                }
             }
 
-            var bottom = BottomBlock;
-            while (bottom != null)
+            if (BottomBlock != null)
             {
-                await bottom.RemoveAsync(rootCanvas);
-                bottom = bottom.BottomBlock;
+                if (deleteAll) BottomBlock.RemoveAsync(rootCanvas);
+                else BottomBlock.ParentBlock = null;
             }
         }
 

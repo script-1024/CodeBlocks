@@ -1,6 +1,5 @@
 ﻿using Windows.Foundation;
 using Microsoft.UI.Xaml.Media;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CodeBlocks.Core
 {
@@ -28,7 +27,6 @@ namespace CodeBlocks.Core
         private int x, y;
         private int w = 16;
         private int h = 10;
-        private int r = 5;
         private PathFigure pathFigure;
 
         private void DrawTopOrDownCurve(int sign, int dir = 0)
@@ -36,24 +34,12 @@ namespace CodeBlocks.Core
             //Sign : Top 1 | Down -1
 
             LineSegment line1 = new LineSegment();
-            line1.Point = new Point(x, y += h - r);
+            line1.Point = new Point(x, y += h);
             pathFigure.Segments.Add(line1);
 
-            ArcSegment arc1 = new ArcSegment();
-            arc1.Point = new Point(x + r * sign, y += r);
-            arc1.Size = new Size(r, r);
-            arc1.SweepDirection = (SweepDirection)dir;
-            pathFigure.Segments.Add(arc1);
-
             LineSegment line2 = new LineSegment();
-            line2.Point = new Point(x += (w - r) * sign, y);
+            line2.Point = new Point(x += w * sign, y);
             pathFigure.Segments.Add(line2);
-
-            ArcSegment arc2 = new ArcSegment();
-            arc2.Point = new Point(x += r * sign, y - r);
-            arc2.Size = new Size(r, r);
-            arc2.SweepDirection = (SweepDirection)dir;
-            pathFigure.Segments.Add(arc2);
 
             LineSegment line3 = new LineSegment();
             line3.Point = new Point(x, y -= h);
@@ -65,44 +51,16 @@ namespace CodeBlocks.Core
             //Sign : Left -1 | Right 1
 
             LineSegment line1 = new LineSegment();
-            line1.Point = new Point(x -= h - r, y);
+            line1.Point = new Point(x -= h, y);
             pathFigure.Segments.Add(line1);
 
-            ArcSegment arc1 = new ArcSegment();
-            arc1.Point = new Point(x -= r, y + r * sign);
-            arc1.Size = new Size(r, r);
-            arc1.SweepDirection = (SweepDirection)dir;
-            pathFigure.Segments.Add(arc1);
-
             LineSegment line2 = new LineSegment();
-            line2.Point = new Point(x, y += (w - r) * sign);
+            line2.Point = new Point(x, y += w * sign);
             pathFigure.Segments.Add(line2);
-
-            ArcSegment arc2 = new ArcSegment();
-            arc2.Point = new Point(x + r, y += r * sign);
-            arc2.Size = new Size(r, r);
-            arc2.SweepDirection = (SweepDirection)dir;
-            pathFigure.Segments.Add(arc2);
 
             LineSegment line3 = new LineSegment();
             line3.Point = new Point(x += h, y);
             pathFigure.Segments.Add(line3);
-        }
-
-        private void DrawCorner(int signX, int signY)
-        {
-            /* Sign
-             *  +x, +y
-             *  -x, +y
-             *  -x, -y
-             *  +x, -y
-             */
-
-            ArcSegment arc = new ArcSegment();
-            arc.Size = new Size(r, r);
-            arc.Point = new Point(x += r * signX, y += r * signY);
-            arc.SweepDirection = SweepDirection.Clockwise;
-            pathFigure.Segments.Add(arc);
         }
 
         private void DrawLine(int dx, int dy, bool relative = true)
@@ -125,8 +83,8 @@ namespace CodeBlocks.Core
             var pathGeo = new PathGeometry();
 
             // 从左上角开始
-            if (MetaData.Type == BlockType.ValueBlock || MetaData.Type == BlockType.ProcessBlock) { x = h + r; y = 0; }
-            else if (MetaData.Type == BlockType.HatBlock) { x = h; y = r / 2; }
+            if (MetaData.Type == BlockType.ValueBlock || MetaData.Type == BlockType.ProcessBlock) { x = h; y = 0; }
+            else if (MetaData.Type == BlockType.HatBlock) { x = h; y = 0; }
 
             pathFigure = new PathFigure();
             pathFigure.StartPoint = new Point(x, y);
@@ -136,10 +94,10 @@ namespace CodeBlocks.Core
             {
                 if (hasTop)
                 {
-                    DrawLine(w - r, 0); // 左半部分
+                    DrawLine(w, 0); // 左半部分
                     DrawTopOrDownCurve(1); // 凹口
                 }
-            }
+            }/*
             else if (MetaData.Type == BlockType.HatBlock)
             {
                 ArcSegment arc = new ArcSegment();
@@ -147,33 +105,33 @@ namespace CodeBlocks.Core
                 arc.Point = new Point(x += 100, y = 0);
                 arc.SweepDirection = SweepDirection.Clockwise;
                 pathFigure.Segments.Add(arc);
-            }
-            DrawLine(Width - r, y, false); // 其余部分
+            }*/
+            DrawLine(Width, y, false); // 其余部分
 
             // 右边
-            DrawCorner(1, 1); // 右上角
+            //DrawCorner(1, 1); // 右上角
             if (hasRight)
             {
-                DrawLine(0, w - r); // 上半部分
+                DrawLine(0, w); // 上半部分
                 while (slots >= 1)
                 {
                     DrawLeftOrRightCurve(1); // 凹口
                     if (--slots >= 1) DrawLine(0, w*2);
                 }
             }
-            DrawLine(x, Height - h - r, false); // 其余部分
+            DrawLine(x, Height - h, false); // 其余部分
 
             // 下边
-            DrawCorner(-1, 1); // 右下角
+            //DrawCorner(-1, 1); // 右下角
             if (hasBottom && MetaData.Type != BlockType.ValueBlock)
             {
                 DrawLine(h + w * 2, y, false); // 右半部分
                 DrawTopOrDownCurve(-1, 1); // 凸起
             }
-            DrawLine(h + r, y, false); // 其余部分
+            DrawLine(h, y, false); // 其余部分
 
             // 左边
-            DrawCorner(-1, -1); // 左下角
+            //DrawCorner(-1, -1); // 左下角
             if (hasLeft)
             {
                 DrawLine(x, w * 2, false); // 下半部分
@@ -182,12 +140,12 @@ namespace CodeBlocks.Core
 
             if (MetaData.Type == BlockType.ValueBlock || MetaData.Type == BlockType.ProcessBlock)
             {
-                DrawLine(x, r, false); // 其余部分
-                DrawCorner(1, -1); // 左上角
+                DrawLine(x, 0, false); // 其余部分
+                //DrawCorner(1, -1); // 左上角
             }
             else if (MetaData.Type == BlockType.HatBlock)
             {
-                DrawLine(x, r/2, false); // 其余部分
+                DrawLine(x, 0, false); // 其余部分
             }
 
             pathGeo.Figures.Add(pathFigure);

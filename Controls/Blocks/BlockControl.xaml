@@ -6,6 +6,6 @@
 
     <Canvas>
         <Path x:Name="BlockBorder" x:FieldModifier="public" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-        <TextBlock x:Name="BlockDescription" x:FieldModifier="public" Foreground="White" FontSize="18" FontFamily="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
+        <TextBlock x:Name="BlockDescription" x:FieldModifier="public" Foreground="White" FontSize="15" FontFamily="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
     </Canvas>
 </UserControl>

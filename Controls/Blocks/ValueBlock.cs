@@ -2,7 +2,6 @@
 using CodeBlocks.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.UI.Core;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
 
@@ -28,21 +27,21 @@ namespace CodeBlocks.Controls
             if (type == BlockValueType.Text)
             {
                 t1.Visibility = t2.Visibility = Visibility.Visible;
-                BlockColor = Color.FromArgb(255, 150, 25, 25);
+                BlockColor = Color.FromArgb(0xFF, 0x96, 0x20, 0x20);
                 Canvas.SetLeft(txtbox, 34);
                 txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Text.PlaceholderText");
             }
             if (type == BlockValueType.Number)
             {
                 t1.Visibility = t2.Visibility = Visibility.Collapsed;
-                BlockColor = Color.FromArgb(255, 0, 85, 255);
+                BlockColor = Color.FromArgb(0xFF, 0x00, 0x60, 0xFF);
                 Canvas.SetLeft(txtbox, 20);
                 txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Number.PlaceholderText");
             }
         }
 
         private readonly TextBlock t1 = new() { Text = "“ " }, t2 = new() { Text = " ”" };
-        private readonly TextBox txtbox = new() { VerticalContentAlignment = VerticalAlignment.Center, BorderBrush = new SolidColorBrush(Colors.Transparent), CornerRadius = new(10) };
+        private readonly TextBox txtbox = new() { VerticalContentAlignment = VerticalAlignment.Center, BorderBrush = new SolidColorBrush(Colors.Transparent), CornerRadius = new(3) };
 
         public ValueBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(handler, args)
         {
