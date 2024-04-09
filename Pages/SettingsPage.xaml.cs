@@ -47,7 +47,7 @@ namespace CodeBlocks.Pages
 
         private void AppBarButton_Click(object sender, RoutedEventArgs e)
         {
-            var wnd = app.m_window;
+            var wnd = app.MainWindow;
             wnd.RootGrid.Children.Remove(this);
             wnd.Tab.Visibility = Visibility.Visible;
             wnd.UpdateDragRects();
