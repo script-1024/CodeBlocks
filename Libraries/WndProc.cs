@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using WinRT.Interop;
-using WinRT;
 
 namespace CodeBlocks.Core
 {
     public static class WindowProc
     {
         public delegate IntPtr WinProc(IntPtr hWnd, PInvoke.User32.WindowMessage Msg, IntPtr wParam, IntPtr lParam);
-        private static WinProc newWndProc = null;
         private static IntPtr oldWndProc = IntPtr.Zero;
 
         private static IntPtr hwnd;
-        private static int MinWidth = 0;
-        private static int MinHeight = 0;
+        private static int MinWidth = -1;
+        private static int MinHeight = -1;
+        private static int MaxWidth = -1;
+        private static int MaxHeight = -1;
 
         [DllImport("user32.dll")]
-        static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, PInvoke.User32.WindowMessage Msg, IntPtr wParam, IntPtr lParam);
+        private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, PInvoke.User32.WindowMessage Msg, IntPtr wParam, IntPtr lParam);
 
         public static void SetWndMinSize(IntPtr _hwnd, int _width, int _height)
         {
@@ -26,23 +25,48 @@ namespace CodeBlocks.Core
             SubClassing();
         }
 
+        public static void SetWndMinMaxSize(IntPtr _hwnd, int _min_width, int _min_height, int _max_width, int _max_height)
+        {
+            hwnd = _hwnd;
+            MinWidth = _min_width;
+            MinHeight = _min_height;
+            MaxWidth = _max_width;
+            MaxHeight = _max_height;
+            SubClassing();
+        }
+
         private static void SubClassing()
         {
             if (hwnd == IntPtr.Zero)
             {
-                int error = Marshal.GetLastWin32Error();
-                throw new InvalidOperationException($"Failed to get window handler: error code {error}");
+                throw new InvalidOperationException($"Failed to get window handler.");
             }
 
-            newWndProc = new(NewWindowProc);
-
-            // Here we use the NativeMethods class
-            oldWndProc = NativeMethods.SetWindowLong(hwnd, PInvoke.User32.WindowLongIndexFlags.GWL_WNDPROC, newWndProc);
+            oldWndProc = NativeMethods.SetWindowLong(hwnd, PInvoke.User32.WindowLongIndexFlags.GWL_WNDPROC);
             if (oldWndProc == IntPtr.Zero)
             {
-                int error = Marshal.GetLastWin32Error();
-                throw new InvalidOperationException($"Failed to set GWL_WNDPROC: error code {error}");
+                throw new InvalidOperationException($"Failed to set GWL_WNDPROC.");
             }
+        }
+
+        private static IntPtr NewWindowProc(IntPtr hWnd, PInvoke.User32.WindowMessage Msg, IntPtr wParam, IntPtr lParam)
+        {
+            switch (Msg)
+            {
+                case PInvoke.User32.WindowMessage.WM_GETMINMAXINFO:
+                    var dpi = PInvoke.User32.GetDpiForWindow(hWnd);
+                    float scale = (float)dpi / 96;
+
+                    MINMAXINFO minMaxInfo = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+                    if (MinWidth != -1) minMaxInfo.ptMinTrackSize.x = (int)(MinWidth * scale);
+                    if (MinHeight != -1) minMaxInfo.ptMinTrackSize.y = (int)(MinHeight * scale);
+                    if (MaxWidth != -1) minMaxInfo.ptMaxTrackSize.x = (int)(MaxWidth * scale);
+                    if (MaxHeight != -1) minMaxInfo.ptMaxTrackSize.y = (int)(MaxHeight * scale);
+                    Marshal.StructureToPtr(minMaxInfo, lParam, true);
+                    break;
+
+            }
+            return CallWindowProc(oldWndProc, hWnd, Msg, wParam, lParam);
         }
 
         public static class NativeMethods
@@ -56,16 +80,17 @@ namespace CodeBlocks.Core
             private static extern IntPtr SetWindowLong64(IntPtr hWnd, PInvoke.User32.WindowLongIndexFlags nIndex, WinProc newProc);
 
             // This does the selection for us, based on the process architecture.
-            public static IntPtr SetWindowLong(IntPtr hWnd, PInvoke.User32.WindowLongIndexFlags nIndex, WinProc newProc)
+            public static IntPtr SetWindowLong(IntPtr hWnd, PInvoke.User32.WindowLongIndexFlags nIndex)
             {
                 if (IntPtr.Size == 4) // 32-bit process
                 {
-                    return SetWindowLong32(hWnd, nIndex, newProc);
+                    return SetWindowLong32(hWnd, nIndex, NewWindowProc);
                 }
-                else // 64-bit process
+                if (IntPtr.Size == 8) // 64-bit process
                 {
-                    return SetWindowLong64(hWnd, nIndex, newProc);
+                    return SetWindowLong64(hWnd, nIndex, NewWindowProc);
                 }
+                return IntPtr.Zero;
             }
         }
 
@@ -77,24 +102,6 @@ namespace CodeBlocks.Core
             public PInvoke.POINT ptMaxPosition;
             public PInvoke.POINT ptMinTrackSize;
             public PInvoke.POINT ptMaxTrackSize;
-        }
-        
-        private static IntPtr NewWindowProc(IntPtr hWnd, PInvoke.User32.WindowMessage Msg, IntPtr wParam, IntPtr lParam)
-        {
-            switch (Msg)
-            {
-                case PInvoke.User32.WindowMessage.WM_GETMINMAXINFO:
-                    var dpi = PInvoke.User32.GetDpiForWindow(hWnd);
-                    float scale = (float)dpi / 96;
-
-                    MINMAXINFO minMaxInfo = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-                    minMaxInfo.ptMinTrackSize.x = (int)(MinWidth * scale);
-                    minMaxInfo.ptMinTrackSize.y = (int)(MinHeight * scale);
-                    Marshal.StructureToPtr(minMaxInfo, lParam, true);
-                    break;
-
-            }
-            return CallWindowProc(oldWndProc, hWnd, Msg, wParam, lParam);
         }
     }
 }
