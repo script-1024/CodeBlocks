@@ -1,37 +1,28 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
-using WinRT.Interop;
+using Microsoft.UI.Windowing;
 using CodeBlocks.Pages;
 using CodeBlocks.Core;
-using Microsoft.UI;
-using Windows.Graphics;
-using Microsoft.UI.Windowing;
-using System.Threading.Tasks;
 
 namespace CodeBlocks
 {
     public sealed partial class MainWindow : Window
     {
-        private IntPtr wndHandle;
         private bool isFileSaved = false;
         private bool isFileOpened = false;
         private readonly MessageDialog dialog = new();
         private readonly App app = Application.Current as App;
 
-        private string GetLocalizedString(string key) => (Application.Current as App).Localizer.GetString(key);
-        private void GetLocalized() { }
-        
         public MainWindow()
         {
             InitializeComponent();
             this.Closed += Window_Closed;
-            wndHandle = WindowNative.GetWindowHandle(this);
-            app.OnLanguageChanged += GetLocalized;
 
-            // 设置窗口最小尺寸
-            WindowProc.SetWndMinSize(wndHandle, 800, 600);
+            // 限制窗口最小尺寸
+            this.AppWindow.Changed += Window_SizeChanged;
 
             // 外观
             SystemBackdrop = new MicaBackdrop();
@@ -42,17 +33,29 @@ namespace CodeBlocks
             this.SizeChanged += (_, _) => UpdateDragRects();
         }
 
+        private void Window_SizeChanged(object sender, AppWindowChangedEventArgs args)
+        {
+            if (args.DidSizeChange)
+            {
+                bool needResize = false;
+                var size = this.AppWindow.Size;
+                if (size.Width < 800) { needResize = true; size.Width = 800; }
+                if (size.Height < 600) { needResize = true; size.Height = 600; }
+                if (needResize) AppWindow.Resize(size);
+            }
+        }
+
         public void UpdateDragRects()
         {
             int split = Tab.TabItems.Count * 240 + 48;
-            RectInt32 left = new(0, 0, split, 24);
-            RectInt32 right = new(split, 0, AppWindow.Size.Width, 48);
+            var left = new Windows.Graphics.RectInt32(0, 0, split, 24);
+            var right = new Windows.Graphics.RectInt32(split, 0, AppWindow.Size.Width, 48);
             AppWindow.TitleBar.SetDragRectangles([left, right]);
         }
 
         public void UpdateDragRects(int split)
         {
-            RectInt32 right = new(split, 0, AppWindow.Size.Width, 48);
+            var right = new Windows.Graphics.RectInt32(split, 0, AppWindow.Size.Width, 48);
             AppWindow.TitleBar.SetDragRectangles([right]);
         }
 

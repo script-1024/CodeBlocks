@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using WinRT.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -12,7 +11,6 @@ namespace CodeBlocks
 {
     public sealed partial class BlockEditor : Window
     {
-        private IntPtr wndHandle;
         private bool isFileSaved = false;
         private bool isFileOpened = false;
         private StorageFile activeFile = null;
@@ -26,10 +24,9 @@ namespace CodeBlocks
             InitializeComponent();
             this.Closed += Window_Closed;
             RootGrid.Loaded += RootGrid_Loaded;
-            wndHandle = WindowNative.GetWindowHandle(this);
 
-            // 设置窗口尺寸
-            AppWindow.Resize(new(750, 800));
+            // 限制窗口尺寸
+            this.AppWindow.Changed += Window_SizeChanged;
 
             // 外观
             SystemBackdrop = new MicaBackdrop();
@@ -55,6 +52,18 @@ namespace CodeBlocks
                     activeFile = null;
                     _ = dialog.ShowAsync("InvalidFile");
                 }
+            }
+        }
+
+        private void Window_SizeChanged(object sender, AppWindowChangedEventArgs args)
+        {
+            if (args.DidSizeChange)
+            {
+                bool needResize = false;
+                var size = this.AppWindow.Size;
+                if (size.Width < 800) { needResize = true; size.Width = 800; }
+                if (size.Height < 600) { needResize = true; size.Height = 600; }
+                if (needResize) AppWindow.Resize(size);
             }
         }
 
