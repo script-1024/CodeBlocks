@@ -3,24 +3,25 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Controls
 {
-
     public sealed partial class ContentBar : UserControl
     {
+        private readonly App app = Application.Current as App;
+
         public string Title
         {
-            get { return TitleTextBlock.Text; }
-            set { TitleTextBlock.Text = value;}
+            get => TitleTextBlock.Text;
+            set => TitleTextBlock.Text = value;
         }
 
         public string Description
         {
-            get { return DescriptionTextBlock.Text; }
-            set { DescriptionTextBlock.Text = value; }
+            get => DescriptionTextBlock.Text;
+            set => DescriptionTextBlock.Text = value;   
         }
 
         public string IconGlyph
         {
-            get { return Icon.Glyph; }
+            get => Icon.Glyph;
             set
             {
                 if (value != null) { Icon.Glyph = value; Icon.Visibility = Visibility.Visible; }
@@ -30,21 +31,18 @@ namespace CodeBlocks.Controls
 
         public new Control Content
         {
-            get { return ContentPresenter.Content as Control; }
+            get => ContentPresenter.Content as Control;
             set => ContentPresenter.Content = value;
         }
 
-        public ContentBar()
-        {
-            InitializeComponent();
-            IconGlyph = "\uE946";
-        }
+        public ContentBar() : this(null, "\uE946") => InitializeComponent();
 
-        public ContentBar(object control, string iconGlyph = "\uE946")
+        public ContentBar(object control, string iconGlyph)
         {
             InitializeComponent();
-            IconGlyph = iconGlyph;
             Content = control as Control;
+            IconGlyph = iconGlyph;
+            app.OnThemeChanged += () => this.RequestedTheme = (ElementTheme)App.CurrentTheme;
         }
     }
 }

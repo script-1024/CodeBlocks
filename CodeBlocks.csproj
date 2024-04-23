@@ -22,12 +22,14 @@
     <None Remove="Controls\AppBar.xaml" />
     <None Remove="Controls\Blocks\BlockControl.xaml" />
     <None Remove="Controls\ContentBar.xaml" />
-    <None Remove="Languages\en_US.yml" />
-    <None Remove="Languages\zh_CN.yml" />
-    <None Remove="Languages\zh_TW.yml" />
+    <None Remove="Controls\ToolBox.xaml" />
+    <None Remove="Languages\en-US.yml" />
+    <None Remove="Languages\zh-CN.yml" />
+    <None Remove="Languages\zh-TW.yml" />
     <None Remove="Pages\CodingPage.xaml" />
-    <None Remove="Pages\HomePage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
+    <None Remove="Styles\Background.xaml" />
+    <None Remove="Styles\Text.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,13 +46,13 @@
     <Content Include="Fonts\HarmonyOS_Sans_B.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Languages\en_US.yml">
+    <Content Include="Languages\en-US.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Languages\zh_CN.yml">
+    <Content Include="Languages\zh-CN.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Languages\zh_TW.yml">
+    <Content Include="Languages\zh-TW.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -58,7 +60,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
-    <PackageReference Include="PInvoke.User32" Version="0.7.124" />
     <PackageReference Include="YamlDotNet" Version="15.1.1" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -88,6 +89,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Controls\ToolBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="BlockEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -113,12 +119,19 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\HomePage.xaml">
+    <Page Update="Controls\ContentBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\ContentBar.xaml">
+    <Folder Include="Blocks\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\Text.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\Background.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

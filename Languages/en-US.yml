@@ -1,16 +1,24 @@
-﻿# en_US.yml - English Language Profile
+﻿# en-US.yml - English Language Profile
 
 Profile:
-    Identifier: en_US
+    Identifier: en-US
     DisplayName: English
 
 Settings:
+    Title: Settings
+
     VersionInfo:
         Title: Version
         
-    LanguageConfig:
+    LanguageOptions:
         Title: Language
         Description: Change the language that this app displays in.
+
+MenuBar:
+    File:
+        Title: File
+        ShowBlockEditor: Open [Block Editor]
+        Exit: Exit
 
 Messages:
     Button:
@@ -25,9 +33,16 @@ Messages:
         Title: Operation Confirmation
         Description: Multiple blocks will be removed. Do you want to continue?
 
+    WindowClosing:
+        Title: Window Closing
+        Description: File not saved. Do you want to continue?
+
 ContentMenu:
     CodeBlock:
         Copy: Copy
+        Delete: Delete
+        DeleteThis: Delete This
+        DeleteAll: Delete All Subsequent Blocks
 
 Blocks:
     ValueBlock:

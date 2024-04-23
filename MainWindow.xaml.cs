@@ -27,10 +27,10 @@ namespace CodeBlocks
             // 外观
             SystemBackdrop = new MicaBackdrop();
             ExtendsContentIntoTitleBar = true;
-            Tab.AddTabButtonClick += (_, _) => AddNewTab();
-            AddNewTab();
+            app.OnThemeChanged += () => (this.Content as FrameworkElement).RequestedTheme = (ElementTheme)App.CurrentTheme;
 
             this.SizeChanged += (_, _) => UpdateDragRects();
+            AddNewTab(typeof(CodingPage));
         }
 
         private void Window_SizeChanged(object sender, AppWindowChangedEventArgs args)
@@ -65,20 +65,21 @@ namespace CodeBlocks
             this.Close(); // 关闭窗口。如果 forceQuit == false，则此函数的表现和无参数 Close() 方法一致
         }
 
-        private async Task<bool> AskUserToCloseWindowAsync()
+        private async Task<ContentDialogResult> FileNotSavedDialogShowAsync()
         {
-            if (!isFileOpened || isFileSaved) return true;
-            else return await dialog.ShowAsync("ClosingWindow", DialogVariant.SaveGiveupCancel) == ContentDialogResult.Primary;
+            if (!isFileOpened || isFileSaved) return ContentDialogResult.Primary;
+            else return await dialog.ShowAsync("WindowClosing", DialogVariant.SaveGiveupCancel);
         }
 
         private async void Window_Closed(object sender, WindowEventArgs args)
         {
             args.Handled = true;
-            bool result = await AskUserToCloseWindowAsync();
-            if (result) { args.Handled = false; Close(true); }
+            var result = await FileNotSavedDialogShowAsync();
+            if (result == ContentDialogResult.Primary) { /* 保存文件 */ }
+            if (result != ContentDialogResult.None) { args.Handled = false; Close(true); }
         }
 
-        private void AddNewTab(string header = "")
+        private void AddNewTab(Type page, string header = "")
         {
             TabViewItem item = new() { Margin = new(0,12,0,0) };
             item.Header = (string.IsNullOrEmpty(header)) ? "New Tab" : header;
@@ -90,7 +91,7 @@ namespace CodeBlocks
             };
 
             this.SizeChanged += (_, _) => resize(); resize(); // 立即调整一次大小
-            frame.Navigate(typeof(CodingPage));
+            frame.Navigate(page);
             item.Content = frame;
 
             Tab.TabItems.Add(item);

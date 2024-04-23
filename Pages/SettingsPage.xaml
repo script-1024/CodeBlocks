@@ -7,9 +7,9 @@
     xmlns:ctrl="using:CodeBlocks.Controls"
     NavigationCacheMode="Required">
 
-    <StackPanel x:Name="RootPanel" Background="Transparent">
+    <StackPanel x:Name="RootPanel">
         <StackPanel x:Name="TitleBar" Orientation="Horizontal">
-            <AppBarButton Icon="Back" Margin="10,2,0,0" LabelPosition="Collapsed" Width="42" Click="AppBarButton_Click"/>
+            <AppBarButton Icon="Back" Margin="10,2,0,0" LabelPosition="Collapsed" Width="42" Click="BackButton_Click"/>
             <BitmapIcon Margin="10,2,0,0" UriSource="Assets\StoreLogo.png" Height="24"/>
             <TextBlock x:Name="TitleBar_Name" Margin="16,16,0,0" Text="Code Blocks" FontSize="12"/>
             <TextBlock x:Name="TitleBar_VersionTag" Margin="8,16,0,0" Text="Beta" FontSize="12" Foreground="Gray"/>
@@ -17,9 +17,12 @@
         
         <TextBlock x:Name="Title" Margin="48,24,0,24" FontSize="40"/>
 
-        <ctrl:ContentBar x:Name="VersionInfo"/>
-        <ctrl:ContentBar x:Name="LangConfig" IconGlyph="&#xF2B7;">
+        <ctrl:ContentBar x:Name="VersionInfo" Tag="NoDescription"/>
+        <ctrl:ContentBar x:Name="LanguageOptions" IconGlyph="&#xF2B7;">
             <ComboBox x:Name="ComboBox_Language"/>
+        </ctrl:ContentBar>
+        <ctrl:ContentBar x:Name="ThemeOptions" IconGlyph="&#xE790;">
+            <ComboBox x:Name="ComboBox_Theme"/>
         </ctrl:ContentBar>
     </StackPanel>
 </Page>

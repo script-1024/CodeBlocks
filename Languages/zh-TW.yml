@@ -1,7 +1,7 @@
-﻿# zh_TW.yml - 繁體中文語言檔案
+﻿# zh-TW.yml - 繁體中文語言檔案
 
 Profile:
-    Identifier: zh_TW
+    Identifier: zh-TW
     DisplayName: 繁體中文
 
 Settings:
@@ -10,9 +10,17 @@ Settings:
     VersionInfo:
         Title: 版本編號
 
-    LanguageConfig:
+    LanguageOptions:
         Title: 語言
         Description: 更改此應用程式的顯示語言
+
+    ThemeOptions:
+        Title: 顏色主題
+        Description: 更改此應用程式的主題
+        Options:
+            FollowSystem: 跟隨系統
+            Light: 淺色
+            Dark: 深色
 
 MenuBar:
     File:
@@ -33,17 +41,23 @@ Messages:
         Title: 操作確認
         Description: 即將移除多個程式塊，是否繼續？
 
-    ClosingWindow:
+    WindowClosing:
         Title: 關閉視窗
         Description: 尚未保存檔案，是否繼續？
 
 ContentMenu:
     CodeBlock:
         Copy: 複製
-        Delete: 刪除此程式塊
+        Delete: 刪除
+        DeleteThis: 刪除此程式塊
         DeleteAll: 刪除後續所有程式塊
 
+BlockEditor:
+    Title: 程式塊編輯器
+
 Blocks:
+    Demo: 文字樣式
+
     ValueBlock:
         Text: 
             Tip: 文字
@@ -63,6 +77,8 @@ Blocks:
         Execute:
             Tip: 以指定的身份、位置、朝向、條件執行任意指令，並儲存執行結果。所有的分支子命令皆為可選項。
             Run: 執行指令 (&cmd)
+            As: 將執行者設為 (&executor)
+            At: 在 (&location)
             Conditons: 條件 (&cond)
 
         Say:

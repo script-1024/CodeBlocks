@@ -1,7 +1,7 @@
-﻿# zh_CN.yml - 简体中文语言档案
+﻿# zh-CN.yml - 简体中文语言档案
 
 Profile:
-    Identifier: zh_CN
+    Identifier: zh-CN
     DisplayName: 简体中文
 
 Settings:
@@ -10,9 +10,17 @@ Settings:
     VersionInfo:
         Title: 版本号
 
-    LanguageConfig:
+    LanguageOptions:
         Title: 语言
         Description: 更改此应用的显示语言
+
+    ThemeOptions:
+        Title: 颜色主题
+        Description: 更改此应用的主题
+        Options:
+            FollowSystem: 跟随系统
+            Light: 浅色
+            Dark: 深色
 
 MenuBar:
     File:
@@ -33,17 +41,23 @@ Messages:
         Title: 操作确认
         Description: 即将移除多个代码块，是否继续？
 
-    ClosingWindow:
+    WindowClosing:
         Title: 关闭窗口
         Description: 尚未保存文件，是否继续？
 
 ContentMenu:
     CodeBlock:
         Copy: 复制
-        Delete: 删除此代码块
+        Delete: 删除
+        DeleteThis: 删除此代码块
         DeleteAll: 删除后续所有代码块
 
+BlockEditor:
+    Title: 代码块编辑器
+
 Blocks:
+    Demo: 文字样式
+
     ValueBlock:
         Text: 
             Tip: 文本

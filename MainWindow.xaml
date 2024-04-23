@@ -10,20 +10,8 @@
     mc:Ignorable="d">
 
     <Grid x:Name="RootGrid" x:FieldModifier="public">
-        <!--
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        -->
-        <!--
-        <StackPanel x:Name="TitleBar" Grid.Row="0" Orientation="Horizontal">
-            <BitmapIcon Margin="16,0,0,0" UriSource="Assets\StoreLogo.png" Height="24"/>
-            <TextBlock x:Name="TitleBar_Name" Margin="16,16,0,0" Text="Code Blocks" FontSize="12"/>
-            <TextBlock x:Name="TitleBar_VersionTag" Margin="8,16,0,0" Text="Beta" FontSize="12" Foreground="Gray"/>
-        </StackPanel>
-        -->
 
-        <TabView x:Name="Tab" x:FieldModifier="public">
+        <TabView x:Name="Tab" x:FieldModifier="public" IsAddTabButtonVisible="False">
             <TabView.Resources>
                 <ResourceDictionary>
                     <ResourceDictionary.ThemeDictionaries>
@@ -37,15 +25,12 @@
                 </ResourceDictionary>
             </TabView.Resources>
             
-            <!--
+            
             <TabView.TabStripHeader>
                 <StackPanel x:Name="TitleBar" Orientation="Horizontal">
-                    <BitmapIcon Margin="16,0,0,0" UriSource="Assets\StoreLogo.png" Height="24"/>
-                    <TextBlock x:Name="TitleBar_Name" Margin="16,16,0,0" Text="Code Blocks" FontSize="12"/>
-                    <TextBlock x:Name="TitleBar_VersionTag" Margin="8,16,0,0" Text="Beta" FontSize="12" Foreground="Gray"/>
+                    <BitmapIcon Margin="16,0,8,-8" UriSource="Assets\StoreLogo.png" Height="24"/>
                 </StackPanel>
             </TabView.TabStripHeader>
-            -->
         </TabView>
         
     </Grid>

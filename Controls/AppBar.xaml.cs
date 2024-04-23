@@ -1,5 +1,6 @@
 using CodeBlocks.Pages;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Controls
@@ -7,6 +8,7 @@ namespace CodeBlocks.Controls
     public sealed partial class AppBar : UserControl
     {
         private readonly App app = Application.Current as App;
+        private string GetLocalizedString(string key) => app.Localizer.GetString(key);
 
         public AppBar()
         {
@@ -31,10 +33,10 @@ namespace CodeBlocks.Controls
         {
             foreach (MenuBarItem menuItem in Menu.Items)
             {
-                menuItem.Title = app.Localizer.GetString($"MenuBar.{menuItem.Tag}.Title");
+                menuItem.Title = GetLocalizedString($"MenuBar.{menuItem.Tag}.Title");
                 foreach (MenuFlyoutItem flyoutItem in menuItem.Items)
                 {
-                    flyoutItem.Text = app.Localizer.GetString($"MenuBar.{menuItem.Tag}.{flyoutItem.Tag}");
+                    flyoutItem.Text = GetLocalizedString($"MenuBar.{menuItem.Tag}.{flyoutItem.Tag}");
                 }
             }
         }
@@ -58,7 +60,7 @@ namespace CodeBlocks.Controls
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            var wnd = (Application.Current as App).MainWindow;
+            var wnd = app.MainWindow;
             wnd.Tab.Visibility = Visibility.Collapsed;
             wnd.RootGrid.Children.Add(new SettingsPage());
             wnd.UpdateDragRects(48);
