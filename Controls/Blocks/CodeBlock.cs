@@ -1,11 +1,9 @@
-﻿using CodeBlocks.Core;
-using CodeBlocks.Pages;
+﻿using System;
+using System.Threading.Tasks;
+using CodeBlocks.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
-using System;
-using System.Data.SqlTypes;
-using System.Threading.Tasks;
 using Windows.Foundation;
 
 namespace CodeBlocks.Controls
@@ -13,40 +11,45 @@ namespace CodeBlocks.Controls
     public class BlockCreatedEventArgs : EventArgs
     {
         public readonly CodeBlock Source;
-        public readonly (double X, double Y) Position;
-        public static readonly BlockCreatedEventArgs Null = new(null, (0, 0));
+        public readonly Point Position;
+        public static readonly BlockCreatedEventArgs Null = new();
 
-        public BlockCreatedEventArgs(CodeBlock source, (double X, double Y) position) : base()
+        public BlockCreatedEventArgs(double x = 0, double y = 0, CodeBlock source = null) : base()
         {
-            Source = source; Position = position;
+            Position = new Point(x, y);
+            Source = source;
+        }
+
+        public BlockCreatedEventArgs(Point pos, CodeBlock source = null) : base()
+        {
+            Position = pos;
+            Source = source;
         }
     }
 
     public class CodeBlock : BlockControl
     {
-        private int width;
-        private int height;
         private string key;
-        private BlockMetaData metaData;
+        private BlockMetaData metaData = BlockMetaData.Null;
+
         private readonly MenuFlyout ContentMenu = new();
         private readonly CodeBlockPainter painter = new();
         private readonly App app = Application.Current as App;
 
+        public delegate void BlockCreatedEventHandler(CodeBlock sender, BlockCreatedEventArgs e);
+        public event BlockCreatedEventHandler OnBlockCreated;
+
         public CodeBlock(BlockCreatedEventHandler createdEventHandler, BlockCreatedEventArgs args = null) : base()
         {
-            metaData = BlockMetaData.Null;
-            app.OnLanguageChanged += Localize_Block;
-            app.OnLanguageChanged += Localize_Menu;
+            app.OnLanguageChanged += LocalizeBlock;
+            app.OnLanguageChanged += LocalizeMenu;
             InitializeMenu();
 
             OnBlockCreated += createdEventHandler;
-            OnBlockCreated?.Invoke(this, (args == null) ? BlockCreatedEventArgs.Null : args);
+            OnBlockCreated?.Invoke(this, args);
         }
 
         public CodeBlock() : this(null, null) { }
-
-    public delegate void BlockCreatedEventHandler(CodeBlock sender, BlockCreatedEventArgs e);
-        public event BlockCreatedEventHandler OnBlockCreated;
 
         private void InitializeMenu()
         {
@@ -57,7 +60,7 @@ namespace CodeBlocks.Controls
             {
                 var left = Canvas.GetLeft(this) + 30;
                 var top = Canvas.GetTop(this) + 30;
-                var block = Copy(new(this, (left, top)));
+                var block = Copy( new(left, top, this) );
             };
             ContentMenu.Items.Add(item_copy);
 
@@ -78,10 +81,10 @@ namespace CodeBlocks.Controls
                 await RemoveAsync(this.Parent as Canvas);
             };
             ContentMenu.Items.Add(item_delAll);
-            Localize_Menu();
+            LocalizeMenu();
         }
 
-        private void Localize_Block()
+        private void LocalizeBlock()
         {
             if (string.IsNullOrEmpty(key)) return;
             var rawText = app.Localizer.GetString(key);
@@ -112,10 +115,12 @@ namespace CodeBlocks.Controls
                 
             }
 
-            Resize(maxWidth + 40, height);
+            (int w, int h) size = Size;
+            size.w = maxWidth + 40;
+            Resize(size);
         }
 
-        private void Localize_Menu()
+        private void LocalizeMenu()
         {
             foreach (MenuFlyoutItem item in ContentMenu.Items)
             {
@@ -123,29 +128,23 @@ namespace CodeBlocks.Controls
             }
         }
 
-        private void Resize(int width, int height)
+        private void Resize((int w, int h) size)
         {
             // 确保方块高度合法
             var minHeight = (metaData.Slots > 0) ? 16 * (metaData.Slots * 3) + 10 : 58;
-            if (height < minHeight) height = minHeight;
+            if (size.h < minHeight) size.h = minHeight;
 
-            this.width = width;
-            this.height = height;
-            metaData.Size = (width, height);
+            metaData.Size = size;
             painter.MetaData = metaData;
             BlockBorder.Data = painter.DrawBlockBorder();
             Array.Resize(ref RightBlocks, metaData.Slots);
         }
 
+        #region "Properties"
         public (int Width, int Height) Size
         {
-            get => (width, height);
-            set
-            {
-                width = value.Width;
-                height = value.Height;
-                Resize(width, height);
-            }
+            get => metaData.Size;
+            set => Resize(value);
         }
 
         public BlockMetaData MetaData
@@ -154,15 +153,18 @@ namespace CodeBlocks.Controls
             set
             {
                 metaData = value;
-                Size = metaData.Size;
+                Resize(value.Size);
             }
         }
 
         public string TranslationKey
         {
             get => key;
-            set { if (value == key) return; key = value; Localize_Block(); }
+            set { if (value == key) return; key = value; LocalizeBlock(); }
         }
+
+        public bool HasBeenRemoved = false;
+        #endregion
 
         #region "Methods"
         public int GetRelatedBlockCount()
@@ -175,12 +177,38 @@ namespace CodeBlocks.Controls
 
         public CodeBlock Copy(BlockCreatedEventArgs args)
         {
-            var block = new CodeBlock(this.OnBlockCreated, args) { MetaData = this.MetaData, BlockColor = this.BlockColor, TranslationKey = this.TranslationKey };
+            CodeBlock block;
+            if (this is ValueBlock vb)
+            {
+                block = new ValueBlock(this.OnBlockCreated, args)
+                {
+                    MetaData = vb.MetaData,
+                    ValueType = vb.ValueType
+                };
+            }
+            else
+            {
+                block = new CodeBlock(this.OnBlockCreated, args)
+                {
+                    MetaData = this.MetaData,
+                    BlockColor = this.BlockColor,
+                    TranslationKey = this.TranslationKey
+                };
+            }
+            
             for (int i = 0; i < this.RightBlocks.Length; i++)
             {
-                if (this.RightBlocks[i] == null) block.RightBlocks[i] = null;
-                else block.RightBlocks[i] = this.RightBlocks[i].Copy(BlockCreatedEventArgs.Null);
+                var thisBlock = this.RightBlocks[i];
+                if (thisBlock is null) block.RightBlocks[i] = null;
+                else
+                {
+                    var left = Canvas.GetLeft(thisBlock) + 30;
+                    var top = Canvas.GetTop(thisBlock) + 30;
+                    var newArgs = new BlockCreatedEventArgs(left, top, thisBlock);
+                    block.RightBlocks[i] = thisBlock.Copy(newArgs);
+                }
             }
+
             Canvas.SetLeft(block.BlockDescription, Canvas.GetLeft(BlockDescription));
             Canvas.SetTop(block.BlockDescription, Canvas.GetTop(BlockDescription));
             return block;
@@ -189,6 +217,19 @@ namespace CodeBlocks.Controls
         public void CopyDataFrom(CodeBlock other)
         {
             this.MetaData = other.metaData;
+        }
+
+        public void PopUp()
+        {
+            if (this.ParentBlock is null) return;
+
+            if (this.DependentSlot == -1) this.ParentBlock.BottomBlock = null;
+            else if (this.DependentSlot > 0) this.ParentBlock.RightBlocks[DependentSlot - 1] = null;
+
+            this.SetPosition(+40, +20, true);
+            this.SetZIndex(+1, true);
+            this.ParentBlock = null;
+            this.DependentSlot = 0;
         }
 
         public void MoveTo(CodeBlock other, double dx = 0, double dy = 0)
@@ -202,10 +243,10 @@ namespace CodeBlocks.Controls
         {
             if (isRelative) value = checked(value + Canvas.GetZIndex(this));
             Canvas.SetZIndex(this, value);
-            if (BottomBlock != null) BottomBlock.SetZIndex(value);
+            BottomBlock?.SetZIndex(value);
             foreach (var block in RightBlocks)
             {
-                if (block != null) block.SetZIndex(value);
+                block?.SetZIndex(value);
             }
         }
 
@@ -222,36 +263,39 @@ namespace CodeBlocks.Controls
             Canvas.SetTop(this, y);
 
             // 移动下方方块
-            if (BottomBlock != null) { BottomBlock.SetPosition(x, y + height - 10); }
+            BottomBlock?.SetPosition(x, y + Size.Height - 10);
 
             // 移动右侧方块
-            if (RightBlocks != null) for (int i = 0; i < metaData.Slots; i++)
+            for (int i = 0; i < metaData.Slots; i++)
             {
                 var block = RightBlocks[i];
-                if (block != null) block.SetPosition(x + width - 10, y + i * 48);
+                block?.SetPosition(x + Size.Width - 10, y + i * 48);
             }
         }
 
-        public bool HasBeenRemoved = false;
         public async Task RemoveAsync(Canvas rootCanvas, bool deleteAll = true)
         {
             if (rootCanvas == null) return;
+
+            if (deleteAll) BottomBlock?.RemoveAsync(rootCanvas);
+            else if(this.DependentSlot == -1)
+            {
+                // 仅删除自身，需接上相邻块
+                if (this.BottomBlock != null)
+                {
+                    this.ParentBlock.BottomBlock = this.BottomBlock;
+                    this.BottomBlock.ParentBlock = this.ParentBlock;
+                    this.BottomBlock.MoveTo(this); // 向上移动到此块的位置
+                }
+            }
+
             rootCanvas.Children.Remove(this);
             HasBeenRemoved = true;
 
             foreach (var block in RightBlocks)
             {
-                if (block != null)
-                {
-                    if (deleteAll) block.RemoveAsync(rootCanvas);
-                    else block.ParentBlock = null;
-                }
-            }
-
-            if (BottomBlock != null)
-            {
-                if (deleteAll) BottomBlock.RemoveAsync(rootCanvas);
-                else BottomBlock.ParentBlock = null;
+                if (deleteAll) await block?.RemoveAsync(rootCanvas);
+                else block?.PopUp();
             }
         }
 
@@ -267,15 +311,15 @@ namespace CodeBlocks.Controls
             int targetH = targetBlock.Size.Height;
 
             if (self.X + 10 > target.X + targetW - 10) rq.x = 1;
-            if (self.X + width < target.X + 10) rq.x = -1;
+            if (self.X + Size.Width < target.X + 10) rq.x = -1;
 
             if (self.Y + 10 > target.Y + targetH - 10) rq.y = 1;
-            if (self.Y + height < target.Y + 10) rq.y = -1;
+            if (self.Y + Size.Height < target.Y + 10) rq.y = -1;
 
-            if (rq.x > 0) rq.dx = (self.X + width) - (target.X + targetW);
+            if (rq.x > 0) rq.dx = (self.X + Size.Width) - (target.X + targetW);
             else if (rq.x < 0) rq.dx = target.X - self.X;
 
-            if (rq.y > 0) rq.dy = (self.Y + height) - (target.Y + targetH);
+            if (rq.y > 0) rq.dy = (self.Y + Size.Height) - (target.Y + targetH);
             else if (rq.y < 0) rq.dy = target.Y - self.Y;
 
             return rq;
