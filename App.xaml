@@ -8,7 +8,8 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
+                <ResourceDictionary Source="/Styles/Background.xaml"/>
+                <ResourceDictionary Source="/Styles/Text.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
             <ResourceDictionary.ThemeDictionaries>
@@ -22,7 +23,7 @@
                     <Style TargetType="TextBox">
                         <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
                     </Style>
-                    <Style TargetType="ComboBox">
+                    <Style TargetType="ComboBoxItem">
                         <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
                     </Style>
                     <Style TargetType="CheckBox">

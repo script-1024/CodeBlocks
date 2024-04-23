@@ -13,13 +13,13 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <ctrl:AppBar Grid.Row="0"/>
-        <Canvas x:Name="UICanvas" Grid.Row="1" Background="White">
-            <ScrollViewer x:Name="Scroller" ZoomMode="Enabled" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
-                <Canvas x:Name="BlockCanvas" Width="6000" Height="6000">
+        <Canvas x:Name="UICanvas" Grid.Row="1" Background="Transparent">
+            <ScrollViewer x:Name="Scroller" ZoomMode="Enabled" MinZoomFactor="0.4" MaxZoomFactor="2.0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+                <Canvas x:Name="BlockCanvas" Width="6000" Height="6000" Background="Transparent">
                     <ctrl:CodeBlock x:Name="ghostBlock" BlockColor="Gray" Visibility="Collapsed"/>
                 </Canvas>
             </ScrollViewer>
-            
+
             <Viewbox x:Name="ZoomIn" Width="40" Height="40">
                 <SymbolIcon Symbol="ZoomIn"/>
             </Viewbox>

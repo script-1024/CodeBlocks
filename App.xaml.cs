@@ -12,10 +12,11 @@ namespace CodeBlocks
         public App()
         {
             InitializeComponent();
-            CurrentLanguage = ApplicationData.Current.LocalSettings.Values["Language"] as string ?? "English";
-            
+            CurrentLanguage = ApplicationData.Current.LocalSettings.Values["Language"].ToString();
+            CurrentTheme = (int)ApplicationData.Current.LocalSettings.Values["RequestedTheme"];
+
             Localizer.ReloadLanguageFiles();
-            this.Localizer = new();
+            LanguageChanged();
         }
 
         public MainWindow MainWindow;
@@ -38,22 +39,35 @@ namespace CodeBlocks
                 MainWindow = new();
                 MainWindow.Activate();
             }
+
+            ThemeChanged();
         }
 
+        // 0:FollowSystem | 1:Light | 2:Dark
+        public static int CurrentTheme;
         public static string CurrentLanguage;
         public static string[] SupportedLanguagesByName;
 
-        public static readonly string Version = "Beta 1.0.4 Build 0409";
+        public static readonly string Version = "Beta 1.0.5 Build 0423";
         public static readonly Dictionary<string, string> LoadedLanguages = new();
-        public static readonly string AppPath = AppDomain.CurrentDomain.BaseDirectory;
+        public static readonly string Path = AppDomain.CurrentDomain.BaseDirectory;
 
         public delegate void LanguageChangedEventHandler();
+        public delegate void ThemeChangedEventHandler();
         public event LanguageChangedEventHandler OnLanguageChanged;
+        public event ThemeChangedEventHandler OnThemeChanged;
         public void LanguageChanged()
         {
-            this.Localizer = new();
+            if (CurrentLanguage is null)
+            {
+                var id = System.Globalization.CultureInfo.InstalledUICulture.Name;
+                CurrentLanguage = LoadedLanguages.ContainsKey(id) ? LoadedLanguages[id] : "English";
+            }
+            this.Localizer = new(LoadedLanguages[CurrentLanguage]);
             OnLanguageChanged?.Invoke();
         }
+
+        public void ThemeChanged() => OnThemeChanged?.Invoke();
 
         public Localizer Localizer { get; private set; }
     }

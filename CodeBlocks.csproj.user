@@ -5,6 +5,15 @@
     <None Update="App.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Styles\Text.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\Background.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\ToolBox.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="BlockEditor.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -24,9 +33,6 @@
       <SubType>Designer</SubType>
     </None>
     <Page Update="Pages\SettingsPage.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Pages\HomePage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Themes\Generic.xaml">

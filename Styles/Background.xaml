@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        
+        <!--Light Theme-->
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="AppBarBackgroundFillColorBrush" Color="#FFF9F9F9"/>
+            <SolidColorBrush x:Key="ContainerBackgroundFillColorBrush" Color="#C8FFFFFF"/>
+        </ResourceDictionary>
+        
+        <!--Dark Theme-->
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="AppBarBackgroundFillColorBrush" Color="#FF282828"/>
+            <SolidColorBrush x:Key="ContainerBackgroundFillColorBrush" Color="#60303030"/>
+        </ResourceDictionary>
+        
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
