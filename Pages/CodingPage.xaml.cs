@@ -6,19 +6,30 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Controls;
 using CodeBlocks.Core;
 using CodeBlocks.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media;
 
 namespace CodeBlocks.Pages
 {
     public sealed partial class CodingPage : Page
     {
-        private float zoomFactor = 1.0f;
-        private bool isCanvasScrolling = false;
+        private bool canCanvasScroll = false;
         private readonly MessageDialog dialog = new();
         private readonly App app = Application.Current as App;
         private string GetLocalizedString(string key) => app.Localizer.GetString(key);
-        public bool Edited = false;
+
+        public bool Edited { get; private set; } = false;
+
+        public delegate void BlockFocusChanged();
+        public event BlockFocusChanged OnBlockFocusChanged;
+        private object focusblock = null;
+        public object FocusBlock
+        {
+            get => focusblock;
+            set
+            {
+                focusblock = value;
+                OnBlockFocusChanged?.Invoke();
+            }
+        }
 
         public CodingPage()
         {
@@ -31,6 +42,7 @@ namespace CodeBlocks.Pages
         {
             UICanvas.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             UICanvas.ManipulationDelta += BlockCanvas_ManipulationDelta;
+            this.OnBlockFocusChanged += CodingPage_OnBlockFocusChanged;
 
             var hButton = new Button() { Content = "New Hat Block" };
             var pButton = new Button() { Content = "New Process Block" };
@@ -45,25 +57,46 @@ namespace CodeBlocks.Pages
             hButton.Click += (_, _) =>
             {
                 var block = new HatBlock(BlockCreated);
-                Canvas.SetLeft(block, 50); Canvas.SetTop(block, 50);
+                Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
+                Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
             };
 
             pButton.Click += (_, _) =>
             {
                 var block = new ProcessBlock(BlockCreated);
-                Canvas.SetLeft(block, 50);
-                Canvas.SetTop(block, 50);
+                Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
+                Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
             };
 
             vButton.Click += (_, _) =>
             {
                 var block = new ValueBlock(BlockCreated) { Size = (90, 58), ValueType = BlockValueType.Text };
-                Canvas.SetLeft(block, 50);
-                Canvas.SetTop(block, 50);
+                Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
+                Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
             };
 
-            //ZoomIn.KeyUp += (_, _) => {app.MainWindow.Title = zoomFactor.ToString(); zoomFactor += 2f; Scroller.ZoomBy(zoomFactor, new((float)(Scroller.ActualWidth / 2), (float)(Scroller.ActualHeight / 2))); };
-            //ZoomOut.KeyUp += (_, _) => { zoomFactor -= 2f; Scroller.ZoomBy(zoomFactor, new((float)(Scroller.ActualWidth / 2), (float)(Scroller.ActualHeight / 2))); };
+            ZoomIn.PointerPressed += (_, _) =>
+            {
+                if (Scroller.ZoomFactor > Scroller.MaxZoomFactor - 0.2f) return;
+                float newFactor = (float)Math.Round(Scroller.ZoomFactor + 0.2f, 2);
+                var scale = newFactor / Scroller.ZoomFactor ;
+                var dx = Scroller.HorizontalOffset * scale;
+                var dy = Scroller.VerticalOffset * scale;
+                Scroller.ChangeView(dx, dy, newFactor);
+            };
+            ZoomOut.PointerPressed += (_, _) =>
+            {
+                if (Scroller.ZoomFactor < Scroller.MinZoomFactor + 0.2f) return;
+                float scale = (Scroller.ZoomFactor - 0.2f) / Scroller.ZoomFactor;
+                var dx = Scroller.HorizontalOffset * scale;
+                var dy = Scroller.VerticalOffset * scale;
+                Scroller.ChangeView(dx, dy, Scroller.ZoomFactor - 0.2f);
+            };
+        }
+
+        private void CodingPage_OnBlockFocusChanged()
+        {
+            
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -75,8 +108,8 @@ namespace CodeBlocks.Pages
             var centerY = (BlockCanvas.ActualHeight - Scroller.ActualHeight) / 2;
             Scroller.ChangeView(centerX, centerY, null, true);
 
-            Scroller.PointerPressed += (_, _) => isCanvasScrolling = true;
-            Scroller.PointerReleased += (_, _) => isCanvasScrolling = false;
+            Scroller.PointerPressed += (_, _) => canCanvasScroll = (FocusBlock == null);
+            Scroller.PointerReleased += (_, _) => canCanvasScroll = false;
         }
 
         private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -89,12 +122,12 @@ namespace CodeBlocks.Pages
             Canvas.SetTop(TrashCan, UICanvas.ActualHeight - 100);
 
             Scroller.Width = UICanvas.ActualWidth;
-            Scroller.Height = UICanvas.ActualHeight - 12;
+            if (UICanvas.ActualHeight > 12) Scroller.Height = UICanvas.ActualHeight - 12;
         }
 
         private void BlockCanvas_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (isCanvasScrolling)
+            if (canCanvasScroll)
             {
                 var newX = Scroller.HorizontalOffset - e.Delta.Translation.X;
                 var newY = Scroller.VerticalOffset - e.Delta.Translation.Y;
@@ -104,10 +137,14 @@ namespace CodeBlocks.Pages
 
         private void BlockCreated(CodeBlock block, BlockCreatedEventArgs e)
         {
+            if (e == null) e = BlockCreatedEventArgs.Null;
+
             BlockCanvas.Children.Add(block);
             Canvas.SetLeft(block, e.Position.X);
             Canvas.SetTop(block, e.Position.Y);
 
+            block.PointerPressed += (_, _) => FocusBlock = block;
+            block.PointerReleased += (_, _) => FocusBlock = null;
             block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             block.ManipulationStarted += CodeBlock_ManipulationStarted;
             block.ManipulationDelta += CodeBlock_ManipulationDelta;
@@ -139,12 +176,10 @@ namespace CodeBlocks.Pages
             var thisBlock = sender as CodeBlock;
             if (thisBlock.HasBeenRemoved) return;
 
-            double newX = Canvas.GetLeft(thisBlock) + e.Delta.Translation.X;
-            double newY = Canvas.GetTop(thisBlock) + e.Delta.Translation.Y;
+            double newX = Canvas.GetLeft(thisBlock) + e.Delta.Translation.X / Scroller.ZoomFactor;
+            double newY = Canvas.GetTop(thisBlock) + e.Delta.Translation.Y / Scroller.ZoomFactor;
             var maxX = BlockCanvas.ActualWidth - thisBlock.Size.Width;
             var maxY = BlockCanvas.ActualHeight - thisBlock.Size.Height;
-            var minX = Canvas.GetLeft(BlockCanvas);
-            var minY = Canvas.GetTop(BlockCanvas);
 
             // 边界检查
             newX = (newX < 0) ? 0 : (newX > maxX) ? maxX : newX;
@@ -159,8 +194,10 @@ namespace CodeBlocks.Pages
 
         private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
+            FocusBlock = null;
+
             var thisBlock = sender as CodeBlock;
-            thisBlock.SetZIndex(-5, true);
+            thisBlock.SetZIndex(0, false);
 
             if (ghostBlock.Visibility == Visibility.Visible)
             {
@@ -189,7 +226,9 @@ namespace CodeBlocks.Pages
                 else if (thisBlock.DependentSlot > 0) // 自己在右侧
                 {
                     var right = parentBlock.RightBlocks;
-                    right[thisBlock.DependentSlot-1] = thisBlock;
+                    var targetSlot = thisBlock.DependentSlot - 1;
+                    right[targetSlot]?.PopUp();
+                    right[targetSlot] = thisBlock;
                 }
             }
         }
@@ -206,12 +245,24 @@ namespace CodeBlocks.Pages
             {
                 if (uiElement == ghostBlock) continue; // Skip
 
+                // 判断是否和垃圾桶重叠
                 {
-                    // 判断是否和垃圾桶重叠
-
                     // 计算中心点距离
-                    var dx = Canvas.GetLeft(TrashCan) + 26 - self.X - selfW / 2;
-                    var dy = Canvas.GetTop(TrashCan) + 26 - self.Y - selfH / 2;
+                    var trashCanCenter = new Point()
+                    {
+                        X = Canvas.GetLeft(TrashCan) + TrashCan.ActualWidth / 2,
+                        Y = Canvas.GetTop(TrashCan) + TrashCan.ActualHeight / 2
+                    };
+
+                    var selfCenter = new Point()
+                    {
+                        X = (self.X * Scroller.ZoomFactor - Scroller.HorizontalOffset) + (selfW * Scroller.ZoomFactor) / 2,
+                        Y = (self.Y * Scroller.ZoomFactor - Scroller.VerticalOffset) + (selfH * Scroller.ZoomFactor) / 2
+                    };
+
+                    var dx = trashCanCenter.X - selfCenter.X;
+                    var dy = trashCanCenter.Y - selfCenter.Y;
+                    
                     var distance = Math.Sqrt(dx * dx + dy * dy);
 
                     // 距离小于 取较大值(宽, 高) 的四分之一 --> 方块已和垃圾桶重叠;
@@ -225,7 +276,6 @@ namespace CodeBlocks.Pages
 
                 if (uiElement == thisBlock) continue;
                 var target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
-
                 if (uiElement is CodeBlock targetBlock)
                 {
                     // 获取自身的相对方位
