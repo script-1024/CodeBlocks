@@ -165,7 +165,7 @@ namespace CodeBlocks.Pages
             {
                 thisBlock.ParentBlock = null;
                 if (thisBlock.DependentSlot == -1) { parentBlock.BottomBlock = null; }
-                else { parentBlock.RightBlocks[thisBlock.DependentSlot-1] = null; }
+                else if (thisBlock.DependentSlot > 0) { parentBlock.RightBlocks[thisBlock.DependentSlot-1] = null; }
             }
 
             thisBlock.DependentSlot = 0;
@@ -173,8 +173,8 @@ namespace CodeBlocks.Pages
 
         private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            if (FocusBlock is null) return;
             var thisBlock = sender as CodeBlock;
-            if (thisBlock.HasBeenRemoved) return;
 
             double newX = Canvas.GetLeft(thisBlock) + e.Delta.Translation.X / Scroller.ZoomFactor;
             double newY = Canvas.GetTop(thisBlock) + e.Delta.Translation.Y / Scroller.ZoomFactor;
@@ -227,7 +227,9 @@ namespace CodeBlocks.Pages
                 {
                     var right = parentBlock.RightBlocks;
                     var targetSlot = thisBlock.DependentSlot - 1;
-                    right[targetSlot]?.PopUp();
+
+                    // 若位置已被其他块占据就将其弹出
+                    if (right[targetSlot] != thisBlock) right[targetSlot]?.PopUp();
                     right[targetSlot] = thisBlock;
                 }
             }
@@ -240,49 +242,48 @@ namespace CodeBlocks.Pages
             var selfH = thisBlock.Size.Height;
             bool isAligned = false;
 
+            // 判断是否和垃圾桶重叠
+            {
+                // 计算中心点距离
+                var trashCanCenter = new Point()
+                {
+                    X = Canvas.GetLeft(TrashCan) + TrashCan.ActualWidth / 2,
+                    Y = Canvas.GetTop(TrashCan) + TrashCan.ActualHeight / 2
+                };
+
+                var selfCenter = new Point()
+                {
+                    X = (self.X * Scroller.ZoomFactor - Scroller.HorizontalOffset) + (selfW * Scroller.ZoomFactor) / 2,
+                    Y = (self.Y * Scroller.ZoomFactor - Scroller.VerticalOffset) + (selfH * Scroller.ZoomFactor) / 2
+                };
+
+                var dx = trashCanCenter.X - selfCenter.X;
+                var dy = trashCanCenter.Y - selfCenter.Y;
+
+                var distance = Math.Sqrt(dx * dx + dy * dy);
+
+                // 距离小于 取较大值(宽, 高) 的四分之一 --> 方块已和垃圾桶重叠;
+                var threshold = Utils.GetBigger(selfW, selfH) * 0.25;
+                if (distance < threshold)
+                {
+                    CodeBlock_RemoveAsync(thisBlock);
+                    return;
+                }
+            }
+
             // 碰撞检查
             foreach (var uiElement in BlockCanvas.Children)
             {
-                if (uiElement == ghostBlock) continue; // Skip
+                if (uiElement == ghostBlock || uiElement == thisBlock) continue; // 跳过，仅判断除自身以外的块
 
-                // 判断是否和垃圾桶重叠
-                {
-                    // 计算中心点距离
-                    var trashCanCenter = new Point()
-                    {
-                        X = Canvas.GetLeft(TrashCan) + TrashCan.ActualWidth / 2,
-                        Y = Canvas.GetTop(TrashCan) + TrashCan.ActualHeight / 2
-                    };
-
-                    var selfCenter = new Point()
-                    {
-                        X = (self.X * Scroller.ZoomFactor - Scroller.HorizontalOffset) + (selfW * Scroller.ZoomFactor) / 2,
-                        Y = (self.Y * Scroller.ZoomFactor - Scroller.VerticalOffset) + (selfH * Scroller.ZoomFactor) / 2
-                    };
-
-                    var dx = trashCanCenter.X - selfCenter.X;
-                    var dy = trashCanCenter.Y - selfCenter.Y;
-                    
-                    var distance = Math.Sqrt(dx * dx + dy * dy);
-
-                    // 距离小于 取较大值(宽, 高) 的四分之一 --> 方块已和垃圾桶重叠;
-                    var threshold = Utils.GetBigger(selfW, selfH) * 0.25;
-                    if (distance < threshold)
-                    {
-                        CodeBlock_RemoveAsync(thisBlock);
-                        return;
-                    }
-                }
-
-                if (uiElement == thisBlock) continue;
                 var target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
                 if (uiElement is CodeBlock targetBlock)
                 {
                     // 获取自身的相对方位
-                    var rq = thisBlock.GetRelativeQuadrant(targetBlock);
+                    var (x, y, dx, dy) = thisBlock.GetRelativeQuadrant(targetBlock);
 
                     // 在四个角落 不和目标相邻 --> 跳过
-                    if (rq.x * rq.y != 0)
+                    if (x * y != 0)
                     {
                         ghostBlock.Visibility = Visibility.Collapsed;
                         continue;
@@ -293,30 +294,30 @@ namespace CodeBlocks.Pages
                     int targetVar = targetBlock.MetaData.Variant;
 
                     // 在左侧时不可吸附 --> 跳过
-                    if (rq.x == -1) continue;
+                    if (x == -1) continue;
 
                     // 在上方时不可吸附 --> 跳过
-                    if (rq.y == -1) continue;
+                    if (y == -1) continue;
 
                     // 在右侧时不可吸附 --> 跳过
-                    if (rq.x == 1 && (!Utils.GetFlag(targetVar, 2) || !Utils.GetFlag(selfVar, 0))) continue;
+                    if (x == 1 && (!Utils.GetFlag(targetVar, 2) || !Utils.GetFlag(selfVar, 0))) continue;
 
                     // 在下方时不可吸附 --> 跳过
-                    if (rq.y == 1 && (!Utils.GetFlag(targetVar, 3) || !Utils.GetFlag(selfVar, 1))) continue;
+                    if (y == 1 && (!Utils.GetFlag(targetVar, 3) || !Utils.GetFlag(selfVar, 1))) continue;
 
                     // 开始尝试自动吸附
                     int threshold = 30;
                     int slot = (int)((self.Y - target.Y) / 48);
-                    if (rq.dx > 0 && (rq.dx - selfW + 10) < threshold)
+                    if (dx > 0 && (dx - selfW + 10) < threshold)
                     {
-                        self.X -= (rq.dx - selfW + 10) * rq.x;
+                        self.X -= (dx - selfW + 10) * x;
                         self.Y = target.Y + slot * 48;
                         thisBlock.DependentSlot = slot+1;
                         isAligned = true;
                     }
-                    else if (rq.dy > 0 && (rq.dy - selfH + 10) < threshold)
+                    else if (dy > 0 && (dy - selfH + 10) < threshold)
                     {
-                        self.Y -= (rq.dy - selfH + 10) * rq.y;
+                        self.Y -= (dy - selfH + 10) * y;
                         self.X = target.X;
                         thisBlock.DependentSlot = -1;
                         isAligned = true;
@@ -336,23 +337,15 @@ namespace CodeBlocks.Pages
 
         private async Task CodeBlock_RemoveAsync(CodeBlock thisBlock)
         {
-            thisBlock.HasBeenRemoved = true;
+            FocusBlock = null;
             int count = thisBlock.GetRelatedBlockCount();
             if (ghostBlock.Visibility == Visibility.Visible) ghostBlock.Visibility = Visibility.Collapsed;
-            if (count == 0) BlockCanvas.Children.Remove(thisBlock);
-            else
+            if (count > 0)
             {
                 var result = await dialog.ShowAsync("RemovingMultipleBlocks", DialogVariant.YesCancel);
-                if (result == ContentDialogResult.Primary)
-                {
-                    await thisBlock.RemoveAsync(BlockCanvas);
-                }
-                else
-                {
-                    thisBlock.HasBeenRemoved = false;
-                    thisBlock.SetPosition(-100, -100, true);
-                }
+                if (result == ContentDialogResult.None) { thisBlock.SetPosition(-100, -100, true); return; }
             }
+            await thisBlock.RemoveAsync(BlockCanvas);
         }
     }
 }
