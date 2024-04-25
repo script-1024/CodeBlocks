@@ -6,7 +6,7 @@
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     Margin="-2,0,-2,0">
 
-    <Grid Background="{ThemeResource AppBarBackgroundFillColorBrush}">
+    <Grid Background="{ThemeResource AppBarBackgroundFillColorBrush}" BorderBrush="{ThemeResource AppBarBorderColorBrush}" BorderThickness="0,0,0,1" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="120"/>

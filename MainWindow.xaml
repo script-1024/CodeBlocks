@@ -12,11 +12,12 @@
     <Grid x:Name="RootGrid" x:FieldModifier="public">
 
         <TabView x:Name="Tab" x:FieldModifier="public" IsAddTabButtonVisible="False">
+            
             <TabView.Resources>
                 <ResourceDictionary>
                     <ResourceDictionary.ThemeDictionaries>
                         <ResourceDictionary x:Key="Light">
-                            <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorLight2}"/>
+                            <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorLight3}"/>
                         </ResourceDictionary>
                         <ResourceDictionary x:Key="Dark">
                             <SolidColorBrush x:Key="TabViewBackground" Color="{ThemeResource SystemAccentColorDark2}"/>

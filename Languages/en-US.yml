@@ -42,7 +42,7 @@ ContentMenu:
         Copy: Copy
         Delete: Delete
         DeleteThis: Delete This
-        DeleteAll: Delete All Subsequent Blocks
+        DeleteAll: Delete All Attached Blocks
 
 Blocks:
     ValueBlock:

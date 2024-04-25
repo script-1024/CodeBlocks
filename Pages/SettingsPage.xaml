@@ -19,10 +19,14 @@
 
         <ctrl:ContentBar x:Name="VersionInfo" Tag="NoDescription"/>
         <ctrl:ContentBar x:Name="LanguageOptions" IconGlyph="&#xF2B7;">
-            <ComboBox x:Name="ComboBox_Language"/>
+            <ComboBox x:Name="ComboBox_Language" SelectedIndex="0"/>
         </ctrl:ContentBar>
         <ctrl:ContentBar x:Name="ThemeOptions" IconGlyph="&#xE790;">
-            <ComboBox x:Name="ComboBox_Theme"/>
+            <ComboBox x:Name="ComboBox_Theme" SelectedIndex="0">
+                <ComboBoxItem Tag="FollowSystem"/>
+                <ComboBoxItem Tag="Light"/>
+                <ComboBoxItem Tag="Dark"/>
+            </ComboBox>
         </ctrl:ContentBar>
     </StackPanel>
 </Page>

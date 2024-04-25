@@ -30,12 +30,11 @@ namespace CodeBlocks.Pages
                 }
             }
 
-            ComboBox_Theme.ItemsSource = new string[]
+            foreach (ComboBoxItem item in ComboBox_Theme.Items)
             {
-                GetLocalizedString("Settings.ThemeOptions.Options.FollowSystem"),
-                GetLocalizedString("Settings.ThemeOptions.Options.Light"),
-                GetLocalizedString("Settings.ThemeOptions.Options.Dark")
-            };
+                item.Content = GetLocalizedString($"Settings.ThemeOptions.Options.{item.Tag}");
+            }
+            ComboBox_Theme.SelectedIndex = -1;
         }
 
         private void InitializePage()
@@ -43,9 +42,8 @@ namespace CodeBlocks.Pages
             VersionInfo.Description = App.Version;
             ComboBox_Language.ItemsSource = App.SupportedLanguagesByName;
             ComboBox_Language.SelectedItem = App.CurrentLanguage;
-            ComboBox_Language.SelectionChanged += (s, e) =>
+            ComboBox_Language.SelectionChanged += (_, _) =>
             {
-                if (ComboBox_Language.SelectedIndex == -1) ComboBox_Language.SelectedIndex = 0;
                 var lang = ComboBox_Language.SelectedItem.ToString();
                 if (App.CurrentLanguage == lang) return;
                 ApplicationData.Current.LocalSettings.Values["Language"] = lang;
@@ -54,12 +52,13 @@ namespace CodeBlocks.Pages
             };
 
             ComboBox_Theme.SelectedIndex = App.CurrentTheme;
-            ComboBox_Theme.SelectionChanged += (s, e) =>
+            ComboBox_Theme.SelectionChanged += (_, _) =>
             {
-                if (ComboBox_Theme.SelectedIndex == -1) ComboBox_Theme.SelectedIndex = App.CurrentTheme;
-                if (App.CurrentTheme == ComboBox_Theme.SelectedIndex) return;
-                ApplicationData.Current.LocalSettings.Values["RequestedTheme"] = ComboBox_Theme.SelectedIndex;
-                App.CurrentTheme = ComboBox_Theme.SelectedIndex;
+                var theme = ComboBox_Theme.SelectedIndex;
+                if (theme == -1) theme = ComboBox_Theme.SelectedIndex = App.CurrentTheme;
+                if (App.CurrentTheme == theme) return;
+                ApplicationData.Current.LocalSettings.Values["RequestedTheme"] = theme;
+                App.CurrentTheme = theme;
                 app.ThemeChanged();
             };
 
