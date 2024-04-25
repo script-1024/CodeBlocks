@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CodeBlocks.Core;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using Windows.Foundation;
 
 namespace CodeBlocks.Controls
@@ -32,8 +35,8 @@ namespace CodeBlocks.Controls
         private string key;
         private BlockMetaData metaData = BlockMetaData.Null;
 
-        private readonly MenuFlyout ContentMenu = new();
         private readonly CodeBlockPainter painter = new();
+        private readonly CommandBarFlyout ContextMenu = new();
         private readonly App app = Application.Current as App;
 
         public delegate void BlockCreatedEventHandler(CodeBlock sender, BlockCreatedEventArgs e);
@@ -53,22 +56,25 @@ namespace CodeBlocks.Controls
 
         private void InitializeMenu()
         {
-            this.ContextFlyout = ContentMenu;
+            this.ContextFlyout = ContextMenu;
+            ContextMenu.AlwaysExpanded = true;
+            ContextMenu.Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.RightEdgeAlignedTop;
 
-            var item_copy = new MenuFlyoutItem() { Tag = "Copy", Icon = new FontIcon() { Glyph = "\uE8C8" } };
+            var item_copy = new AppBarButton() { Tag = "Copy", Icon = new FontIcon() { Glyph = "\uE8C8" } };
             item_copy.Click += (_, _) =>
             {
                 var left = Canvas.GetLeft(this) + 30;
                 var top = Canvas.GetTop(this) + 30;
                 var block = Copy( new(left, top, this) );
+                ContextMenu.Hide();
             };
-            ContentMenu.Items.Add(item_copy);
+            ContextMenu.PrimaryCommands.Add(item_copy);
 
-            var item_del = new MenuFlyoutItem() { Tag = "Delete", Icon = new FontIcon() { Glyph = "\uE74D" } };
+            var item_del = new AppBarButton() { Tag = "Delete", Icon = new FontIcon() { Glyph = "\uE74D" } };
             item_del.Click += async (_, _) => await RemoveAsync(this.Parent as Canvas, false);
-            ContentMenu.Items.Add(item_del);
+            ContextMenu.PrimaryCommands.Add(item_del);
 
-            var item_delAll = new MenuFlyoutItem() { Tag = "DeleteAll", Icon = new FontIcon() { Glyph = "\uE74D" } };
+            var item_delAll = new AppBarButton() { Tag = "DeleteAll", Icon = new FontIcon() { Glyph = "\uE74D" }, Margin = new(0,1,0,0)}; // 不加上 Margin 就会出现一条不和谐的透明细线
             item_delAll.Click += async (_, _) =>
             {
                 if (GetRelatedBlockCount() > 0)
@@ -80,7 +86,8 @@ namespace CodeBlocks.Controls
 
                 await RemoveAsync(this.Parent as Canvas);
             };
-            ContentMenu.Items.Add(item_delAll);
+            ContextMenu.SecondaryCommands.Add(item_delAll);
+
             LocalizeMenu();
         }
 
@@ -122,9 +129,14 @@ namespace CodeBlocks.Controls
 
         private void LocalizeMenu()
         {
-            foreach (MenuFlyoutItem item in ContentMenu.Items)
+            foreach (AppBarButton item in ContextMenu.PrimaryCommands)
             {
-                item.Text = app.Localizer.GetString("ContentMenu.CodeBlock." + item.Tag);
+                item.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + item.Tag);
+            }
+
+            foreach (AppBarButton item in ContextMenu.SecondaryCommands)
+            {
+                item.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + item.Tag);
             }
         }
 
@@ -273,9 +285,31 @@ namespace CodeBlocks.Controls
             }
         }
 
+        public async Task PlayScaleAnimation(double from = 1.0, double to = 0.0, int delay = 5)
+        {
+            if (from == to) return;
+            bool doZoomIn = (to > from);
+            double delta = (doZoomIn) ? 0.05 : -0.05;
+            ScaleTransform transform = new();
+            transform.CenterX = Size.Width / 2;
+            transform.CenterY = Size.Height / 2;
+            this.RenderTransform = transform;
+            for (double d = from; ; d += delta)
+            {
+                if ( doZoomIn && d > to) break;
+                if (!doZoomIn && d < to) break;
+                transform.ScaleX = transform.ScaleY = d;
+                await Task.Delay(delay);
+            }
+        }
+
         public async Task RemoveAsync(Canvas rootCanvas, bool deleteAll = true)
         {
-            if (rootCanvas == null) return;
+            if (rootCanvas == null || HasBeenRemoved) return;
+            if (ContextMenu.IsOpen) ContextMenu.Hide();
+
+            // 删除方块的缩小动画
+            await PlayScaleAnimation(delay: 5);
 
             if (deleteAll) BottomBlock?.RemoveAsync(rootCanvas);
             else if(this.DependentSlot == -1)
@@ -294,7 +328,7 @@ namespace CodeBlocks.Controls
 
             foreach (var block in RightBlocks)
             {
-                if (deleteAll) await block?.RemoveAsync(rootCanvas);
+                if (deleteAll) block?.RemoveAsync(rootCanvas);
                 else block?.PopUp();
             }
         }
