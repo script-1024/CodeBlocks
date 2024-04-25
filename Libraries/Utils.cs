@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Threading.Tasks;
 using System;
 using Windows.UI;
+using Windows.Foundation.Diagnostics;
 
 namespace CodeBlocks.Core
 {
@@ -15,10 +16,14 @@ namespace CodeBlocks.Core
     public class MessageDialog
     {
         private readonly ContentDialog dialog = new();
+        public bool IsDialogActivated { get; private set; } = false;
         public XamlRoot XamlRoot { get => dialog.XamlRoot; set => dialog.XamlRoot = value; }
         private string GetLocalizedString(string key) => (Application.Current as App).Localizer.GetString(key);
         public async Task<ContentDialogResult> ShowAsync(string msgId, DialogVariant variant = DialogVariant.Confirm)
         {
+            if (IsDialogActivated) return ContentDialogResult.None;
+            else IsDialogActivated = true;
+
             bool hasPrimaryButton = false;
             dialog.Title = GetLocalizedString($"Messages.{msgId}.Title");
             dialog.Content = GetLocalizedString($"Messages.{msgId}.Description");
@@ -61,7 +66,9 @@ namespace CodeBlocks.Core
             if (hasPrimaryButton) dialog.DefaultButton = ContentDialogButton.Primary;
             else dialog.DefaultButton = ContentDialogButton.Close;
 
-            return await dialog.ShowAsync();
+            var result = await dialog.ShowAsync();
+            IsDialogActivated = false;
+            return result;
         }
     }
 
