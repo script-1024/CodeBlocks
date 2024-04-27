@@ -1,9 +1,9 @@
 ﻿using Windows.UI;
-using CodeBlocks.Core;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls;
+using CodeBlocks.Core;
 
 namespace CodeBlocks.Controls
 {
@@ -13,37 +13,25 @@ namespace CodeBlocks.Controls
     {
         private BlockValueType type = BlockValueType.None;
         private string GetLocalizedString(string key) => (Application.Current as App).Localizer.GetString(key);
+
+        public object Value
+        {
+            get => txtbox.Text;
+            set => txtbox.Text = value.ToString();
+        }
+
         public BlockValueType ValueType
         {
             get => type;
-            set
-            {
-                type = value;
-                OnTypeChanged();
-            }
-        }
-        private void OnTypeChanged()
-        {
-            if (type == BlockValueType.Text)
-            {
-                t1.Visibility = t2.Visibility = Visibility.Visible;
-                BlockColor = Color.FromArgb(0xFF, 0x96, 0x20, 0x20);
-                Canvas.SetLeft(txtbox, 34);
-                txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Text.PlaceholderText");
-            }
-            if (type == BlockValueType.Number)
-            {
-                t1.Visibility = t2.Visibility = Visibility.Collapsed;
-                BlockColor = Color.FromArgb(0xFF, 0x00, 0x60, 0xFF);
-                Canvas.SetLeft(txtbox, 20);
-                txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Number.PlaceholderText");
-            }
+            set { type = value; OnTypeChanged(); }
         }
 
         private readonly TextBlock t1 = new() { Text = "“ " }, t2 = new() { Text = " ”" };
         private readonly TextBox txtbox = new() { VerticalContentAlignment = VerticalAlignment.Center, BorderBrush = new SolidColorBrush(Colors.Transparent), CornerRadius = new(3) };
 
-        public ValueBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(handler, args)
+        public override event BlockCreatedEventHandler OnBlockCreated;
+
+        public ValueBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(null, args)
         {
             MetaData = new() { Type = BlockType.ValueBlock, Variant = 1, Size = this.Size };
             t1.Foreground = t2.Foreground = BlockDescription.Foreground;
@@ -65,17 +53,63 @@ namespace CodeBlocks.Controls
                 string key = $"Blocks.ValueBlock.{((type == BlockValueType.Text) ? "Text" : "Number")}.PlaceholderText";
                 txtbox.PlaceholderText = GetLocalizedString(key);
             };
+
+            OnBlockCreated += handler;
+            OnBlockCreated?.Invoke(this, args);
         }
 
         public ValueBlock() : this(null, null) { }
 
-        void ResizeTextBox()
+        private void OnTypeChanged()
+        {
+            if (type == BlockValueType.Text)
+            {
+                t1.Visibility = t2.Visibility = Visibility.Visible;
+                BlockColor = Color.FromArgb(0xFF, 0x96, 0x20, 0x20);
+                Canvas.SetLeft(txtbox, 34);
+                txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Text.PlaceholderText");
+            }
+            if (type == BlockValueType.Number)
+            {
+                t1.Visibility = t2.Visibility = Visibility.Collapsed;
+                BlockColor = Color.FromArgb(0xFF, 0x00, 0x60, 0xFF);
+                Canvas.SetLeft(txtbox, 20);
+                txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Number.PlaceholderText");
+            }
+        }
+
+        private void ResizeTextBox()
         {
             int w = (int)txtbox.ActualWidth + ((type == BlockValueType.Text) ? 58 : 30);
             Size = (w, Size.Height);
             double x = Canvas.GetLeft(txtbox);
             Canvas.SetLeft(t1, x-14);
             Canvas.SetLeft(t2, x+w-58);
+        }
+
+        public override CodeBlock Copy(BlockCreatedEventArgs args)
+        {
+            var block = new ValueBlock(this.OnBlockCreated, args)
+            {
+                Value = this.Value,
+                MetaData = this.MetaData,
+                ValueType = this.ValueType
+            };
+
+            for (int i = 0; i < this.RightBlocks.Length; i++)
+            {
+                var thisBlock = this.RightBlocks[i];
+                if (thisBlock is null) block.RightBlocks[i] = null;
+                else
+                {
+                    var left = Canvas.GetLeft(thisBlock) + 30;
+                    var top = Canvas.GetTop(thisBlock) + 30;
+                    var newArgs = new BlockCreatedEventArgs(left, top, thisBlock);
+                    block.RightBlocks[i] = thisBlock.Copy(newArgs);
+                }
+            }
+
+            return block;
         }
     }
 }

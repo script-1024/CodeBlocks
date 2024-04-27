@@ -40,7 +40,7 @@ namespace CodeBlocks.Controls
         private readonly App app = Application.Current as App;
 
         public delegate void BlockCreatedEventHandler(CodeBlock sender, BlockCreatedEventArgs e);
-        public event BlockCreatedEventHandler OnBlockCreated;
+        public virtual event BlockCreatedEventHandler OnBlockCreated;
 
         public CodeBlock(BlockCreatedEventHandler createdEventHandler, BlockCreatedEventArgs args = null) : base()
         {
@@ -187,27 +187,15 @@ namespace CodeBlocks.Controls
             return count;
         }
 
-        public CodeBlock Copy(BlockCreatedEventArgs args)
+        public virtual CodeBlock Copy(BlockCreatedEventArgs args)
         {
-            CodeBlock block;
-            if (this is ValueBlock vb)
+            var block = new CodeBlock(this.OnBlockCreated, args)
             {
-                block = new ValueBlock(this.OnBlockCreated, args)
-                {
-                    MetaData = vb.MetaData,
-                    ValueType = vb.ValueType
-                };
-            }
-            else
-            {
-                block = new CodeBlock(this.OnBlockCreated, args)
-                {
-                    MetaData = this.MetaData,
-                    BlockColor = this.BlockColor,
-                    TranslationKey = this.TranslationKey
-                };
-            }
-            
+                MetaData = this.MetaData,
+                BlockColor = this.BlockColor,
+                TranslationKey = this.TranslationKey
+            };
+
             for (int i = 0; i < this.RightBlocks.Length; i++)
             {
                 var thisBlock = this.RightBlocks[i];
