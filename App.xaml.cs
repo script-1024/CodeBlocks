@@ -49,7 +49,7 @@ namespace CodeBlocks
         public static string CurrentLanguage;
         public static string[] SupportedLanguagesByName;
 
-        public static readonly string Version = "Beta 1.0.5 Build 0425";
+        public static readonly string Version = "Beta 1.0.6 Build 0427";
         public static readonly Dictionary<string, string> LoadedLanguages = new();
         public static readonly string Path = AppDomain.CurrentDomain.BaseDirectory;
 
