@@ -262,8 +262,8 @@ namespace CodeBlocks.Pages
 
                 var distance = Math.Sqrt(dx * dx + dy * dy);
 
-                // 距离小于 取较大值(宽, 高) 的四分之一 --> 方块已和垃圾桶重叠;
-                var threshold = Utils.GetBigger(selfW, selfH) * 0.25;
+                // 距离小于 取较大值(宽, 高) 的三分之一 --> 方块已和垃圾桶重叠;
+                var threshold = Utils.GetBigger(selfW, selfH) / 3;
                 if (distance < threshold)
                 {
                     CodeBlock_RemoveAsync(thisBlock);
