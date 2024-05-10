@@ -28,12 +28,23 @@
                     <ctrl:CodeBlock x:Name="DemoBlock"/>
                 </Canvas>
                 <StackPanel Grid.Column="1" Background="{ThemeResource FlatBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource FlatBorderColorBrush}" BorderThickness="1,0,0,0">
-                    <Button Tag="Export" Content="Export" Margin="16,16,0,0"/>
-                    <ComboBox SelectedIndex="0">
+                    <Button Tag="导出" Content="Export" Margin="16,16,0,0"/>
+                    <ComboBox SelectedIndex="0" Margin="16,5,0,0">
                         <ComboBox.Items>
-                            <ComboBoxItem Content=""/>
+                            <ComboBoxItem Content="选择模板" IsEnabled="False"/>
+                            <ComboBoxItem Content="事件"/>
+                            <ComboBoxItem Content="控制"/>
+                            <ComboBoxItem Content="流程"/>
                         </ComboBox.Items>
                     </ComboBox>
+                    <SplitButton x:Name="ColorButton" Margin="16,5,0,0">
+                        <Border x:Name="CurrentColor" Background="{ThemeResource ControlBlockColorBrush}"/>
+                        <SplitButton.Flyout>
+                            <Flyout Placement="Bottom">
+                                <!-- flyout content -->
+                            </Flyout>
+                        </SplitButton.Flyout>
+                    </SplitButton>
                 </StackPanel>
             </Grid>
         </Border>

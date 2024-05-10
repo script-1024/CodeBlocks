@@ -70,7 +70,7 @@ namespace CodeBlocks.Pages
 
             vButton.Click += (_, _) =>
             {
-                var block = new ValueBlock(BlockCreated) { Size = (90, 58), ValueType = BlockValueType.Text };
+                var block = new ValueBlock(BlockCreated) { Size = (90, 58), ValueType = BlockValueType.Number };
                 Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
                 Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
             };

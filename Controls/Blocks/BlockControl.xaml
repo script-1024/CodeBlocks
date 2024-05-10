@@ -7,5 +7,11 @@
     <Canvas>
         <Path x:Name="BlockBorder" x:FieldModifier="public" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
         <TextBlock x:Name="BlockDescription" x:FieldModifier="public" Foreground="White" FontSize="15" FontFamily="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
+
+        <TeachingTip
+            x:Name="BlockTip"
+            x:FieldModifier="public"
+            PreferredPlacement="Auto">
+        </TeachingTip>
     </Canvas>
 </UserControl>

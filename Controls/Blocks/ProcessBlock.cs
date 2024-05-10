@@ -1,5 +1,5 @@
-﻿using Windows.UI;
-using CodeBlocks.Core;
+﻿using CodeBlocks.Core;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Controls
@@ -8,7 +8,7 @@ namespace CodeBlocks.Controls
     {
         public ProcessBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(handler, args)
         {
-            BlockColor = Color.FromArgb(0xFF, 0xFF, 0xC8, 0x00);
+            BlockColor = (App.Current.Resources["ControlBlockColorBrush"] as SolidColorBrush).Color;
             MetaData = new() { Type = BlockType.ProcessBlock, Variant = 10, Size = this.Size };
             TranslationKey = "Blocks.ProcessBlock.Say.Text";
             Canvas.SetLeft(BlockDescription, 24);

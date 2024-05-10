@@ -1,12 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Windows.UI;
-using Microsoft.UI.Xaml;
+﻿using Windows.UI;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
+using System.Collections.Generic;
 using CodeBlocks.Core;
-using Microsoft.UI.Xaml.Shapes;
 
 namespace CodeBlocks.Controls
 {
@@ -23,11 +19,11 @@ namespace CodeBlocks.Controls
 
         private void SetColor(Color value)
         {
-            var fillBrush = new SolidColorBrush(value);
-            var borderBrush = new SolidColorBrush(borderColor);
-            BlockBorder.Stroke = borderBrush;
+            var fillColorBrush = new SolidColorBrush(value);
+            var borderColorBrush = new SolidColorBrush(borderColor);
+            BlockBorder.Stroke = borderColorBrush;
             BlockBorder.StrokeThickness = 2;
-            BlockBorder.Fill = fillBrush;
+            BlockBorder.Fill = fillColorBrush;
         }
 
         #region "Properties"

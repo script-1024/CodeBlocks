@@ -1,9 +1,9 @@
-﻿using Windows.UI;
-using Microsoft.UI;
+﻿using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
 using CodeBlocks.Core;
+using System;
 
 namespace CodeBlocks.Controls
 {
@@ -12,7 +12,8 @@ namespace CodeBlocks.Controls
     public class ValueBlock : CodeBlock
     {
         private BlockValueType type = BlockValueType.None;
-        private string GetLocalizedString(string key) => (Application.Current as App).Localizer.GetString(key);
+        private readonly App app = Application.Current as App;
+        private string GetLocalizedString(string key) => app.Localizer.GetString(key);
 
         public object Value
         {
@@ -48,7 +49,7 @@ namespace CodeBlocks.Controls
                 ResizeTextBox();
             };
 
-            (Application.Current as App).OnLanguageChanged += () =>
+            app.OnLanguageChanged += () =>
             {
                 string key = $"Blocks.ValueBlock.{((type == BlockValueType.Text) ? "Text" : "Number")}.PlaceholderText";
                 txtbox.PlaceholderText = GetLocalizedString(key);
@@ -65,16 +66,35 @@ namespace CodeBlocks.Controls
             if (type == BlockValueType.Text)
             {
                 t1.Visibility = t2.Visibility = Visibility.Visible;
-                BlockColor = Color.FromArgb(0xFF, 0x96, 0x20, 0x20);
+                BlockColor = (app.Resources["TextValueBlockColorBrush"] as SolidColorBrush).Color;
                 Canvas.SetLeft(txtbox, 34);
                 txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Text.PlaceholderText");
+
+                txtbox.TextChanged -= CheckIllegalCharacter;
             }
             if (type == BlockValueType.Number)
             {
                 t1.Visibility = t2.Visibility = Visibility.Collapsed;
-                BlockColor = Color.FromArgb(0xFF, 0x00, 0x60, 0xFF);
+                BlockColor = (app.Resources["NumberValueBlockColorBrush"] as SolidColorBrush).Color;
                 Canvas.SetLeft(txtbox, 20);
                 txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Number.PlaceholderText");
+
+                txtbox.TextChanged += CheckIllegalCharacter;
+            }
+        }
+
+        private void CheckIllegalCharacter(object sender, TextChangedEventArgs e)
+        {
+            double result;
+            if (double.TryParse(txtbox.Text, out result))
+            {
+                if (BlockTip.IsOpen) BlockTip.IsOpen = false;
+            }
+            else
+            {
+                BlockTip.Title = "非法字元";
+                BlockTip.Subtitle = "输入的内容无法转成数字";
+                if (! BlockTip.IsOpen) BlockTip.IsOpen = true;
             }
         }
 

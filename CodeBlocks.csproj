@@ -29,6 +29,7 @@
     <None Remove="Pages\CodingPage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
     <None Remove="Styles\Background.xaml" />
+    <None Remove="Styles\BlockColor.xaml" />
     <None Remove="Styles\Text.xaml" />
   </ItemGroup>
 
@@ -127,6 +128,10 @@
     <Folder Include="Blocks\" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Styles\BlockColor.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Styles\Text.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
