@@ -11,7 +11,6 @@ namespace CodeBlocks.Controls
             BlockColor = (App.Current.Resources["ControlBlockColorBrush"] as SolidColorBrush).Color;
             MetaData = new() { Type = BlockType.ProcessBlock, Variant = 10, Size = this.Size };
             TranslationKey = "Blocks.ProcessBlock.Say.Text";
-            Canvas.SetLeft(BlockDescription, 24);
             Canvas.SetTop(BlockDescription, 16);
         }
 

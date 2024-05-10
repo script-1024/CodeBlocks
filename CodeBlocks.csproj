@@ -16,22 +16,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <PublishAot>False</PublishAot>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <None Remove="BlockEditor.xaml" />
-    <None Remove="Controls\AppBar.xaml" />
-    <None Remove="Controls\Blocks\BlockControl.xaml" />
-    <None Remove="Controls\ContentBar.xaml" />
-    <None Remove="Controls\ToolBox.xaml" />
-    <None Remove="Languages\en-US.yml" />
-    <None Remove="Languages\zh-CN.yml" />
-    <None Remove="Languages\zh-TW.yml" />
-    <None Remove="Pages\CodingPage.xaml" />
-    <None Remove="Pages\SettingsPage.xaml" />
-    <None Remove="Styles\Background.xaml" />
-    <None Remove="Styles\BlockColor.xaml" />
-    <None Remove="Styles\Text.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />

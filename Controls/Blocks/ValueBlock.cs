@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
 using CodeBlocks.Core;
-using System;
+using Windows.UI;
 
 namespace CodeBlocks.Controls
 {

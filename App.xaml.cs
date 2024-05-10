@@ -21,20 +21,26 @@ namespace CodeBlocks
 
         public MainWindow MainWindow;
         public BlockEditor BlockEditor;
-
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
+            bool openWithValidFile = false;
             var appActivationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
 
             if (appActivationArgs.Kind is ExtendedActivationKind.File &&
-                appActivationArgs.Data is Windows.ApplicationModel.Activation.IFileActivatedEventArgs fileActivationArgs &&
+                appActivationArgs.Data is Windows.ApplicationModel.Activation.FileActivatedEventArgs fileActivationArgs &&
                 fileActivationArgs.Files.FirstOrDefault() is StorageFile file)
             {
                 // 由支持的文件类型启动
-                BlockEditor = new(file);
-                BlockEditor.Activate();
+                if (file.Name.EndsWith(".cbd"))
+                {
+                    openWithValidFile = true;
+                    BlockEditor = new(file);
+                    BlockEditor.Activate();
+                }
+                else openWithValidFile = false;
             }
-            else
+
+            if (!openWithValidFile)
             {
                 // 常规启动
                 MainWindow = new();
@@ -49,7 +55,7 @@ namespace CodeBlocks
         public static string CurrentLanguage;
         public static string[] SupportedLanguagesByName;
 
-        public static readonly string Version = "Beta 1.0.6 Build 0427";
+        public static readonly string Version = "Beta 1.0.7 Build 0511";
         public static readonly Dictionary<string, string> LoadedLanguages = new();
         public static readonly string Path = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -63,7 +69,7 @@ namespace CodeBlocks
             {
                 // 优先使用电脑现有的语言
                 var id = System.Globalization.CultureInfo.InstalledUICulture.Name;
-                CurrentLanguage = LoadedLanguages.ContainsKey(id) ? LoadedLanguages[id] : "English";
+                CurrentLanguage = LoadedLanguages.TryGetValue(id, out string value) ? value : "English";
             }
             this.Localizer = new(LoadedLanguages[CurrentLanguage]);
             OnLanguageChanged?.Invoke();
