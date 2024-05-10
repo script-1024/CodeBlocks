@@ -50,6 +50,8 @@ namespace CodeBlocks.Controls
 
             OnBlockCreated += createdEventHandler;
             OnBlockCreated?.Invoke(this, args);
+
+            Canvas.SetLeft(BlockDescription, SlotHeight + SlotWidth);
         }
 
         public CodeBlock() : this(null, null) { }
@@ -65,7 +67,7 @@ namespace CodeBlocks.Controls
             {
                 var left = Canvas.GetLeft(this) + 30;
                 var top = Canvas.GetTop(this) + 30;
-                var block = Copy( new(left, top, this) );
+                var block = Copy(new(left, top, this));
                 ContextMenu.Hide();
             };
             ContextMenu.PrimaryCommands.Add(item_copy);
@@ -74,7 +76,7 @@ namespace CodeBlocks.Controls
             item_del.Click += async (_, _) => await RemoveAsync(this.Parent as Canvas, false);
             ContextMenu.PrimaryCommands.Add(item_del);
 
-            var item_delAll = new AppBarButton() { Tag = "DeleteAll", Icon = new FontIcon() { Glyph = "\uE74D" }, Margin = new(0,1,0,0)}; // 不加上 Margin 就会出现一条不和谐的透明细线
+            var item_delAll = new AppBarButton() { Tag = "DeleteAll", Icon = new FontIcon() { Glyph = "\uE74D" }, Margin = new(0, 1, 0, 0) }; // 不加上 Margin 就会出现一条不和谐的透明细线
             item_delAll.Click += async (_, _) =>
             {
                 if (GetRelatedBlockCount() > 0)
@@ -119,11 +121,12 @@ namespace CodeBlocks.Controls
             {
                 metaData.Slots = slots;
                 metaData.Variant |= 0b_0100;
-                
             }
 
             (int w, int h) size = Size;
-            size.w = maxWidth + 40;
+            size.w = maxWidth + SlotWidth * 2;
+            size.w += (metaData.Variant & 0b_0001) == 0 ? SlotHeight : 0;
+            size.w += (metaData.Variant & 0b_0100) == 0 ? SlotHeight : 0;
             Resize(size);
         }
 
@@ -143,7 +146,7 @@ namespace CodeBlocks.Controls
         private void Resize((int w, int h) size)
         {
             // 确保方块高度合法
-            var minHeight = (metaData.Slots > 0) ? 16 * (metaData.Slots * 3) + 10 : 58;
+            var minHeight = (metaData.Slots > 0) ? SlotWidth * (metaData.Slots * 3) + SlotHeight : 58;
             if (size.h < minHeight) size.h = minHeight;
 
             metaData.Size = size;
@@ -214,6 +217,38 @@ namespace CodeBlocks.Controls
             return block;
         }
 
+        public void SetData(string key, object value)
+        {
+            BlockMetaData data = metaData;
+            switch (key)
+            {
+                case "Type":
+                    data.Type = (BlockType)value;
+                    break;
+                case "Content":
+                    data.Content = (string)value;
+                    break;
+                case "Variant":
+                    data.Variant = (int)value;
+                    break;
+                case "Slots":
+                    data.Slots = (int)value;
+                    break;
+                case "Size":
+                    data.Size = ((int w, int h))value;
+                    break;
+                case "Width":
+                    data.Size.Width = (int)value;
+                    break;
+                case "Height":
+                    data.Size.Height = (int)value;
+                    break;
+                default:
+                    break;
+            }
+            MetaData = data;
+        }
+
         public void CopyDataFrom(CodeBlock other)
         {
             this.MetaData = other.metaData;
@@ -232,13 +267,6 @@ namespace CodeBlocks.Controls
             this.DependentSlot = 0;
         }
 
-        public void MoveTo(CodeBlock other, double dx = 0, double dy = 0)
-        {
-            double x = Canvas.GetLeft(other) + dx;
-            double y = Canvas.GetTop(other) + dy;
-            SetPosition(x, y);
-        }
-
         public void SetZIndex(int value, bool isRelative = false)
         {
             if (isRelative) value = checked(value + Canvas.GetZIndex(this));
@@ -250,8 +278,14 @@ namespace CodeBlocks.Controls
             }
         }
 
+        bool moved = false;
+        private (double x, double y) prevPosition;
         public void SetPosition(double x, double y, bool isRelative = false)
         {
+            moved = true;
+            prevPosition.x = Canvas.GetLeft(this);
+            prevPosition.y = Canvas.GetTop(this);
+
             if (isRelative)
             {
                 x += Canvas.GetLeft(this);
@@ -263,15 +297,39 @@ namespace CodeBlocks.Controls
             Canvas.SetTop(this, y);
 
             // 移动下方方块
-            BottomBlock?.SetPosition(x, y + Size.Height - 10);
+            BottomBlock?.SetPosition(x, y + Size.Height - SlotHeight);
 
             // 移动右侧方块
             for (int i = 0; i < metaData.Slots; i++)
             {
                 var block = RightBlocks[i];
-                block?.SetPosition(x + Size.Width - 10, y + i * 48);
+                block?.SetPosition(x + Size.Width - SlotHeight, y + i * 48);
             }
         }
+
+        public void MoveToBlock(CodeBlock other, double dx = 0, double dy = 0)
+        {
+            double x = Canvas.GetLeft(other) + dx;
+            double y = Canvas.GetTop(other) + dy;
+            SetPosition(x, y);
+        }
+
+        public void MoveToBack(CodeBlock replacer, bool replace = true)
+        {
+            // 定位到队列的尾端
+            var endBlock = replacer;
+            while (endBlock.BottomBlock != null) endBlock = endBlock.BottomBlock;
+
+            if (replace)
+            {
+                ParentBlock.BottomBlock = replacer;
+                endBlock.BottomBlock = this;
+                this.ParentBlock = endBlock;
+            }
+            this.MoveToBlock(endBlock, 0, endBlock.Size.Height - SlotHeight);
+        }
+
+        public void ReturnToPreviousPosition() { if (moved) SetPosition(prevPosition.x, prevPosition.y); }
 
         public async Task PlayScaleAnimation(double from = 1.0, double to = 0.0, int delay = 5)
         {
@@ -307,7 +365,7 @@ namespace CodeBlocks.Controls
                 {
                     this.ParentBlock.BottomBlock = this.BottomBlock;
                     this.BottomBlock.ParentBlock = this.ParentBlock;
-                    this.BottomBlock.MoveTo(this); // 向上移动到此块的位置
+                    this.BottomBlock.MoveToBlock(this); // 向上移动到此块的位置
                 }
             }
 
@@ -346,6 +404,11 @@ namespace CodeBlocks.Controls
 
             return rq;
         }
+        #endregion
+
+        #region "Static"
+        public static readonly int SlotWidth = 16;
+        public static readonly int SlotHeight = 10;
         #endregion
     }
 }

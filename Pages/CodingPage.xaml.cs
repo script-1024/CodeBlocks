@@ -151,14 +151,44 @@ namespace CodeBlocks.Pages
             block.ManipulationCompleted += CodeBlock_ManipulationCompleted;
         }
 
+        private void GhostBlock_Reset(bool hide = true)
+        {
+            if (hide) ghostBlock.Visibility = Visibility.Collapsed;
+
+            // 复原暫时移动的块
+            if (ghostBlock.ParentBlock != null)
+            {
+                ghostBlock.ParentBlock.ReturnToPreviousPosition();
+                ghostBlock.ParentBlock = null;
+            }
+        }
+
         private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             Edited = true;
-
+            GhostBlock_Reset();
             var thisBlock = sender as CodeBlock;
             thisBlock.SetZIndex(+5, true);
             ghostBlock.CopyDataFrom(thisBlock);
-            ghostBlock.Visibility = Visibility.Collapsed;
+
+            ghostBlock.Size = thisBlock.Size;
+            var endBlock = thisBlock.BottomBlock;
+            while (endBlock != null)
+            {
+                ghostBlock.SetData("Height", ghostBlock.Size.Height + endBlock.Size.Height - CodeBlock.SlotHeight);
+                endBlock = endBlock.BottomBlock;
+            }
+
+            foreach (var block in thisBlock.RightBlocks)
+            {
+                if (block != null)
+                {
+                    // 第一个非null的方块
+                    ghostBlock.SetData("Width", ghostBlock.Size.Width + block.Size.Width - CodeBlock.SlotHeight);
+                    ghostBlock.SetData("Variant", ghostBlock.MetaData.Variant ^ 0b0100);
+                    break;
+                }
+            }
 
             var parentBlock = thisBlock.ParentBlock;
             if (parentBlock != null)
@@ -202,26 +232,15 @@ namespace CodeBlocks.Pages
             if (ghostBlock.Visibility == Visibility.Visible)
             {
                 // 移动到示意矩形的位置
-                thisBlock.MoveTo(ghostBlock);
-                ghostBlock.Visibility = Visibility.Collapsed;
+                thisBlock.MoveToBlock(ghostBlock);
+                GhostBlock_Reset();
 
                 // 移动其他子块
                 var parentBlock = thisBlock.ParentBlock;
                 if (thisBlock.DependentSlot == -1) // 自己在下方
                 {
                     if (parentBlock.BottomBlock == null) { parentBlock.BottomBlock = thisBlock; }
-                    else
-                    {
-                        // 定位到队列的尾端
-                        var endBlock = thisBlock;
-                        while (endBlock.BottomBlock != null) endBlock = endBlock.BottomBlock;
-
-                        var bottomBlock = parentBlock.BottomBlock;
-                        parentBlock.BottomBlock = thisBlock;
-                        bottomBlock.ParentBlock = endBlock;
-                        endBlock.BottomBlock = bottomBlock;
-                        bottomBlock.MoveTo(endBlock, 0, endBlock.Size.Height - 10);
-                    }
+                    else parentBlock.BottomBlock.MoveToBack(thisBlock);
                 }
                 else if (thisBlock.DependentSlot > 0) // 自己在右侧
                 {
@@ -285,7 +304,7 @@ namespace CodeBlocks.Pages
                     // 在四个角落 不和目标相邻 --> 跳过
                     if (x * y != 0)
                     {
-                        ghostBlock.Visibility = Visibility.Collapsed;
+                        GhostBlock_Reset();
                         continue;
                     }
 
@@ -308,16 +327,16 @@ namespace CodeBlocks.Pages
                     // 开始尝试自动吸附
                     int threshold = 30;
                     int slot = (int)((self.Y - target.Y) / 48);
-                    if (dx > 0 && (dx - selfW + 10) < threshold)
+                    if (dx > 0 && (dx - selfW + CodeBlock.SlotHeight) < threshold)
                     {
-                        self.X -= (dx - selfW + 10) * x;
+                        self.X -= (dx - selfW + CodeBlock.SlotHeight) * x;
                         self.Y = target.Y + slot * 48;
                         thisBlock.DependentSlot = slot+1;
                         isAligned = true;
                     }
-                    else if (dy > 0 && (dy - selfH + 10) < threshold)
+                    else if (dy > 0 && (dy - selfH + CodeBlock.SlotHeight) < threshold)
                     {
-                        self.Y -= (dy - selfH + 10) * y;
+                        self.Y -= (dy - selfH + CodeBlock.SlotHeight) * y;
                         self.X = target.X;
                         thisBlock.DependentSlot = -1;
                         isAligned = true;
@@ -328,9 +347,19 @@ namespace CodeBlocks.Pages
                         thisBlock.ParentBlock = targetBlock;
                         ghostBlock.SetPosition(self.X, self.Y);
                         ghostBlock.Visibility = Visibility.Visible;
+                        if (thisBlock.DependentSlot == -1)
+                        {
+                            GhostBlock_Reset(hide: false);
+                            ghostBlock.ParentBlock = targetBlock.BottomBlock;
+                            targetBlock.BottomBlock?.MoveToBack(ghostBlock, false);
+                        }
                         return;
                     }
-                    else ghostBlock.Visibility = Visibility.Collapsed;
+                    else
+                    {
+                        thisBlock.ParentBlock = null;
+                        GhostBlock_Reset();
+                    }
                 }
             }
         }
@@ -339,7 +368,7 @@ namespace CodeBlocks.Pages
         {
             FocusBlock = null;
             int count = thisBlock.GetRelatedBlockCount();
-            if (ghostBlock.Visibility == Visibility.Visible) ghostBlock.Visibility = Visibility.Collapsed;
+            if (ghostBlock.Visibility == Visibility.Visible) GhostBlock_Reset();
             if (count > 0)
             {
                 var result = await dialog.ShowAsync("RemovingMultipleBlocks", DialogVariant.YesCancel);

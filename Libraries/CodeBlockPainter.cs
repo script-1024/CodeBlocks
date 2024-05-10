@@ -1,4 +1,5 @@
-﻿using Windows.Foundation;
+﻿using CodeBlocks.Controls;
+using Windows.Foundation;
 using Microsoft.UI.Xaml.Media;
 
 namespace CodeBlocks.Core
@@ -25,8 +26,8 @@ namespace CodeBlocks.Core
         public BlockMetaData MetaData;
 
         private int x, y;
-        private int w = 16;
-        private int h = 10;
+        private int w = CodeBlock.SlotWidth;
+        private int h = CodeBlock.SlotHeight;
         private PathFigure pathFigure;
 
         private void DrawTopOrDownCurve(int sign, int dir = 0)
