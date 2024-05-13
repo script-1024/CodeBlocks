@@ -75,23 +75,38 @@ namespace CodeBlocks.Pages
                 Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
             };
 
-            ZoomIn.PointerPressed += (_, _) =>
-            {
-                if (Scroller.ZoomFactor > Scroller.MaxZoomFactor - 0.2f) return;
-                float newFactor = (float)Math.Round(Scroller.ZoomFactor + 0.2f, 2);
-                var scale = newFactor / Scroller.ZoomFactor ;
-                var dx = Scroller.HorizontalOffset * scale;
-                var dy = Scroller.VerticalOffset * scale;
-                Scroller.ChangeView(dx, dy, newFactor);
-            };
-            ZoomOut.PointerPressed += (_, _) =>
-            {
-                if (Scroller.ZoomFactor < Scroller.MinZoomFactor + 0.2f) return;
-                float scale = (Scroller.ZoomFactor - 0.2f) / Scroller.ZoomFactor;
-                var dx = Scroller.HorizontalOffset * scale;
-                var dy = Scroller.VerticalOffset * scale;
-                Scroller.ChangeView(dx, dy, Scroller.ZoomFactor - 0.2f);
-            };
+            ZoomIn.PointerPressed += (_, _) => ZoomChange(zoomIn: true);
+            ZoomOut.PointerPressed += (_, _) => ZoomChange(zoomIn: false);
+            Scroller.PointerWheelChanged += Scroller_PointerWheelChanged;
+        }
+
+        private void Scroller_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            
+        }
+
+        private void ZoomChange(bool zoomIn = true)
+        {
+            if ( zoomIn && Scroller.ZoomFactor > Scroller.MaxZoomFactor - 0.125f) return;
+            if (!zoomIn && Scroller.ZoomFactor < Scroller.MinZoomFactor + 0.125f) return;
+
+            // 计算缩放前窗口中心在Canvas上的坐标
+            double centerCanvasX = Scroller.HorizontalOffset + Scroller.ViewportWidth / 2;
+            double centerCanvasY = Scroller.VerticalOffset + Scroller.ViewportHeight / 2;
+
+            int sign = (zoomIn) ? 1 : -1;
+            float newFactor = Scroller.ZoomFactor + 0.125f * sign;
+            var scale = newFactor / Scroller.ZoomFactor;
+
+            // 计算缩放后窗口中心在Canvas上的坐标
+            double newCenterCanvasX = centerCanvasX * scale;
+            double newCenterCanvasY = centerCanvasY * scale;
+
+            // 计算缩放后滚动视图的偏移量
+            var dx = newCenterCanvasX - Scroller.ViewportWidth / 2;
+            var dy = newCenterCanvasY - Scroller.ViewportHeight / 2;
+
+            Scroller.ChangeView(dx, dy, newFactor);
         }
 
         private void CodingPage_OnBlockFocusChanged()
