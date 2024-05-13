@@ -21,15 +21,15 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
-                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
 
                 <Canvas x:Name="DisplayCanvas" Grid.Column="0" Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}">
                     <ctrl:CodeBlock x:Name="DemoBlock"/>
                 </Canvas>
-                <StackPanel Grid.Column="1" Background="{ThemeResource FlatBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource FlatBorderColorBrush}" BorderThickness="1,0,0,0">
-                    <Button Tag="导出" Content="Export" Margin="16,16,0,0"/>
-                    <ComboBox SelectedIndex="0" Margin="16,5,0,0">
+                <StackPanel Grid.Column="1" Height="{Binding ElementName=CanvasBorder, Path=ActualHeight}" Background="{ThemeResource FlatBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource FlatBorderColorBrush}" BorderThickness="1,0,0,0">
+                    <Button Tag="Export" Content="导出" Margin="16,16,0,0"/>
+                    <ComboBox SelectedIndex="0" Margin="16,8,0,0">
                         <ComboBox.Items>
                             <ComboBoxItem Content="选择模板" IsEnabled="False"/>
                             <ComboBoxItem Content="事件"/>
@@ -37,11 +37,25 @@
                             <ComboBoxItem Content="流程"/>
                         </ComboBox.Items>
                     </ComboBox>
-                    <SplitButton x:Name="ColorButton" Margin="16,5,0,0">
-                        <Border x:Name="CurrentColor" Background="{ThemeResource ControlBlockColorBrush}"/>
+                    <SplitButton x:Name="ColorButton" Margin="16,8,0,0" Padding="0" Height="32" HorizontalContentAlignment="Left">
+                        <Frame x:Name="CurrentColor" Background="{ThemeResource ControlBlockColorBrush}" Width="36" Height="{Binding ElementName=ColorButton, Path=ActualHeight}" Margin="0"/>
                         <SplitButton.Flyout>
                             <Flyout Placement="Bottom">
-                                <!-- flyout content -->
+                                <GridView ItemClick="GridView_ItemClick" IsItemClickEnabled="True">
+                                    <GridView.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <ItemsWrapGrid MaximumRowsOrColumns="3" Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </GridView.ItemsPanel>
+                                    <GridView.Resources>
+                                        <Style TargetType="Rectangle">
+                                            <Setter Property="Width" Value="32"/>
+                                            <Setter Property="Height" Value="32"/>
+                                            <Setter Property="RadiusX" Value="4"/>
+                                            <Setter Property="RadiusY" Value="4"/>
+                                        </Style>
+                                    </GridView.Resources>
+                                </GridView>
                             </Flyout>
                         </SplitButton.Flyout>
                     </SplitButton>

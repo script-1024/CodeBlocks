@@ -7,6 +7,8 @@ using Microsoft.UI.Windowing;
 using Windows.UI;
 using Windows.Storage;
 using CodeBlocks.Core;
+using Microsoft.UI.Xaml.Shapes;
+using System.Linq;
 
 namespace CodeBlocks
 {
@@ -38,9 +40,30 @@ namespace CodeBlocks
             if (fe.RequestedTheme != (ElementTheme)App.CurrentTheme)
                 fe.RequestedTheme = (ElementTheme)App.CurrentTheme;
 
+            // 读取颜色清单
+            ColorButton_ReloadItems();
+
             // 本地化翻译
             app.OnLanguageChanged += GetLocalize;
             GetLocalize();
+        }
+
+        private void ColorButton_ReloadItems()
+        {
+            var resourceDict = app.Resources.MergedDictionaries.FirstOrDefault(d => d.Source.OriginalString.EndsWith("BlockColor.xaml"));
+            if (resourceDict is null) return;
+
+            var gridView = (ColorButton.Flyout as Flyout).Content as GridView;
+            gridView.Items.Clear();
+
+            resourceDict = resourceDict.ThemeDictionaries["Default"] as ResourceDictionary;
+            foreach (SolidColorBrush brush in resourceDict.Values)
+            {
+                var rect = new Rectangle();
+                var color = brush.Color;
+                rect.Fill = new SolidColorBrush(color);
+                gridView.Items.Add(rect);
+            }
         }
 
         private void GetLocalize()
@@ -85,6 +108,18 @@ namespace CodeBlocks
 
                 ResetBlockPosition();
             }
+        }
+
+        private void GridView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            var rect = (Rectangle)e.ClickedItem;
+            var color = ((SolidColorBrush)rect.Fill).Color;
+
+            CurrentColor.Background = new SolidColorBrush(color);
+            DemoBlock.BlockColor = color;
+
+            // Delay required to circumvent GridView bug: https://github.com/microsoft/microsoft-ui-xaml/issues/6350
+            Task.Delay(10).ContinueWith(_ => ColorButton.Flyout.Hide(), TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public void Close(bool forceQuit)
