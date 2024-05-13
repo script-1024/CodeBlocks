@@ -1,9 +1,8 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System.Threading.Tasks;
-using System;
+﻿using System;
 using Windows.UI;
-using Windows.Foundation.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Core
 {
@@ -74,19 +73,23 @@ namespace CodeBlocks.Core
 
     public static class Utils
     {
-        public static Visibility ToVisibility(bool value) => (value) ? Visibility.Visible : Visibility.Collapsed;
         public static double GetBigger(double a, double b) => (a > b) ? a : b;
         public static double GetSmaller(double a, double b) => (a < b) ? a : b;
-        public static bool GetFlag(int source, int bit) => ((source >> bit) & 1) == 1;
+        public static bool GetFlag(int bits, int digits) => ((bits >> digits) & 1) == 1;
+    }
+
+    public static class Extensions
+    {
+        public static Visibility ToVisibility(this bool value) => (value) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public static class ColorHelper
     {
         public static double GetRelativeLuminance(Color color)
         {
-            double r = color.R / 255;
-            double g = color.G / 255;
-            double b = color.B / 255;
+            double r = color.R / 255.0;
+            double g = color.G / 255.0;
+            double b = color.B / 255.0;
             return 0.2126 * r + 0.7152 * g + 0.0722 * b;
         }
 
@@ -107,15 +110,24 @@ namespace CodeBlocks.Core
 
             return Color.FromArgb(a, r, g, b);
         }
-        public static Color ToWindowsUIColor(System.Drawing.Color color)
+
+        public static Color FromInt(int colorHex, bool allowAlpha = false)
         {
-            return Color.FromArgb(color.A, color.R, color.G, color.B);
+            byte a = 0xFF, r, g, b;
+
+            // 0xFFAABBCC -> Color.FromArgb(0xFF, 0xAA, 0xBB, 0xCC);
+            b = (byte)(colorHex & 0xFF); colorHex >>= 8;
+            g = (byte)(colorHex & 0xFF); colorHex >>= 8;
+            r = (byte)(colorHex & 0xFF); colorHex >>= 8;
+            if (allowAlpha) a = (byte)(colorHex & 0xFF);
+
+            return Color.FromArgb(a, r, g, b);
         }
     }
 
     public static class TextHelper
     {
-        public static double CalculateStringWidth(string str)
+        public static double GetWidth(string str)
         {
             double totalWidth = 0;
             foreach (char c in str)
@@ -129,9 +141,9 @@ namespace CodeBlocks.Core
         public static bool IsFullWidth(char c)
         {
             return
-                c >= 0x4E00 && c <= 0x9FFF || // 中文字符
-                c >= 0xFF01 && c <= 0xFF5E || // 全角字符
-                c == 0x3000; // 全角空格
+            /* 中文字符 */ c >= 0x4E00 && c <= 0x9FFF ||
+            /* 全角字符 */ c >= 0xFF01 && c <= 0xFF5E ||
+            /* 全角空格 */ c == 0x3000;
         }
     }
 }

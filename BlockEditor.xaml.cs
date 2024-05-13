@@ -152,7 +152,7 @@ namespace CodeBlocks
         {
             if (activeFile == null)
             {
-                DemoBlock.BlockColor = Color.FromArgb(0xFF, 0xFF, 0xC8, 0x00);
+                DemoBlock.BlockColor = ColorHelper.FromInt(0xFFC800);
                 DemoBlock.MetaData = new() { Type = BlockType.ProcessBlock, Variant = 10 };
                 DemoBlock.TranslationKey = "Blocks.Demo";
                 Canvas.SetLeft(DemoBlock.BlockDescription, 24);

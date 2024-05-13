@@ -14,7 +14,7 @@ namespace CodeBlocks.Controls
         public BlockControl()
         {
             InitializeComponent();
-            if (fillColor == default) BlockColor = Color.FromArgb(255, 80, 80, 80);
+            if (fillColor == default) BlockColor = ColorHelper.FromInt(0x505050);
         }
 
         private void SetColor(Color value)

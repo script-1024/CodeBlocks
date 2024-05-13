@@ -112,7 +112,7 @@ namespace CodeBlocks.Controls
                 else
                 {
                     BlockDescription.Inlines.Add(new Run() { Text = part });
-                    textWidth = (int)(TextHelper.CalculateStringWidth(part) * BlockDescription.FontSize);
+                    textWidth = (int)(TextHelper.GetWidth(part) * BlockDescription.FontSize);
                     if (textWidth > maxWidth) maxWidth = textWidth;
                 }
             }
