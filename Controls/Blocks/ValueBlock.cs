@@ -4,11 +4,10 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
 using CodeBlocks.Core;
 using Windows.UI;
+using System;
 
 namespace CodeBlocks.Controls
 {
-    public enum BlockValueType { None = 0, Text = 1, Number = 2, Boolean = 3 }
-
     public class ValueBlock : CodeBlock
     {
         private BlockValueType type = BlockValueType.None;
@@ -52,7 +51,7 @@ namespace CodeBlocks.Controls
 
             app.OnLanguageChanged += () =>
             {
-                string key = $"Blocks.ValueBlock.{((type == BlockValueType.Text) ? "Text" : "Number")}.PlaceholderText";
+                string key = $"Blocks.ValueBlock.{(type.IsEqual(BlockValueType.String) ? "Text" : "Number")}.PlaceholderText";
                 txtbox.PlaceholderText = GetLocalizedString(key);
             };
 
@@ -64,7 +63,7 @@ namespace CodeBlocks.Controls
 
         private void OnTypeChanged()
         {
-            if (type == BlockValueType.Text)
+            if (type.IsEqual(BlockValueType.String))
             {
                 t1.Visibility = t2.Visibility = Visibility.Visible;
                 BlockColor = (app.Resources["TextValueBlockColorBrush"] as SolidColorBrush).Color;
@@ -73,7 +72,7 @@ namespace CodeBlocks.Controls
 
                 txtbox.TextChanged -= CheckIllegalCharacter;
             }
-            if (type == BlockValueType.Number)
+            if (type.IsEqual(BlockValueType.Number))
             {
                 t1.Visibility = t2.Visibility = Visibility.Collapsed;
                 BlockColor = (app.Resources["NumberValueBlockColorBrush"] as SolidColorBrush).Color;
@@ -86,22 +85,27 @@ namespace CodeBlocks.Controls
 
         private void CheckIllegalCharacter(object sender, TextChangedEventArgs e)
         {
-            double result;
-            if (double.TryParse(txtbox.Text, out result))
+            if (type.IsEqual(BlockValueType.Decimal) && double.TryParse(txtbox.Text, out _))
+            {
+                if (BlockTip.IsOpen) BlockTip.IsOpen = false;
+            }
+            else if (type.IsEqual(BlockValueType.Integer) && int.TryParse(txtbox.Text, out _))
             {
                 if (BlockTip.IsOpen) BlockTip.IsOpen = false;
             }
             else
             {
                 BlockTip.Title = "非法字元";
-                BlockTip.Subtitle = "输入的内容无法转成数字";
+                BlockTip.Subtitle = "输入的内容无法转成指定类型";
                 if (! BlockTip.IsOpen) BlockTip.IsOpen = true;
             }
         }
 
         private void ResizeTextBox()
         {
-            int w = (int)txtbox.ActualWidth + ((type == BlockValueType.Text) ? 58 : 30);
+            int w = (int)txtbox.ActualWidth;
+            if (type.IsEqual(BlockValueType.String)) w += 58;
+            if (type.IsEqual(BlockValueType.Number)) w += 30;
             Size = (w, Size.Height);
             double x = Canvas.GetLeft(txtbox);
             Canvas.SetLeft(t1, x-14);

@@ -429,3 +429,36 @@ public enum BlockProperties
     Width     = 6,
     Height    = 7
 }
+
+public enum BlockValueType
+{
+    None          = 0b_0000_0000, // 0x00 不指定类型
+    Int8          = 0b_0000_0010, // 0x02 指定元素类型为  8位整数
+    Int16         = 0b_0000_0011, // 0x03 指定元素类型为 16位整数
+    Int32         = 0b_0000_0100, // 0x04 指定元素类型为 32位整数
+    Int64         = 0b_0000_0101, // 0x05 指定元素类型为 64位整数
+    Void          = 0b_0000_1111, // 0x0F 空类型
+    SingleValue   = 0b_0001_0000, // 0x10 接受单一元素
+    Enumerate     = 0b_0001_0001, // 0x11 期望枚举类型
+    Number        = 0b_0010_0000, // 0x20 期望一个数字
+    Integer       = 0b_0011_0000, // 0x30 期望一个整数 (预设 int)
+    Bool          = 0b_0011_0001, // 0x31 指定 bool  数值
+    Byte          = 0b_0011_0010, // 0x32 指定 byte  数值
+    Short         = 0b_0011_0011, // 0x33 指定 short 数值
+    Int           = 0b_0011_0100, // 0x34 指定 int   数值
+    Long          = 0b_0011_0101, // 0x35 指定 long  数值
+    Decimal       = 0b_0011_1000, // 0x38 期望一个小数 (预设 double)
+    Float         = 0b_0011_1110, // 0x3E 指定 float  数值
+    Double        = 0b_0011_1111, // 0x3F 指定 double 数值
+    MultipleValue = 0b_0100_0000, // 0x40 接受多个元素
+    List          = 0b_0100_0001, // 0x60 期望一个列表
+    Dictionary    = 0b_0100_0010, // 0x70 期望一个字典
+    Array         = 0b_0100_1000, // 0x50 期望一个数组
+    ByteArray     = 0b_0100_1010, // 0x52 指定 byte 数组
+    IntArray      = 0b_0100_1100, // 0x54 指定 int  数组
+    LongArray     = 0b_0100_1101, // 0x55 指定 long 数组
+    String        = 0b_1000_0000, // 0x80 期望一个字串
+    PlainString   = 0b_1000_0001, // 0x81 指定 纯字串
+    JsonString    = 0b_1000_0010, // 0x82 指定 JSON 字串
+    UnknownType   = 0b_1111_1111  // 0xFF 未知类型
+}

@@ -3,6 +3,7 @@ using Windows.UI;
 using Microsoft.UI.Xaml;
 using System.Linq;
 using System.Text;
+using CodeBlocks.Controls;
 
 namespace CodeBlocks.Core
 {
@@ -88,6 +89,8 @@ namespace CodeBlocks.Core
         public static long ToLong(this byte[] bytes, int index = 0, int length = 8) => BytesToInteger(bytes, index, length);
         public static int ToInt(this byte[] bytes, int index = 0, int length = 4) => (int)BytesToInteger(bytes, index, length);
         public static short ToShort(this byte[] bytes, int index = 0, int length = 2) => (short)BytesToInteger(bytes, index, length);
+
+        public static bool IsEqual(this BlockValueType type, BlockValueType other) => ((type & other) == other);
     }
 
     public static class ColorHelper
