@@ -26,8 +26,8 @@ namespace CodeBlocks.Core
         public BlockMetaData MetaData;
 
         private int x, y;
-        private int w = CodeBlock.SlotWidth;
-        private int h = CodeBlock.SlotHeight;
+        private readonly int w = CodeBlock.SlotWidth;
+        private readonly int h = CodeBlock.SlotHeight;
         private PathFigure pathFigure;
 
         private void DrawTopOrDownCurve(int sign, int dir = 0)
@@ -98,15 +98,15 @@ namespace CodeBlocks.Core
                     DrawLine(w, 0); // 左半部分
                     DrawTopOrDownCurve(1); // 凹口
                 }
-            }/*
+            }
             else if (MetaData.Type == BlockType.HatBlock)
             {
                 ArcSegment arc = new ArcSegment();
-                arc.Size = new Size(70, 70);
-                arc.Point = new Point(x += 100, y = 0);
+                arc.Size = new Size(35, 24);
+                arc.Point = new Point(x += 60, y = 0);
                 arc.SweepDirection = SweepDirection.Clockwise;
                 pathFigure.Segments.Add(arc);
-            }*/
+            }
             DrawLine(Width, y, false); // 其余部分
 
             // 右边
