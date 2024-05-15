@@ -1,86 +1,91 @@
 ﻿using System;
 using Windows.UI;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using System.Linq;
+using System.Text;
 
 namespace CodeBlocks.Core
 {
-    public enum DialogVariant
-    {
-        Yes = 1, No = 2, Cancel = 4, Confirm = 8, Save = 16, Giveup = 32,
-        YesNo = 3, YesCancel = 5, YesNoCancel = 7, ConfirmCancel = 12, SaveGiveupCancel = 52,
-    }
-
-    public class MessageDialog
-    {
-        private readonly ContentDialog dialog = new();
-        public bool IsDialogActivated { get; private set; } = false;
-        public XamlRoot XamlRoot { get => dialog.XamlRoot; set => dialog.XamlRoot = value; }
-        private string GetLocalizedString(string key) => (Application.Current as App).Localizer.GetString(key);
-        public async Task<ContentDialogResult> ShowAsync(string msgId, DialogVariant variant = DialogVariant.Confirm)
-        {
-            if (IsDialogActivated) return ContentDialogResult.None;
-            else IsDialogActivated = true;
-
-            bool hasPrimaryButton = false;
-            dialog.Title = GetLocalizedString($"Messages.{msgId}.Title");
-            dialog.Content = GetLocalizedString($"Messages.{msgId}.Description");
-            dialog.PrimaryButtonText = dialog.SecondaryButtonText = dialog.CloseButtonText = null; // 重置按键文本
-
-            if ((int)(variant & DialogVariant.Yes) > 0)
-            {
-                dialog.PrimaryButtonText = GetLocalizedString("Messages.Button.Yes");
-                hasPrimaryButton = true;
-            }
-            if ((int)(variant & DialogVariant.Confirm) > 0)
-            {
-                
-                dialog.PrimaryButtonText = GetLocalizedString("Messages.Button.Confirm");
-                hasPrimaryButton = true;
-            }
-            if ((int)(variant & DialogVariant.Save) > 0)
-            {
-                dialog.PrimaryButtonText = GetLocalizedString("Messages.Button.Save");
-                hasPrimaryButton = true;
-            }
-            if ((int)(variant & DialogVariant.Giveup) > 0)
-            {
-                dialog.SecondaryButtonText = GetLocalizedString("Messages.Button.Giveup");
-            }
-            if ((int)(variant & DialogVariant.Cancel) > 0)
-            {
-                dialog.CloseButtonText = GetLocalizedString("Messages.Button.Cancel");
-            }
-
-            if (variant == DialogVariant.No || variant == DialogVariant.YesNo)
-            {
-                dialog.CloseButtonText = GetLocalizedString("Messages.Button.No");
-            }
-            else if (variant == DialogVariant.YesNoCancel)
-            {
-                dialog.SecondaryButtonText = GetLocalizedString("Messages.Button.No");
-            }
-
-            if (hasPrimaryButton) dialog.DefaultButton = ContentDialogButton.Primary;
-            else dialog.DefaultButton = ContentDialogButton.Close;
-
-            var result = await dialog.ShowAsync();
-            IsDialogActivated = false;
-            return result;
-        }
-    }
-
     public static class Utils
     {
         public static double GetBigger(double a, double b) => (a > b) ? a : b;
         public static double GetSmaller(double a, double b) => (a < b) ? a : b;
         public static bool GetFlag(int bits, int digits) => ((bits >> digits) & 1) == 1;
+
+        public static T[] ConcatArrays<T>(params T[][] pList)
+        {
+            var result = new T[pList.Sum(x => x.Length)];
+            int offset = 0;
+            for (int i=0; i<pList.Length; i++)
+            {
+                pList[i].CopyTo(result, offset);
+                offset += pList[i].Length;
+            }
+            return result;
+        }
     }
 
     public static class Extensions
     {
         public static Visibility ToVisibility(this bool value) => (value) ? Visibility.Visible : Visibility.Collapsed;
+
+        private static byte[] IntegerToBytes(ulong value, int length)
+        {
+            var bytes = new byte[length];
+            for (int i = 0; i < length; i++)
+            {
+                bytes[i] = (byte)(value & 0xFF);
+                value >>= 8;
+            }
+            return bytes;
+        }
+
+        private static long BytesToInteger(byte[] bytes, int index, int length)
+        {
+            long result = 0;
+            for (int i=index, offset=0; i<bytes.Length && offset<length; i++, offset++)
+            {
+                result |= (long)bytes[i] << (offset * 8);
+            }
+            return result;
+        }
+
+        public static int ToInt(this Color color)
+        {
+            // A: 0xFF  R: 0xAA  G: 0xBB  B: 0xCC  ->  int: 0xFFAABBCC
+            return (color.A << 24) | (color.R << 16) | (color.G << 8) | color.B;
+        }
+
+        public static string ToUnicodeString(this byte[] value, int index = 0, int count = 0)
+        {
+            // UTF-16 每两个字节为一字符
+            if (index < 0 || index >= value.Length / 2) throw new ArgumentOutOfRangeException();
+
+            // 若呼叫时不想指定特定长度或设置了非法值，则将 count 设为字串长度
+            if (count <= 0) count = value.Length / 2;
+            return Encoding.Unicode.GetString(value, index, count);
+        }
+
+        public static byte[] ToBytes(this string value, int index = 0, int count = 0)
+        {
+            if (value.Length > 0 && (index < 0 || index >= value.Length)) throw new ArgumentOutOfRangeException();
+
+            // 若呼叫时不想指定特定长度或设置了非法值，则将 count 设为字串长度
+            if (count <= 0) count = value.Length;
+            return Encoding.Unicode.GetBytes(value, index, count);
+        }
+
+        public static byte[] ToBytes(this long value, int length = 8) => IntegerToBytes((ulong)value, length);
+        public static byte[] ToBytes(this int value, int length = 4) => IntegerToBytes((ulong)value, length);
+        public static byte[] ToBytes(this short value, int length = 2) => IntegerToBytes((ulong)value, length);
+
+        public static byte[] ToBytes(this ulong value, int length = 8) => IntegerToBytes(value, length);
+        public static byte[] ToBytes(this uint value, int length = 4) => IntegerToBytes(value, length);
+        public static byte[] ToBytes(this ushort value, int length = 2) => IntegerToBytes(value, length);
+
+        public static long ToLong(this byte[] bytes, int index = 0, int length = 8) => BytesToInteger(bytes, index, length);
+        public static int ToInt(this byte[] bytes, int index = 0, int length = 4) => (int)BytesToInteger(bytes, index, length);
+        public static short ToShort(this byte[] bytes, int index = 0, int length = 2) => (short)BytesToInteger(bytes, index, length);
     }
 
     public static class ColorHelper
