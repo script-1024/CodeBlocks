@@ -184,7 +184,7 @@ namespace CodeBlocks.Pages
             var endBlock = thisBlock.BottomBlock;
             while (endBlock != null)
             {
-                ghostBlock.SetData("Height", ghostBlock.Size.Height + endBlock.Size.Height - CodeBlock.SlotHeight);
+                ghostBlock.SetData(BlockProperties.Height, ghostBlock.Size.Height + endBlock.Size.Height - CodeBlock.SlotHeight);
                 endBlock = endBlock.BottomBlock;
             }
 
@@ -193,8 +193,8 @@ namespace CodeBlocks.Pages
                 if (block != null)
                 {
                     // 第一个非null的方块
-                    ghostBlock.SetData("Width", ghostBlock.Size.Width + block.Size.Width - CodeBlock.SlotHeight);
-                    ghostBlock.SetData("Variant", ghostBlock.MetaData.Variant ^ 0b0100);
+                    ghostBlock.SetData(BlockProperties.Width, ghostBlock.Size.Width + block.Size.Width - CodeBlock.SlotHeight);
+                    ghostBlock.SetData(BlockProperties.Variant, ghostBlock.MetaData.Variant ^ 0b0100);
                     break;
                 }
             }
