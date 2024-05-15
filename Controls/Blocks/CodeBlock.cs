@@ -101,16 +101,16 @@ public class CodeBlock : BlockControl
     {
         if (string.IsNullOrEmpty(key)) return;
         var rawText = app.Localizer.GetString(key);
-        var parts = rawText.Split('(', ')');
+        var parts = rawText.Split('{', '}');
         int slots = 0, maxWidth = 0, textWidth;
         ValueIndex.Clear();
         BlockDescription.Inlines.Clear();
 
         foreach (var part in parts)
         {
-            if (part.StartsWith('&'))
+            if (part.StartsWith('%'))
             {
-                ValueIndex.Add(part.Replace("&", ""), slots++);
+                ValueIndex.Add(part.Replace("%", ""), slots++);
                 BlockDescription.Inlines.Add(new LineBreak());
             }
             else

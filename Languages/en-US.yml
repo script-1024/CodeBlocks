@@ -4,6 +4,9 @@ Profile:
     Identifier: en-US
     DisplayName: English
 
+Misc:
+    CBDFile: Code Block Definition File
+    
 Settings:
     Title: Settings
 
@@ -63,4 +66,4 @@ Blocks:
     ProcessBlock:
         Say:
             Tip: Broadcasts message in the chat as the current executor to all players.
-            Text: Say (&text)
+            Text: Say {%text}
