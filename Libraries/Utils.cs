@@ -56,23 +56,25 @@ namespace CodeBlocks.Core
             return (color.A << 24) | (color.R << 16) | (color.G << 8) | color.B;
         }
 
-        public static string ToUnicodeString(this byte[] value, int index = 0, int count = 0)
+        public static string ToUnicodeString(this byte[] bytes, int bytesIndex = 0, int bytesCount = -1)
         {
-            // UTF-16 每两个字节为一字符
-            if (index < 0 || index >= value.Length / 2) throw new ArgumentOutOfRangeException();
+            if (bytesCount == 0 || bytes.Length == 0) return string.Empty;
+            if (bytesIndex < 0 || bytesIndex >= bytes.Length) throw new ArgumentOutOfRangeException(paramName: nameof(bytesIndex), message: "byte[].ToUnicodeString(): An invalid index was specified.");
 
+            // UTF-16 每两个字节为一字符
             // 若呼叫时不想指定特定长度或设置了非法值，则将 count 设为字串长度
-            if (count <= 0) count = value.Length / 2;
-            return Encoding.Unicode.GetString(value, index, count);
+            if (bytesCount < 0) bytesCount = (bytes.Length - bytesIndex) / 2;
+            return Encoding.Unicode.GetString(bytes, bytesIndex, bytesCount);
         }
 
-        public static byte[] ToBytes(this string value, int index = 0, int count = 0)
+        public static byte[] ToBytes(this string value, int charIndex = 0, int charCount = -1)
         {
-            if (value.Length > 0 && (index < 0 || index >= value.Length)) throw new ArgumentOutOfRangeException();
+            if (value.Length == 0 || charCount == 0) return [];
+            if (charIndex < 0 || charIndex >= value.Length) throw new ArgumentOutOfRangeException(paramName: nameof(charIndex), message: "string.ToBytes(): An invalid index was specified.");
 
             // 若呼叫时不想指定特定长度或设置了非法值，则将 count 设为字串长度
-            if (count <= 0) count = value.Length;
-            return Encoding.Unicode.GetBytes(value, index, count);
+            if (charCount < 0) charCount = value.Length;
+            return Encoding.Unicode.GetBytes(value, charIndex, charCount);
         }
 
         public static byte[] ToBytes(this long value, int length = 8) => IntegerToBytes((ulong)value, length);

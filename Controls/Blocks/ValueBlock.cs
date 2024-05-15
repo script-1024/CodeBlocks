@@ -30,6 +30,7 @@ namespace CodeBlocks.Controls
         private readonly TextBlock t1 = new() { Text = "“ " }, t2 = new() { Text = " ”" };
         private readonly TextBox txtbox = new() { VerticalContentAlignment = VerticalAlignment.Center, BorderBrush = new SolidColorBrush(Colors.Transparent), CornerRadius = new(3) };
 
+        // 覆写预设行为，用于修复方块被复制后未正确初始化的错误。
         public override event BlockCreatedEventHandler OnBlockCreated;
 
         public ValueBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(null, args)

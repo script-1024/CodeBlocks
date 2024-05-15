@@ -36,8 +36,15 @@ public class CodeBlock : BlockControl
     private readonly CommandBarFlyout ContextMenu = new();
     private readonly App app = Application.Current as App;
 
+    // 方块被创建后要引发的事件，用于在 CodingPage 中初始化方块
     public delegate void BlockCreatedEventHandler(CodeBlock sender, BlockCreatedEventArgs e);
+
+    // Ignore warn CA1070
+    // Fix bug when ValueBlock was copied, it wasn't initialized correctly.
+    // It has a different behavior than the default (THIS base class).
+    #pragma warning disable CA1070
     public virtual event BlockCreatedEventHandler OnBlockCreated;
+    #pragma warning restore CA1070
 
     public CodeBlock(BlockCreatedEventHandler createdEventHandler, BlockCreatedEventArgs args = null) : base()
     {
@@ -95,7 +102,7 @@ public class CodeBlock : BlockControl
         if (string.IsNullOrEmpty(key)) return;
         var rawText = app.Localizer.GetString(key);
         var parts = rawText.Split('(', ')');
-        int slots = 0, textWidth = 0, maxWidth = 0;
+        int slots = 0, maxWidth = 0, textWidth;
         ValueIndex.Clear();
         BlockDescription.Inlines.Clear();
 
@@ -129,14 +136,14 @@ public class CodeBlock : BlockControl
 
     private void LocalizeMenu()
     {
-        foreach (AppBarButton item in ContextMenu.PrimaryCommands)
+        foreach (var item in ContextMenu.PrimaryCommands)
         {
-            item.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + item.Tag);
+            if (item is AppBarButton btn) btn.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + btn.Tag);
         }
 
-        foreach (AppBarButton item in ContextMenu.SecondaryCommands)
+        foreach (var item in ContextMenu.SecondaryCommands)
         {
-            item.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + item.Tag);
+            if (item is AppBarButton btn) btn.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + btn.Tag);
         }
     }
 
@@ -331,16 +338,18 @@ public class CodeBlock : BlockControl
     public async Task PlayScaleAnimation(double from = 1.0, double to = 0.0, int delay = 5)
     {
         if (from == to) return;
-        bool doZoomIn = (to > from);
-        double delta = (doZoomIn) ? 0.05 : -0.05;
-        ScaleTransform transform = new();
-        transform.CenterX = Size.Width / 2;
-        transform.CenterY = Size.Height / 2;
+        bool isAskedToZoomIn = (to > from);
+        double delta = (isAskedToZoomIn) ? 0.05 : -0.05;
+        var transform = new ScaleTransform()
+        {
+            CenterX = Size.Width / 2,
+            CenterY = Size.Height / 2
+        };
         this.RenderTransform = transform;
         for (double d = from; ; d += delta)
         {
-            if ( doZoomIn && d > to) break;
-            if (!doZoomIn && d < to) break;
+            if ( isAskedToZoomIn && d > to) break;
+            if (!isAskedToZoomIn && d < to) break;
             transform.ScaleX = transform.ScaleY = d;
             await Task.Delay(delay);
         }
