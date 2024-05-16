@@ -110,7 +110,7 @@ public class CodeBlock : BlockControl
         {
             if (part.StartsWith('%'))
             {
-                ValueIndex.Add(part.Replace("%", ""), slots++);
+                ValueIndex.Add(part.Trim('%'), slots++);
                 BlockDescription.Inlines.Add(new LineBreak());
             }
             else
@@ -121,11 +121,7 @@ public class CodeBlock : BlockControl
             }
         }
 
-        if (slots > 0)
-        {
-            metaData.Slots = slots;
-            metaData.Variant |= 0b_0100;
-        }
+        if (slots > 0) metaData.Slots = slots;
 
         (int w, int h) size = Size;
         size.w = maxWidth + SlotWidth * 2;

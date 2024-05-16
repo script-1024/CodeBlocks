@@ -41,7 +41,7 @@ namespace CodeBlocks.Pages
         private void InitializePage()
         {
             UICanvas.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            UICanvas.ManipulationDelta += BlockCanvas_ManipulationDelta;
+            UICanvas.ManipulationDelta += UICanvas_ManipulationDelta;
             this.OnBlockFocusChanged += CodingPage_OnBlockFocusChanged;
 
             var hButton = new Button() { Content = "New Hat Block" };
@@ -134,7 +134,7 @@ namespace CodeBlocks.Pages
             if (UICanvas.ActualHeight > 12) Scroller.Height = UICanvas.ActualHeight - 12;
         }
 
-        private void BlockCanvas_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void UICanvas_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (canCanvasScroll)
             {
