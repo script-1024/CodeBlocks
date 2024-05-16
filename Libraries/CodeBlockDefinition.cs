@@ -69,7 +69,7 @@ public sealed class CodeBlockDefinition
         if (metaData[index++] != FileOperations.GetCheckDigit(metaData, 0x00, 0x07)) return Failed("FileVerificationFailed");
 
         // 方块资料数据
-        ColorHex = metaData.ToInt(index, +3); index += 3;
+        ColorHex = metaData.ToInt(index, +3, isBigEndian: true); index += 3;
         byte countTranslations = metaData[index++];
         byte lengthIdentifier = metaData[index++];
         int lengthCode = metaData.ToInt(index, 2); index += 2;
