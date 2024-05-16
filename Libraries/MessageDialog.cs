@@ -62,8 +62,9 @@ public class MessageDialog
 
     public async Task<ContentDialogResult> ShowAsync(string msgId, DialogVariant variant = DialogVariant.Confirm)
     {
-        if (IsDialogActivated) return ContentDialogResult.None;
-        else IsDialogActivated = true;
+        // 若对话框处于激活状态 等待其退出
+        while (IsDialogActivated) await Task.Delay(200);
+        IsDialogActivated = true;
         
         dialog.Title = GetLocalizedString($"Messages.{msgId}.Title");
         dialog.Content = GetLocalizedString($"Messages.{msgId}.Description");
