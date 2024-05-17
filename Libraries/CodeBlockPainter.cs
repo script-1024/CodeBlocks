@@ -6,7 +6,7 @@ namespace CodeBlocks.Core
 {
     public enum BlockType
     {
-        Undefined = 0, ValueBlock = 1, HatBlock = 2, ProcessBlock = 3, BranchBlock = 4
+        Undefined = 0, Value = 1, Event = 2, Control = 3, Action = 4
     }
 
     public struct BlockMetaData
@@ -84,14 +84,14 @@ namespace CodeBlocks.Core
             var pathGeo = new PathGeometry();
 
             // 从左上角开始
-            if (MetaData.Type == BlockType.ValueBlock || MetaData.Type == BlockType.ProcessBlock) { x = h; y = 0; }
-            else if (MetaData.Type == BlockType.HatBlock) { x = h; y = 0; }
+            if (MetaData.Type == BlockType.Value || MetaData.Type == BlockType.Action) { x = h; y = 0; }
+            else if (MetaData.Type == BlockType.Event) { x = h; y = 0; }
 
             pathFigure = new PathFigure();
             pathFigure.StartPoint = new Point(x, y);
 
             // 上边
-            if (MetaData.Type == BlockType.ProcessBlock)
+            if (MetaData.Type == BlockType.Action)
             {
                 if (hasTop)
                 {
@@ -99,7 +99,7 @@ namespace CodeBlocks.Core
                     DrawTopOrDownCurve(1); // 凹口
                 }
             }
-            else if (MetaData.Type == BlockType.HatBlock)
+            else if (MetaData.Type == BlockType.Event)
             {
                 ArcSegment arc = new ArcSegment();
                 arc.Size = new Size(35, 24);
@@ -124,7 +124,7 @@ namespace CodeBlocks.Core
 
             // 下边
             //DrawCorner(-1, 1); // 右下角
-            if (hasBottom && MetaData.Type != BlockType.ValueBlock)
+            if (hasBottom && MetaData.Type != BlockType.Value)
             {
                 DrawLine(h + w * 2, y, false); // 右半部分
                 DrawTopOrDownCurve(-1, 1); // 凸起
@@ -139,12 +139,12 @@ namespace CodeBlocks.Core
                 DrawLeftOrRightCurve(-1, 1); // 凸起
             }
 
-            if (MetaData.Type == BlockType.ValueBlock || MetaData.Type == BlockType.ProcessBlock)
+            if (MetaData.Type == BlockType.Value || MetaData.Type == BlockType.Action)
             {
                 DrawLine(x, 0, false); // 其余部分
                 //DrawCorner(1, -1); // 左上角
             }
-            else if (MetaData.Type == BlockType.HatBlock)
+            else if (MetaData.Type == BlockType.Event)
             {
                 DrawLine(x, 0, false); // 其余部分
             }

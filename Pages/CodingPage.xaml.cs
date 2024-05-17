@@ -56,14 +56,14 @@ namespace CodeBlocks.Pages
 
             hButton.Click += (_, _) =>
             {
-                var block = new HatBlock(BlockCreated);
+                var block = new EventBlock(BlockCreated);
                 Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
                 Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
             };
 
             pButton.Click += (_, _) =>
             {
-                var block = new ProcessBlock(BlockCreated);
+                var block = new ActionBlock(BlockCreated);
                 Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
                 Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
             };

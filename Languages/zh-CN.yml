@@ -71,12 +71,12 @@ Blocks:
         Boolean:
             Tip: 逻辑
 
-    HatBlock:
+    EventBlock:
         FunctionEntry:
             Tip: 函数的进入点，命令将从此处开始执行。
             Text: 当函数被呼叫
 
-    ProcessBlock:
+    ActionBlock:
         Execute:
             Tip: 以指定的身份、位置、朝向、条件执行任意命令，并保存执行结果。所有的分支子命令皆为可选项。
             Run: 执行命令 {%cmd}

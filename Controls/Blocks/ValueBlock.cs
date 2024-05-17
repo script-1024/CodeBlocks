@@ -34,7 +34,7 @@ namespace CodeBlocks.Controls
 
         public ValueBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(null, args)
         {
-            MetaData = new() { Type = BlockType.ValueBlock, Variant = 1, Size = this.Size };
+            MetaData = new() { Type = BlockType.Value, Variant = 1, Size = this.Size };
             t1.Foreground = t2.Foreground = BlockDescription.Foreground;
             t1.FontFamily = t2.FontFamily = txtbox.FontFamily = BlockDescription.FontFamily;
             t1.FontSize = t2.FontSize = BlockDescription.FontSize;
@@ -66,7 +66,7 @@ namespace CodeBlocks.Controls
             if (type.IsEqual(BlockValueType.String))
             {
                 t1.Visibility = t2.Visibility = Visibility.Visible;
-                BlockColor = (app.Resources["TextValueBlockColorBrush"] as SolidColorBrush).Color;
+                BlockColor = (app.Resources["ValueBlockTextColorBrush"] as SolidColorBrush).Color;
                 Canvas.SetLeft(txtbox, 34);
                 txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Text.PlaceholderText");
 
@@ -75,7 +75,7 @@ namespace CodeBlocks.Controls
             if (type.IsEqual(BlockValueType.Number))
             {
                 t1.Visibility = t2.Visibility = Visibility.Collapsed;
-                BlockColor = (app.Resources["NumberValueBlockColorBrush"] as SolidColorBrush).Color;
+                BlockColor = (app.Resources["ValueBlockNumberColorBrush"] as SolidColorBrush).Color;
                 Canvas.SetLeft(txtbox, 20);
                 txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Number.PlaceholderText");
 
@@ -135,6 +135,11 @@ namespace CodeBlocks.Controls
             }
 
             return block;
+        }
+
+        public override void RefreshBlockText()
+        {
+            return;
         }
     }
 }

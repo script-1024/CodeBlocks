@@ -19,6 +19,8 @@ namespace CodeBlocks.Core
         public string GetString(string key) => GetString(Content, key);
         private static string GetString(object source, string key)
         {
+            if (string.IsNullOrEmpty(key)) return string.Empty;
+
             var path = key.Split('.');
             var dict = source as Dictionary<object, object>;
             foreach (string item in path)
@@ -33,7 +35,7 @@ namespace CodeBlocks.Core
         public static void ReloadLanguageFiles()
         {
             List<string> list = [];
-            App.LoadedLanguages.Clear();
+            App.RegisteredLanguages.Clear();
             foreach (var filePath in Directory.GetFiles($"{App.Path}/Languages/", "*.yml"))
             {
                 string yamlContent = File.ReadAllText(filePath);
@@ -45,8 +47,8 @@ namespace CodeBlocks.Core
                     var name = GetString(dict, "Profile.DisplayName");
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     if (fileName != id) continue; // 忽略格式错误的语言档案
-                    App.LoadedLanguages.Add(name, id);
-                    App.LoadedLanguages.Add(id, name);
+                    App.RegisteredLanguages.Add(name, id);
+                    App.RegisteredLanguages.Add(id, name);
                     list.Add(name);
                 }
             }

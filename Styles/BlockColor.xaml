@@ -7,9 +7,9 @@
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="EventBlockColorBrush" Color="#FFAA00"/>
             <SolidColorBrush x:Key="ControlBlockColorBrush" Color="#FFC800"/>
-            <SolidColorBrush x:Key="TextValueBlockColorBrush" Color="#962020"/>
-            <SolidColorBrush x:Key="NumberValueBlockColorBrush" Color="#0060FF"/>
-            <SolidColorBrush x:Key="BooleanValueBlockColorBrush" Color="#78FF32"/>
+            <SolidColorBrush x:Key="ValueBlockTextColorBrush" Color="#962020"/>
+            <SolidColorBrush x:Key="ValueBlockNumberColorBrush" Color="#0060FF"/>
+            <SolidColorBrush x:Key="ValueBlockBooleanColorBrush" Color="#78FF32"/>
         </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>

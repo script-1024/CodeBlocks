@@ -55,8 +55,8 @@ namespace CodeBlocks
         public static string CurrentLanguage;
         public static string[] SupportedLanguagesByName;
 
-        public static readonly string Version = "Beta 1.0.7 Build 0515";
-        public static readonly Dictionary<string, string> LoadedLanguages = new();
+        public static readonly string Version = "Beta 1.0.7 Build 0516";
+        public static readonly Dictionary<string, string> RegisteredLanguages = new();
         public static readonly string Path = AppDomain.CurrentDomain.BaseDirectory;
 
         public delegate void LanguageChangedEventHandler();
@@ -69,9 +69,9 @@ namespace CodeBlocks
             {
                 // 优先使用电脑现有的语言
                 var id = System.Globalization.CultureInfo.InstalledUICulture.Name;
-                CurrentLanguage = LoadedLanguages.TryGetValue(id, out string value) ? value : "English";
+                CurrentLanguage = RegisteredLanguages.TryGetValue(id, out string value) ? value : "English";
             }
-            this.Localizer = new(LoadedLanguages[CurrentLanguage]);
+            this.Localizer = new(RegisteredLanguages[CurrentLanguage]);
             OnLanguageChanged?.Invoke();
         }
 
