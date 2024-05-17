@@ -41,12 +41,22 @@ namespace CodeBlocks.Core
             return bytes;
         }
 
-        private static long BytesToInteger(byte[] bytes, int index, int length)
+        private static long BytesToInteger(byte[] bytes, int index, int length, bool isBigEndian = false)
         {
             long result = 0;
-            for (int i=index, offset=0; i<bytes.Length && offset<length; i++, offset++)
+            if (isBigEndian)
             {
-                result |= (long)bytes[i] << (offset * 8);
+                for (int i = index, offset = length - 1; i < bytes.Length && offset >= 0; i++, offset--)
+                {
+                    result |= (long)bytes[i] << (offset * 8);
+                }
+            }
+            else
+            {
+                for (int i = index, offset = 0; i < bytes.Length && offset < length; i++, offset++)
+                {
+                    result |= (long)bytes[i] << (offset * 8);
+                }
             }
             return result;
         }
@@ -86,9 +96,9 @@ namespace CodeBlocks.Core
         public static byte[] ToBytes(this uint value, int length = 4) => IntegerToBytes(value, length);
         public static byte[] ToBytes(this ushort value, int length = 2) => IntegerToBytes(value, length);
 
-        public static long ToLong(this byte[] bytes, int index = 0, int length = 8) => BytesToInteger(bytes, index, length);
-        public static int ToInt(this byte[] bytes, int index = 0, int length = 4) => (int)BytesToInteger(bytes, index, length);
-        public static short ToShort(this byte[] bytes, int index = 0, int length = 2) => (short)BytesToInteger(bytes, index, length);
+        public static long ToLong(this byte[] bytes, int index = 0, int length = 8, bool isBigEndian = false) => BytesToInteger(bytes, index, length, isBigEndian);
+        public static int ToInt(this byte[] bytes, int index = 0, int length = 4, bool isBigEndian = false) => (int)BytesToInteger(bytes, index, length, isBigEndian);
+        public static short ToShort(this byte[] bytes, int index = 0, int length = 2, bool isBigEndian = false) => (short)BytesToInteger(bytes, index, length, isBigEndian);
 
         public static bool IsEqual(this BlockValueType type, BlockValueType other) => ((type & other) == other);
     }
