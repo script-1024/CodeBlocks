@@ -4,63 +4,168 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctrl="using:CodeBlocks.Controls">
-    
+
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="48"/>
-            <RowDefinition Height="240"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
 
         <StackPanel x:Name="TitleBar" Grid.Row="0" VerticalAlignment="Center" Orientation="Horizontal">
-            <BitmapIcon Margin="16,0,0,-8" UriSource="Assets\StoreLogo.png" Height="24"/>
+            <Viewbox Margin="16,0,0,-8" Width="24" Height="24">
+                <FontIcon Glyph="&#xEA86;"/>
+            </Viewbox>
+
             <TextBlock x:Name="TitleBar_Name" Margin="16,8,0,0" FontSize="14"/>
         </StackPanel>
 
-        <Border x:Name="CanvasBorder" Grid.Row="1" Margin="80,40,80,0" CornerRadius="10" BorderBrush="{ThemeResource FlatBorderColorBrush}" BorderThickness="1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="160"/>
-                </Grid.ColumnDefinitions>
+        <TeachingTip x:Name="IdTip" Grid.Row="1"
+                     PreferredPlacement="Auto"
+                     FontFamily="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
+        
+        <TeachingTip x:Name="EditorTip" Grid.Row="1"
+                     PreferredPlacement="Auto" IsLightDismissEnabled="True"
+                     FontFamily="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
 
-                <Canvas x:Name="DisplayCanvas" Grid.Column="0" Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}">
-                    <ctrl:CodeBlock x:Name="DemoBlock"/>
-                </Canvas>
-                <StackPanel Grid.Column="1" Height="{Binding ElementName=CanvasBorder, Path=ActualHeight}" Background="{ThemeResource FlatBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource FlatBorderColorBrush}" BorderThickness="1,0,0,0">
-                    <Button Tag="Export" Content="导出" Margin="16,16,0,0"/>
-                    <ComboBox SelectedIndex="0" Margin="16,8,0,0">
-                        <ComboBox.Items>
-                            <ComboBoxItem Content="选择模板" IsEnabled="False"/>
-                            <ComboBoxItem Content="事件"/>
-                            <ComboBoxItem Content="控制"/>
-                            <ComboBoxItem Content="流程"/>
-                        </ComboBox.Items>
-                    </ComboBox>
-                    <SplitButton x:Name="ColorButton" Margin="16,8,0,0" Padding="0" Height="32" HorizontalContentAlignment="Left">
-                        <Frame x:Name="CurrentColor" Background="{ThemeResource ControlBlockColorBrush}" Width="36" Height="{Binding ElementName=ColorButton, Path=ActualHeight}" Margin="0"/>
-                        <SplitButton.Flyout>
-                            <Flyout Placement="Bottom">
-                                <GridView ItemClick="GridView_ItemClick" IsItemClickEnabled="True">
-                                    <GridView.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <ItemsWrapGrid MaximumRowsOrColumns="3" Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </GridView.ItemsPanel>
-                                    <GridView.Resources>
-                                        <Style TargetType="Rectangle">
-                                            <Setter Property="Width" Value="32"/>
-                                            <Setter Property="Height" Value="32"/>
-                                            <Setter Property="RadiusX" Value="4"/>
-                                            <Setter Property="RadiusY" Value="4"/>
-                                        </Style>
-                                    </GridView.Resources>
-                                </GridView>
-                            </Flyout>
-                        </SplitButton.Flyout>
-                    </SplitButton>
+        <Grid x:Name="ContentGrid" Grid.Row="1" Margin="40,40,40,40">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50*"/>
+                <ColumnDefinition Width="50*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Default">
+                            <Style x:Key="FlatPanel" TargetType="StackPanel">
+                                <Setter Property="CornerRadius" Value="10"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Setter Property="BorderBrush" Value="{ThemeResource FlatBorderColorBrush}"/>
+                                <Setter Property="Background" Value="{ThemeResource FlatBackgroundFillColorSecondaryBrush}"/>
+                            </Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="CornerRadius" Value="5"/>
+                                <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
+                            </Style>
+                            <Style TargetType="Button">
+                                <Setter Property="CornerRadius" Value="5"/>
+                                <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC"/>
+                            </Style>
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+            </Grid.Resources>
+
+            <Grid x:Name="LeftGrid" Grid.Column="0" Margin="0,0,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="160"/>
+                </Grid.RowDefinitions>
+
+                <Border x:Name="CanvasBorder" Grid.Row="0" Margin="0,0,0,0" CornerRadius="10" BorderBrush="{ThemeResource FlatBorderColorBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="55"/>
+                        </Grid.RowDefinitions>
+
+                        <ScrollViewer x:Name="Scroller" Grid.Row="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+                            <Canvas x:Name="DisplayCanvas" Width="1200" Height="600" Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}">
+                                <ctrl:CodeBlock x:Name="DemoBlock"/>
+                            </Canvas>
+                        </ScrollViewer>
+
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Width="3000" CornerRadius="0" BorderThickness="0,1,0,0" Style="{StaticResource FlatPanel}">
+                            <Button Tag="Open" Content="开启" Margin="10,0,0,0" Click="OpenButton_Click"/>
+
+                            <Button Tag="Export" Content="导出" Margin="10,0,0,0" Click="ExportButton_Click"/>
+
+                            <ComboBox
+                                x:Name="BlockTypeComboBox"
+                                SelectedIndex="0" Margin="10,11,0,0"
+                                SelectionChanged="BlockTypeComboBox_SelectionChanged"
+                                FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC">
+                                
+                                <ComboBox.Items>
+                                    <ComboBoxItem Content="外型模板" IsEnabled="False"/>
+                                    <ComboBoxItem Content="事件" Tag="Event"/>
+                                    <ComboBoxItem Content="控制" Tag="Control"/>
+                                    <ComboBoxItem Content="操作" Tag="Action"/>
+                                </ComboBox.Items>
+                            </ComboBox>
+
+                            <SplitButton x:Name="ColorButton" Margin="10,0,0,0" Padding="0" Height="32" HorizontalContentAlignment="Left">
+                                <Frame x:Name="CurrentColor" Margin="0" Background="{ThemeResource ControlBlockColorBrush}"
+                                       Width="36" Height="{Binding ElementName=ColorButton, Path=ActualHeight}"/>
+                                
+                                <SplitButton.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <GridView ItemClick="ColorGridView_ItemClick" IsItemClickEnabled="True">
+                                            <GridView.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <ItemsWrapGrid MaximumRowsOrColumns="3" Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </GridView.ItemsPanel>
+                                            <GridView.Resources>
+                                                <Style TargetType="Rectangle">
+                                                    <Setter Property="Width" Value="32"/>
+                                                    <Setter Property="Height" Value="32"/>
+                                                    <Setter Property="RadiusX" Value="4"/>
+                                                    <Setter Property="RadiusY" Value="4"/>
+                                                </Style>
+                                            </GridView.Resources>
+                                        </GridView>
+                                    </Flyout>
+                                </SplitButton.Flyout>
+                            </SplitButton>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Row="1" Margin="0,20,0,0" Style="{StaticResource FlatPanel}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" Text="方块标识符: " Margin="20,20,0,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="BlockIDTextBox" Grid.Column="1" Margin="20,20,20,0" IsSpellCheckEnabled="False" BeforeTextChanging="BlockIDTextBox_BeforeTextChanging" TextChanged="BlockIDTextBox_TextChanged"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Text="接口: " Margin="20,20,20,20" Grid.Column="0"/>
+                        <CheckBox x:Name="LSlotCheckBox" Content="左" Grid.Column="1" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
+                        <CheckBox x:Name="TSlotCheckBox" Content="上" Grid.Column="2" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
+                        <CheckBox x:Name="RSlotCheckBox" Content="右" Grid.Column="3" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
+                        <CheckBox x:Name="BSlotCheckBox" Content="下" Grid.Column="4" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
+                    </Grid>
                 </StackPanel>
             </Grid>
-        </Border>
+
+            <ScrollViewer x:Name="RightScroller" Grid.Column="1" Margin="10,0,0,0">
+                <StackPanel>
+                    <Expander BorderBrush="{ThemeResource FlatBorderColorBrush}" CornerRadius="10" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <FontIcon Glyph="&#xF2B7;"/>
+                                <TextBlock Margin="16,0,0,0" Text="翻译字典"/>
+                            </StackPanel>
+                        </Expander.Header>
+                        <Expander.Content>
+                            <ctrl:DictionaryEditBox x:Name="TranslationsDictoraryEditor"/>
+                        </Expander.Content>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Window>
