@@ -13,9 +13,12 @@ public enum DialogVariant
 
 public class MessageDialog
 {
+    private string activatedMsgId = "";
     private readonly ContentDialog dialog = new();
+
     public bool IsDialogActivated { get; private set; } = false;
     public XamlRoot XamlRoot { get => dialog.XamlRoot; set => dialog.XamlRoot = value; }
+
     private string GetLocalizedString(string key) => (Application.Current as App).Localizer.GetString(key);
     
     private void SetDialogButtons(DialogVariant variant)
@@ -62,8 +65,13 @@ public class MessageDialog
 
     public async Task<ContentDialogResult> ShowAsync(string msgId, DialogVariant variant = DialogVariant.Confirm)
     {
+        // 阻止重复呼叫
+        if (IsDialogActivated && activatedMsgId == msgId) return ContentDialogResult.None;
+
         // 若对话框处于激活状态 等待其退出
         while (IsDialogActivated) await Task.Delay(200);
+
+        activatedMsgId = msgId;
         IsDialogActivated = true;
         
         dialog.Title = GetLocalizedString($"Messages.{msgId}.Title");
@@ -74,6 +82,7 @@ public class MessageDialog
 
         var result = await dialog.ShowAsync();
         IsDialogActivated = false;
+        activatedMsgId = "";
         return result;
     }
 }
