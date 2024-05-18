@@ -178,8 +178,8 @@ internal static class FileOperations
         {
             int keyLength = data.ToShort(bytesIndex); bytesIndex += 2;
             int valLength = data.ToShort(bytesIndex); bytesIndex += 2;
-            var key = data.ToUnicodeString(bytesIndex, keyLength * 2); bytesIndex += 2;
-            var val = data.ToUnicodeString(bytesIndex, valLength * 2); bytesIndex += 2;
+            var key = data.ToUnicodeString(bytesIndex, keyLength * 2); bytesIndex += keyLength * 2;
+            var val = data.ToUnicodeString(bytesIndex, valLength * 2); bytesIndex += valLength * 2;
             dict.Add(key, val);
         }
         return bytesIndex;
@@ -190,7 +190,7 @@ internal static class FileOperations
         for (int c = 0; c < dictCount; c++)
         {
             int keyLength = data.ToShort(bytesIndex); bytesIndex += 2;
-            var key = data.ToUnicodeString(bytesIndex, keyLength * 2); bytesIndex += 2;
+            var key = data.ToUnicodeString(bytesIndex, keyLength * 2); bytesIndex += keyLength * 2;
             var val = data[bytesIndex++];
             dict.Add(key, val);
         }

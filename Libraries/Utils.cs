@@ -72,9 +72,8 @@ namespace CodeBlocks.Core
             if (bytesCount == 0 || bytes.Length == 0) return string.Empty;
             if (bytesIndex < 0 || bytesIndex >= bytes.Length) throw new ArgumentOutOfRangeException(paramName: nameof(bytesIndex), message: "byte[].ToUnicodeString(): An invalid index was specified.");
 
-            // UTF-16 每两个字节为一字符
             // 若呼叫时不想指定特定长度或设置了非法值，则将 count 设为字串长度
-            if (bytesCount < 0) bytesCount = (bytes.Length - bytesIndex) / 2;
+            if (bytesCount < 0) bytesCount = bytes.Length - bytesIndex;
             return Encoding.Unicode.GetString(bytes, bytesIndex, bytesCount);
         }
 
