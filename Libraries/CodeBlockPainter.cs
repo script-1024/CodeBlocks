@@ -13,7 +13,7 @@ namespace CodeBlocks.Core
     {
         public BlockType Type;
         public string Content;
-        public int Variant;
+        public byte Variant;
         public int Slots;
         public (int Width, int Height) Size;
         public static readonly BlockMetaData Null = new() { Type = 0, Content = "", Variant = 0, Slots = 0, Size = (0, 0) };

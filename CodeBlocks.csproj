@@ -31,6 +31,12 @@
     <Content Include="Fonts\HarmonyOS_Sans_B.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Fonts\HarmonyOS_Sans_L.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fonts\HarmonyOS_Sans_M.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Languages\en-US.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -110,6 +116,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Blocks\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Controls\DictionaryEditBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\BlockColor.xaml">
