@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CodeBlocks.Core;
 using Microsoft.UI.Xaml;
@@ -29,6 +31,7 @@ public class BlockCreatedEventArgs : EventArgs
 
 public class CodeBlock : BlockControl
 {
+    private string id;
     private string key;
     private BlockMetaData metaData = BlockMetaData.Null;
 
@@ -48,7 +51,7 @@ public class CodeBlock : BlockControl
 
     public CodeBlock(BlockCreatedEventHandler createdEventHandler, BlockCreatedEventArgs args = null) : base()
     {
-        app.OnLanguageChanged += LocalizeBlock;
+        app.OnLanguageChanged += RefreshBlockText;
         app.OnLanguageChanged += LocalizeMenu;
         InitializeMenu();
 
@@ -56,6 +59,7 @@ public class CodeBlock : BlockControl
         OnBlockCreated?.Invoke(this, args);
 
         Canvas.SetLeft(BlockDescription, SlotHeight + SlotWidth);
+        RefreshBlockText();
     }
 
     public CodeBlock() : this(null, null) { }
@@ -97,11 +101,11 @@ public class CodeBlock : BlockControl
         LocalizeMenu();
     }
 
-    private void LocalizeBlock()
+    private void SetText(string text)
     {
-        if (string.IsNullOrEmpty(key)) return;
-        var rawText = app.Localizer.GetString(key);
-        var parts = rawText.Split('{', '}');
+        if (string.IsNullOrEmpty(text)) return;
+
+        var parts = text.Split('{', '}');
         int slots = 0, maxWidth = 0, textWidth;
         ValueIndex.Clear();
         BlockDescription.Inlines.Clear();
@@ -123,11 +127,45 @@ public class CodeBlock : BlockControl
 
         if (slots > 0) metaData.Slots = slots;
 
+        // 调整方块宽度
         (int w, int h) size = Size;
         size.w = maxWidth + SlotWidth * 2;
         size.w += (metaData.Variant & 0b_0001) == 0 ? SlotHeight : 0;
         size.w += (metaData.Variant & 0b_0100) == 0 ? SlotHeight : 0;
         Resize(size);
+    }
+
+    // 旧方法，从全局翻译文件取得结果
+    private void LocalizeBlock()
+    {
+        if (string.IsNullOrEmpty(key)) return;
+        var text = app.Localizer.GetString(key);
+        SetText(text);
+    }
+
+    // 新方法，从自带的翻译字典取得结果
+    public virtual void RefreshBlockText()
+    {
+        string langId = App.RegisteredLanguages[App.CurrentLanguage];
+        if (TranslationsDict != null)
+        {
+            string text;
+            if (TranslationsDict.TryGetValue(langId, out text))
+            {
+                SetText(text);
+                return;
+            }
+            else if (TranslationsDict.Count > 0)
+            {
+                text = TranslationsDict.First().Value;
+                SetText(text);
+                return;
+            }
+        }
+
+        // fallback
+        // LocalizeBlock();
+        SetText(id);
     }
 
     private void LocalizeMenu()
@@ -148,6 +186,9 @@ public class CodeBlock : BlockControl
         // 确保方块高度合法
         var minHeight = (metaData.Slots > 0) ? SlotWidth * (metaData.Slots * 3) + SlotHeight : 58;
         if (size.h < minHeight) size.h = minHeight;
+
+        // 确保方块宽度合法
+        if (size.w < 100) size.w = 100;
 
         metaData.Size = size;
         painter.MetaData = metaData;
@@ -172,16 +213,25 @@ public class CodeBlock : BlockControl
         }
     }
 
+    public string Identifier
+    {
+        get => id;
+        set { id = value; RefreshBlockText(); } 
+    }
+
     public string TranslationKey
     {
         get => key;
-        set { if (value == key) return; key = value; LocalizeBlock(); }
+        set { key = value; LocalizeBlock(); }
     }
+
+    public Dictionary<string, string> TranslationsDict;
 
     public bool HasBeenRemoved = false;
     #endregion
 
     #region "Methods"
+
     public int GetRelatedBlockCount()
     {
         int count = 0;
@@ -189,7 +239,6 @@ public class CodeBlock : BlockControl
         if (BottomBlock != null) count++;
         return count;
     }
-
     public virtual CodeBlock Copy(BlockCreatedEventArgs args)
     {
         var block = new CodeBlock(this.OnBlockCreated, args)
@@ -216,7 +265,6 @@ public class CodeBlock : BlockControl
         Canvas.SetTop(block.BlockDescription, Canvas.GetTop(BlockDescription));
         return block;
     }
-
     public void SetData(BlockProperties key, object value)
     {
         BlockMetaData data = this.MetaData;
@@ -229,7 +277,7 @@ public class CodeBlock : BlockControl
                 data.Content = (string)value;
                 break;
             case BlockProperties.Variant:
-                data.Variant = (int)value;
+                data.Variant = (byte)value;
                 break;
             case BlockProperties.Slots:
                 data.Slots = (int)value;
@@ -248,12 +296,10 @@ public class CodeBlock : BlockControl
         }
         this.MetaData = data;
     }
-
     public void CopyDataFrom(CodeBlock other)
     {
         this.MetaData = other.metaData;
     }
-
     public void PopUp()
     {
         if (this.ParentBlock is null) return;
@@ -266,7 +312,6 @@ public class CodeBlock : BlockControl
         this.ParentBlock = null;
         this.DependentSlot = 0;
     }
-
     public void SetZIndex(int value, bool isRelative = false)
     {
         if (isRelative) value = checked(value + Canvas.GetZIndex(this));
@@ -306,14 +351,12 @@ public class CodeBlock : BlockControl
             block?.SetPosition(x + Size.Width - SlotHeight, y + i * 48);
         }
     }
-
     public void MoveToBlock(CodeBlock other, double dx = 0, double dy = 0)
     {
         double x = Canvas.GetLeft(other) + dx;
         double y = Canvas.GetTop(other) + dy;
         SetPosition(x, y);
     }
-
     public void MoveToBack(CodeBlock replacer, bool replace = true)
     {
         // 定位到队列的尾端
@@ -328,9 +371,7 @@ public class CodeBlock : BlockControl
         }
         this.MoveToBlock(endBlock, 0, endBlock.Size.Height - SlotHeight);
     }
-
     public void ReturnToPreviousPosition() { if (moved) SetPosition(prevPosition.x, prevPosition.y); }
-
     public async Task PlayScaleAnimation(double from = 1.0, double to = 0.0, int delay = 5)
     {
         if (from == to) return;
@@ -350,7 +391,6 @@ public class CodeBlock : BlockControl
             await Task.Delay(delay);
         }
     }
-
     public async Task RemoveAsync(Canvas rootCanvas, bool deleteAll = true)
     {
         if (rootCanvas == null || HasBeenRemoved) return;
@@ -380,7 +420,6 @@ public class CodeBlock : BlockControl
             else block?.PopUp();
         }
     }
-
     public (int x, int y, double dx, double dy) GetRelativeQuadrant(CodeBlock targetBlock)
     {
         //  x,  y 定义: 右下为正，左上为负，中间为零
@@ -406,11 +445,14 @@ public class CodeBlock : BlockControl
 
         return rq;
     }
+    
     #endregion
 
     #region "Static"
+
     public static readonly int SlotWidth = 16;
     public static readonly int SlotHeight = 10;
+
     #endregion
 }
 
@@ -425,7 +467,6 @@ public enum BlockProperties
     Width     = 6,
     Height    = 7
 }
-
 public enum BlockValueType
 {
     None          = 0b_0000_0000, // 0x00 不指定类型
