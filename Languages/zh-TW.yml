@@ -28,7 +28,7 @@ Settings:
 MenuBar:
     File:
         Title: 檔案
-        ShowBlockEditor: 開啟 [程式塊編輯器]
+        ShowBlockEditor: 程式塊編輯器
         Exit: 離開
 
 Messages:
@@ -48,6 +48,31 @@ Messages:
         Title: 關閉視窗
         Description: 尚未保存檔案，是否繼續？
 
+    FileFormatIsTooOld:
+        Title: 版本不兼容
+        Description: 檔案版本過低，部分資料可能無法正確載入。
+
+    AppVersionIsTooOldToOpenFile:
+        Title: 版本不兼容
+        Description: 檔案指定的目標版本高於當前應用程式，部分資料可能無法正確載入，建議檢查軟體更新。如果你認為這是個錯誤，請聯絡開發人員。
+
+    ReadFileFailed:
+        UnknownException:
+            Title: 無法讀取檔案
+            Description: 出現未知錯誤，這通常不該發生，請聯絡開發人員協助處理。
+        FileNotAvailable:
+            Title: 無法讀取檔案
+            Description: 檔案可能已被佔用或指定的路徑無法存取，請稍後再試。
+        FileNotSupport:
+            Title: 無法讀取檔案
+            Description: 此檔案類型不受支援。
+        FileVerificationFailed:
+            Title: 無法讀取檔案
+            Description: 檢驗失敗，檔案可能已損壞或遭到篡改。
+        FileDataIncorrectOrMissing:
+            Title: 無法讀取檔案
+            Description: 資料錯誤，檔案可能已損壞或遭到篡改。
+
 ContentMenu:
     CodeBlock:
         Copy: 複製
@@ -57,6 +82,30 @@ ContentMenu:
 
 BlockEditor:
     Title: 程式塊編輯器
+    Open: 開啟
+    Export: 導出
+    BlockType:
+        Tip: 外觀類型
+        Event: 事件
+        Control: 控制
+        Action: 操作
+    BlockData:
+        ID: 方塊標識符
+        Slots:
+            Label: 可用接口
+            Left: 左
+            Top: 上
+            Right: 右
+            Bottom: 下
+    TranslationsDictionary:
+        Header: 翻譯字典
+        Buttons:
+            Add: 新增
+            Delete: 刪除
+            Clear: 清空
+        ColumnTitles:
+            ID: 語言ID
+            Text: 文字
 
 Blocks:
     Demo: 文字樣式
@@ -64,7 +113,7 @@ Blocks:
     ValueBlock:
         Text: 
             Tip: 文字
-            PlaceholderText: 空文本
+            PlaceholderText: 空字串
         Number:
             Tip: 數值
             PlaceholderText: 0

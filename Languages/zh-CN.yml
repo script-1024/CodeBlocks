@@ -28,7 +28,7 @@ Settings:
 MenuBar:
     File:
         Title: 文件
-        ShowBlockEditor: 开启 [代码块编辑器]
+        ShowBlockEditor: 代码块编辑器
         Exit: 离开
 
 Messages:
@@ -48,6 +48,31 @@ Messages:
         Title: 关闭窗口
         Description: 尚未保存文件，是否继续？
 
+    FileFormatIsTooOld:
+        Title: 版本不兼容
+        Description: 文件版本过低，部分数据可能无法正确加载。
+
+    AppVersionIsTooOldToOpenFile:
+        Title: 版本不兼容
+        Description: 文件指定的目标版本高于当前应用，部分数据可能无法正确加载，建议检查软件更新。如果你认为这是个错误，请联系开发人员。
+
+    ReadFileFailed:
+        UnknownException:
+            Title: 无法读取文件
+            Description: 出现未知错误，这通常不该发生，请联系开发人员协助处理。
+        FileNotAvailable:
+            Title: 无法读取文件
+            Description: 文件可能已被占用或指定的路径不可访问，请稍后再试。
+        FileNotSupport:
+            Title: 无法读取文件
+            Description: 此文件的类型不受支持。
+        FileVerificationFailed:
+            Title: 无法读取文件
+            Description: 校验失败，文件可能已损坏或遭到篡改。
+        FileDataIncorrectOrMissing:
+            Title: 无法读取文件
+            Description: 数据错误，文件可能已损坏或遭到篡改。
+
 ContentMenu:
     CodeBlock:
         Copy: 复制
@@ -57,6 +82,30 @@ ContentMenu:
 
 BlockEditor:
     Title: 代码块编辑器
+    Open: 开启
+    Export: 导出
+    BlockType:
+        Tip: 外观类型
+        Event: 事件
+        Control: 控制
+        Action: 操作
+    BlockData:
+        ID: 方块标识符
+        Slots:
+            Label: 可用接口
+            Left: 左
+            Top: 上
+            Right: 右
+            Bottom: 下
+    TranslationsDictionary:
+        Header: 翻译字典
+        Buttons:
+            Add: 新增
+            Delete: 删除
+            Clear: 清空
+        ColumnTitles:
+            ID: 语言ID
+            Text: 文本
 
 Blocks:
     Demo: 文字样式

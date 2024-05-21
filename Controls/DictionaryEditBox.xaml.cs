@@ -1,41 +1,47 @@
 ﻿using System;
-using System.Collections.Generic;
+using Windows.System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Controls;
 
 public sealed partial class DictionaryEditBox : UserControl
 {
-    private bool disabledFocusChange = false;
     public delegate void UpdateDictionaryEventHandler();
     public event UpdateDictionaryEventHandler UpdateDictionary;
+
+    private readonly App app = Application.Current as App;
+    private string GetLocalizedString(string key) => app.Localizer.GetString(key);
 
     public DictionaryEditBox()
     {
         this.InitializeComponent();
-        AddNewItem();
-        DictionaryView.SelectionChanged += async (s, e) =>
-        {
-            if (disabledFocusChange) return;
-            if (e == null || e.AddedItems == null || e.AddedItems[0] == null) return;
+        app.OnLanguageChanged += GetLocalized;
+        GetLocalized();
 
-            await Task.Delay(10);  // 稍等一下，确保控件已被载入
-            var panel = e.AddedItems[0] as StackPanel;
-            if (panel.Children.Count > 0) panel.Children[0].Focus(FocusState.Programmatic);
-        };
+        AddNewItem();
 
         this.LostFocus += (_, _) => UpdateDictionary?.Invoke();
     }
 
-    #region "UserInput"
+    private void GetLocalized()
+    {
+        foreach (var obj in CommandBar.PrimaryCommands)
+        {
+            if (obj is AppBarButton btn) btn.Label = GetLocalizedString($"BlockEditor.TranslationsDictionary.Buttons.{btn.Tag}");
+        }
+        LangLabel.Text = GetLocalizedString("BlockEditor.TranslationsDictionary.ColumnTitles.ID");
+        TextLabel.Text = GetLocalizedString("BlockEditor.TranslationsDictionary.ColumnTitles.Text");
+    }
+
+    #region "User Input Event"
 
     private void AddButton_Click(object sender, RoutedEventArgs e) => AddNewItem();
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
-        disabledFocusChange = true; // 删除控件时暫时不要修改焦点
         if (DictionaryView.SelectedItems.Count != 0)
         {
             foreach (var item in DictionaryView.SelectedItems)
@@ -43,7 +49,6 @@ public sealed partial class DictionaryEditBox : UserControl
                 DictionaryView.Items.Remove(item);
             }
         }
-        disabledFocusChange = false;
         if (DictionaryView.Items.Count == 0)
         {
             await Task.Delay(10);
@@ -52,39 +57,45 @@ public sealed partial class DictionaryEditBox : UserControl
     }
     private async void ClearButton_Click(object sender, RoutedEventArgs e)
     {
-        disabledFocusChange = true; // 删除控件时暫时不要修改焦点
         DictionaryView.Items.Clear();
-        disabledFocusChange = false;
         await Task.Delay(10);
         AddNewItem();
     }
 
     #endregion
 
+    private void FocusTo(int gridIndex, int txtboxIndex = 0)
+    {
+        if (gridIndex < 0) gridIndex = 0;
+        if (gridIndex >= DictionaryView.Items.Count) gridIndex = DictionaryView.Items.Count - 1;
+        var grid = DictionaryView.Items[gridIndex] as Grid;
+        grid.Children[txtboxIndex].Focus(FocusState.Keyboard);
+        DictionaryView.SelectedItem = grid;
+    }
+
     private void AddNewItem(string key = "", string val = "")
     {
-        var stackPanel = new StackPanel()
-        {
-            Orientation = Orientation.Horizontal,
-            Padding = new(10),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-        };
+        var grid = new Grid() { Padding = new(10) };
+        var col_0 = new ColumnDefinition() { Width = new(80) };
+        var col_1 = new ColumnDefinition();
+        grid.ColumnDefinitions.Add(col_0);
+        grid.ColumnDefinitions.Add(col_1);
 
         var keyTxtBox = new TextBox()
         {
             Text = key,
-            Margin = new(5, 0, 0, 0),
+            Margin = new(0, 0, 0, 0),
             CornerRadius = new(0),
-            IsSpellCheckEnabled = false
+            IsSpellCheckEnabled = false,
+            TextWrapping = TextWrapping.Wrap /* 设置这个属性以隐藏 “X” 清除按键 */
         };
 
         var valTxtBox = new TextBox()
         {
             Text = val,
-            Margin = new(5, 0, 0, 0),
+            Margin = new(10, 0, 0, 0),
             CornerRadius = new(0),
-            IsSpellCheckEnabled = false,
-            HorizontalAlignment = HorizontalAlignment.Stretch
+            IsSpellCheckEnabled = false
         };
 
         keyTxtBox.AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
@@ -92,63 +103,95 @@ public sealed partial class DictionaryEditBox : UserControl
 
         void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var item = (sender as TextBox).Parent as StackPanel;
+            var item = (sender as TextBox).Parent as Grid;
             DictionaryView.SelectedItem = item;
         }
 
-        keyTxtBox.AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyPress), true);
-        valTxtBox.AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyPress), true);
+        keyTxtBox.AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), true);
+        valTxtBox.AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), true);
 
-        void OnKeyPress(object sender, KeyRoutedEventArgs e)
+        void OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
             var txtbox = sender as TextBox;
-            var stPanel = txtbox.Parent as StackPanel;
-            int index = DictionaryView.Items.IndexOf(stPanel);
+            var parentGrid = txtbox.Parent as Grid;
+            int index = DictionaryView.Items.IndexOf(parentGrid);
+            int cursorPosition = txtbox.SelectionStart;
+            int textLength = txtbox.Text.Length;
             if (txtbox == keyTxtBox)
-            {
-                if (e.Key == Windows.System.VirtualKey.Left)
+                switch (e.Key)
                 {
-                    if (index > 0) DictionaryView.SelectedIndex = index - 1;
+                    case VirtualKey.Left:
+                        if (cursorPosition == 0 && index > 0) FocusTo(index - 1, 1);
+                        return;
+
+                    case VirtualKey.Right:
+                        if (cursorPosition == textLength) valTxtBox.Focus(FocusState.Keyboard);
+                        return;
+
+                    case VirtualKey.Up:
+                        FocusTo(index - 1, 0);
+                        return;
+
+                    case VirtualKey.Down:
+                        FocusTo(index + 1, 0);
+                        return;
+
+                    case VirtualKey.Back:
+                        if (keyTxtBox.Text.Length > 0 || index == 0) return;
+                        DeleteButton_Click(null, null);
+                        FocusTo(index - 1, 1);
+                        return;
+
+                    case VirtualKey.Enter:
+                        valTxtBox.Focus(FocusState.Keyboard);
+                        return;
+
+                    default:
+                        return;
                 }
-                if (e.Key == Windows.System.VirtualKey.Right)
-                {
-                    valTxtBox.Focus(FocusState.Keyboard);
-                }
-                if (e.Key == Windows.System.VirtualKey.Back && keyTxtBox.Text.Length == 0)
-                {
-                    DeleteButton_Click(null, null);
-                    if (index > 0) DictionaryView.SelectedIndex = index - 1;
-                }
-                if (e.Key == Windows.System.VirtualKey.Enter)
-                {
-                    valTxtBox.Focus(FocusState.Keyboard);
-                }
-            }
+
             if (txtbox == valTxtBox)
-            {
-                if (e.Key == Windows.System.VirtualKey.Left)
+                switch (e.Key)
                 {
-                    keyTxtBox.Focus(FocusState.Keyboard);
+                    case VirtualKey.Left:
+                        if (cursorPosition == 0) keyTxtBox.Focus(FocusState.Keyboard);
+                        return;
+
+                    case VirtualKey.Right:
+                        if (cursorPosition == textLength && parentGrid != DictionaryView.Items[^1] as Grid) FocusTo(index + 1, 0);
+                        return;
+
+                    case VirtualKey.Up:
+                        FocusTo(index - 1, 1);
+                        return;
+
+                    case VirtualKey.Down:
+                        FocusTo(index + 1, 1);
+                        return;
+
+                    case VirtualKey.Back:
+                        if (cursorPosition == 0) keyTxtBox.Focus(FocusState.Keyboard);
+                        return;
+
+                    case VirtualKey.Enter:
+                        if (parentGrid != DictionaryView.Items[^1] as Grid) { FocusTo(index + 1, 0); return; }
+                        AddNewItem();
+                        return;
+
+                    default:
+                        return;
                 }
-                if (e.Key == Windows.System.VirtualKey.Right)
-                {
-                    if (stPanel != DictionaryView.Items[^1] as StackPanel) DictionaryView.SelectedIndex = index + 1;
-                }
-                if (e.Key == Windows.System.VirtualKey.Back && valTxtBox.Text.Length == 0)
-                {
-                    keyTxtBox.Focus(FocusState.Keyboard);
-                }
-                if (e.Key == Windows.System.VirtualKey.Enter)
-                {
-                    if (stPanel == DictionaryView.Items[^1] as StackPanel) AddNewItem();
-                    DictionaryView.SelectedIndex = index + 1;
-                }
-            }
         }
 
-        stackPanel.Children.Add(keyTxtBox);
-        stackPanel.Children.Add(valTxtBox);
-        DictionaryView.Items.Add(stackPanel);
+        grid.Children.Add(keyTxtBox);
+        grid.Children.Add(valTxtBox);
+
+        Grid.SetColumn(keyTxtBox, 0);
+        Grid.SetColumn(valTxtBox, 1);
+
+        DictionaryView.Items.Add(grid);
+        DictionaryView.SelectedItem = grid;
+        keyTxtBox.Loaded += (_, _) => keyTxtBox.Focus(FocusState.Programmatic); // 将焦点设置到新添加的第一个文字框上
     }
 
     public Dictionary<string, string> GetDictionary(Dictionary<string, string> dict = null)
@@ -156,11 +199,11 @@ public sealed partial class DictionaryEditBox : UserControl
         dict ??= new(DictionaryView.Items.Count);
         foreach (var item in DictionaryView.Items)
         {
-            var stackPanel = item as StackPanel;
-            string key = (stackPanel.Children[0] as TextBox).Text;
-            string val = (stackPanel.Children[1] as TextBox).Text;
+            var grid = item as Grid;
+            string key = (grid.Children[0] as TextBox).Text;
+            string val = (grid.Children[1] as TextBox).Text;
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(val)) continue;
-            if (!dict.ContainsKey(key)) dict.Add(key, val);
+            dict.TryAdd(key, val);
         }
         return dict;
     }

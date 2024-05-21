@@ -57,8 +57,8 @@ namespace CodeBlocks
             ColorButton_ReloadItems();
 
             // 本地化翻译
-            app.OnLanguageChanged += GetLocalize;
-            GetLocalize();
+            app.OnLanguageChanged += GetLocalized;
+            GetLocalized();
 
             // 设置Tip的目标控件
             IdTip.Target = BlockIDTextBox;
@@ -74,7 +74,7 @@ namespace CodeBlocks
         public void Close(bool forceQuit)
         {
             if (forceQuit) this.Closed -= Window_Closed; // 取消订阅 Closed 事件
-            app.OnLanguageChanged -= GetLocalize; // 取消订阅翻译事件
+            app.OnLanguageChanged -= GetLocalized;       // 取消订阅翻译事件
             this.Close(); // 关闭窗口。如果 forceQuit == false，则此函数的表现和无参数 Close() 方法一致
         }
         private async Task<ContentDialogResult> FileNotSavedDialogShowAsync()
@@ -107,9 +107,27 @@ namespace CodeBlocks
         #region "Translate"
 
         private string GetLocalizedString(string key) => app.Localizer.GetString(key);
-        private void GetLocalize()
+        private void GetLocalized()
         {
             TitleBar_Name.Text = GetLocalizedString("BlockEditor.Title");
+            OpenButton.Content = GetLocalizedString("BlockEditor.Open");
+            ExportButton.Content = GetLocalizedString("BlockEditor.Export");
+
+            foreach (var obj in BlockTypeComboBox.Items)
+            {
+                if (obj is ComboBoxItem item) item.Content = GetLocalizedString($"BlockEditor.BlockType.{item.Tag}");
+            }
+            // 切换语言需要更新当前选择项
+            BlockTypeComboBox.SelectedIndex = -1;
+
+            BlockIDLabel.Text = GetLocalizedString("BlockEditor.BlockData.ID");
+            SlotsLabel.Text = GetLocalizedString("BlockEditor.BlockData.Slots.Label");
+            LSlotCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Slots.Left");
+            TSlotCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Slots.Top");
+            RSlotCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Slots.Right");
+            BSlotCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Slots.Bottom");
+
+            TranslationsDictEditorHeader.Text = GetLocalizedString($"BlockEditor.TranslationsDictionary.Header");
         }
 
         #endregion
@@ -207,6 +225,7 @@ namespace CodeBlocks
         private async void ExportButton_Click(object sender, RoutedEventArgs e) => await ExportFileAsync();
         private void BlockTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (BlockTypeComboBox.SelectedIndex < 0) { BlockTypeComboBox.SelectedIndex = (int)DemoBlock.MetaData.Type; return; }
             var selection = BlockTypeComboBox.SelectedItem as ComboBoxItem;
             if (selection is null) return;
 
@@ -254,42 +273,38 @@ namespace CodeBlocks
         }
         private void CheckBox_Click(object sender, RoutedEventArgs e) => UpdateBlockVariant();
 
-
         private void BlockIDTextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
             int invalidCharCount = args.NewText.Count(c => !IsValidNamingCharacter(c));
-            if (invalidCharCount > 0) args.Cancel = true;
-            else args.Cancel = false;
+            if (invalidCharCount > 0) { args.Cancel = true; SetTipState(IdTip, isOpen: true, 0x2, "非法字符"); }
+            else { args.Cancel = false; SetTipState(IdTip, isOpen: false, 0x2); }
         }
 
         private void BlockIDTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             isFileSaved = false;
             string id = BlockIDTextBox.Text;
-            int colonCount = id.Count(c => c == ':');
-            if (colonCount > 1)
+            int checkResult = CheckIsNamespaceValid(id);
+            if (checkResult > 1)
             {
-                SetTipState(IdTip, isOpen: true, 0x1, "无效的命名空间", "\':\' 只可出现一次");
+                string title = "无效的名称空间";
+                string subtitle = "";
+
+                if (checkResult == 2)
+                {
+                    title = "方块ID不可为空";
+                    DemoBlock.TranslationKey = "Blocks.Demo";
+                }
+                else if (checkResult == 3) subtitle = "\':\' 只可出现一次";
+                else if (checkResult == 4) subtitle = "格式错误";
+
+                SetTipState(IdTip, isOpen: true, 0x1, title, subtitle);
                 return;
             }
             else
             {
-                if (string.IsNullOrWhiteSpace(id))
-                {
-                    if (DemoBlock.TranslationsDict is null) DemoBlock.TranslationKey = "Blocks.Demo";
-                    SetTipState(IdTip, isOpen: true, 0x2, "方块ID不可为空");
-                    return;
-                }
-                else SetTipState(IdTip, isOpen: false, 0x2);
-
-                int? invalidNamingCount =
-                    id.Split(':')?.Count(string.IsNullOrEmpty) +
-                    id.Split('.')?.Count(string.IsNullOrEmpty);
-
-                if (invalidNamingCount is not null && invalidNamingCount > 0) { SetTipState(IdTip, isOpen: true, 0x1, "无效的命名空间"); return; }
-                else SetTipState(IdTip, isOpen: false, 0x1);
-
-                if (colonCount == 0) id = $"Custom:{id}";
+                SetTipState(IdTip, isOpen: false, 0x1);
+                if (checkResult == 0) id = $"custom:{id}";
             }
 
             DemoBlock.Identifier = id;
@@ -297,6 +312,8 @@ namespace CodeBlocks
         }
 
         #endregion
+
+        #region "Methods"
 
         private async Task<TaskResult> ExportFileAsync()
         {
@@ -379,6 +396,17 @@ namespace CodeBlocks
                 TranslationsDictoraryEditor.LoadDictionary(cbd.TranslationsDict);
                 DemoBlock.TranslationsDict = cbd.TranslationsDict;
                 DemoBlock.RefreshBlockText();
+
+                BlockIDTextBox.Text = cbd.Identifier;
+                BlockTypeComboBox.SelectedIndex = (int)cbd.BlockType;
+                CurrentColor.Background = new SolidColorBrush(DemoBlock.BlockColor);
+
+                int variant = cbd.Variant;
+                LSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_0001);
+                TSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_0010);
+                RSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_0100);
+                BSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_1000);
+                isFileSaved = true;
             }
 
             Canvas.SetLeft(DemoBlock.BlockDescription, 24);
@@ -404,7 +432,6 @@ namespace CodeBlocks
         private bool IsValidNamingCharacter(char c)
         {
             return
-                (c >= 'A' && c <= 'Z') ||
                 (c >= 'a' && c <= 'z') ||
                 (c >= '0' && c <= '9') ||
                 (c == '.' || c == ':' || c == '-' || c == '_');
@@ -412,15 +439,48 @@ namespace CodeBlocks
 
         private void SetTipState(TeachingTip target, bool isOpen, uint errorCode, string title = "", string subTitle = "")
         {
-            target.IsOpen = isOpen;
             if (isOpen)
             {
+                target.IsOpen = true;
                 target.Title = title;
                 target.Subtitle = subTitle;
                 invalidDataCount |= errorCode;
             }
-            else invalidDataCount &= (~errorCode);
+            else
+            {
+                invalidDataCount &= (~errorCode);
+                if (invalidDataCount == 0) target.IsOpen = false;
+            }
         }
+
+        public static int CheckIsNamespaceValid(string str)
+        {
+            // return value:
+            // 0  --> Success (0 colon)
+            // 1  --> Success (1 colon)
+            // 2  --> Empty string
+            // 3  --> Exists more than one colon
+            // 4  --> Invalid format
+
+            if (string.IsNullOrEmpty(str)) return 2;
+
+            int colonCount = 0, lastPeriodIndex = -1;
+            for (int i=0; i<str.Length; i++)
+            {
+                if (str[i] == '.') lastPeriodIndex = i;
+                else if (str[i] == ':')
+                {
+                    colonCount++;
+                    if (colonCount > 1) return 3;
+                    if (i == 0 || i == str.Length - 1) return 4;
+                    if (lastPeriodIndex != -1 && lastPeriodIndex < i) return 4;
+                }
+            }
+
+            return colonCount;
+        }
+
+        #endregion
     }
 
     public struct TaskResult

@@ -17,10 +17,18 @@ Settings:
         Title: Language
         Description: Change the language that this app displays in.
 
+    ThemeOptions:
+        Title: Theme
+        Description: Change window theme.
+        Options:
+            FollowSystem: Follow system
+            Light: Light
+            Dark: Dark
+
 MenuBar:
     File:
         Title: File
-        ShowBlockEditor: Open [Block Editor]
+        ShowBlockEditor: Block Editor
         Exit: Exit
 
 Messages:
@@ -40,12 +48,64 @@ Messages:
         Title: Window Closing
         Description: File not saved. Do you want to continue?
 
+    FileFormatIsTooOld:
+        Title: Version incompatible
+        Description: The file version is too low and some data may not be loaded correctly.
+
+    AppVersionIsTooOldToOpenFile:
+        Title: Version incompatible
+        Description: The target version specified by the file is higher than the current application. Some data may not be loaded correctly. It is recommended to check for software updates. If you think this is a bug, please contact the developers.
+
+    ReadFileFailed:
+        UnknownException:
+            Title: Unable to read file
+            Description: An unknown error occurred. It should not happen. Please contact the developers for assistance.
+        FileNotAvailable:
+            Title: Unable to read file
+            Description: This file may be occupied or the specified path is inaccessible. Please try again later.
+        FileNotSupport:
+            Title: Unable to read file
+            Description: This file type is not supported.
+        FileVerificationFailed:
+            Title: Unable to read file
+            Description: Verification failed. This file may be corrupted or tampered with.
+        FileDataIncorrectOrMissing:
+            Title: Unable to read file
+            Description: The data is incorrect. This file may be corrupted or tampered with.
+
 ContentMenu:
     CodeBlock:
         Copy: Copy
         Delete: Delete
         DeleteThis: Delete This
         DeleteAll: Delete All Attached Blocks
+
+BlockEditor:
+    Title: Block Editor
+    Open: Open
+    Export: Export
+    BlockType:
+        Tip: Type
+        Event: Event
+        Control: Control
+        Action: Action
+    BlockData:
+        ID: Block ID
+        Slots:
+            Label: Slots
+            Left: Left
+            Top: Top
+            Right: Right
+            Bottom: Down
+    TranslationsDictionary:
+        Header: Translations
+        Buttons:
+            Add: Add
+            Delete: Delete
+            Clear: Clear
+        ColumnTitles:
+            ID: Lang ID
+            Text: Text
 
 Blocks:
     ValueBlock:

@@ -33,17 +33,25 @@
             </ResourceDictionary>
         </Grid.Resources>
 
-        <CommandBar Grid.Row="0" DefaultLabelPosition="Right" Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}">
-            <AppBarButton x:Name="AddButton" Icon="Add" Label="Add" Click="AddButton_Click"/>
-            <AppBarButton x:Name="DeleteButton" Icon="Delete" Label="Delete" Click="DeleteButton_Click"/>
-            <AppBarButton x:Name="ClearButton" Icon="Clear" Label="Clear" Click="ClearButton_Click"/>
+        <CommandBar x:Name="CommandBar" Grid.Row="0" DefaultLabelPosition="Right" Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}">
+            <AppBarButton Icon="Add" Tag="Add" Click="AddButton_Click"/>
+            <AppBarButton Icon="Delete" Tag="Delete" Click="DeleteButton_Click"/>
+            <AppBarButton Icon="Clear" Tag="Clear" Click="ClearButton_Click"/>
         </CommandBar>
 
         <StackPanel Grid.Row="1" Margin="24,8,24,24">
-            <StackPanel Orientation="Horizontal" Background="{ThemeResource FlatBackgroundFillColorSecondaryBrush}" BorderBrush="{ThemeResource FlatBorderColorBrush}" BorderThickness="1,1,1,0" CornerRadius="5,5,0,0">
-                <TextBlock x:Name="LabelLang" Text="ID" Margin="36,0,0,0" VerticalAlignment="Center"/>
-                <TextBlock x:Name="LabelText" Text="Text" Margin="50,0,0,0" VerticalAlignment="Center"/>
-            </StackPanel>
+            <Grid Background="{ThemeResource FlatBackgroundFillColorSecondaryBrush}"
+                  BorderBrush="{ThemeResource FlatBorderColorBrush}"
+                  BorderThickness="1,1,1,0" CornerRadius="5,5,0,0">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock x:Name="LangLabel" Grid.Column="0" Margin="30,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TextLabel" Grid.Column="1" VerticalAlignment="Center"/>
+            </Grid>
 
             <ListView x:Name="DictionaryView" MaxHeight="302" SelectionMode="Extended"
                       Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}"

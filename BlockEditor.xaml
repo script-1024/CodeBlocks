@@ -76,9 +76,8 @@
                         </ScrollViewer>
 
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Width="3000" CornerRadius="0" BorderThickness="0,1,0,0" Style="{StaticResource FlatPanel}">
-                            <Button Tag="Open" Content="开启" Margin="10,0,0,0" Click="OpenButton_Click"/>
-
-                            <Button Tag="Export" Content="导出" Margin="10,0,0,0" Click="ExportButton_Click"/>
+                            <Button x:Name="OpenButton" Tag="Open" Margin="10,0,0,0" Click="OpenButton_Click"/>
+                            <Button x:Name="ExportButton" Tag="Export" Margin="10,0,0,0" Click="ExportButton_Click"/>
 
                             <ComboBox
                                 x:Name="BlockTypeComboBox"
@@ -87,10 +86,10 @@
                                 FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC">
                                 
                                 <ComboBox.Items>
-                                    <ComboBoxItem Content="外型模板" IsEnabled="False"/>
-                                    <ComboBoxItem Content="事件" Tag="Event"/>
-                                    <ComboBoxItem Content="控制" Tag="Control"/>
-                                    <ComboBoxItem Content="操作" Tag="Action"/>
+                                    <ComboBoxItem Tag="Tip" IsEnabled="False"/>
+                                    <ComboBoxItem Tag="Event"/>
+                                    <ComboBoxItem Tag="Control"/>
+                                    <ComboBoxItem Tag="Action"/>
                                 </ComboBox.Items>
                             </ComboBox>
 
@@ -129,41 +128,46 @@
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
                         
-                        <TextBlock Grid.Column="0" Text="方块标识符: " Margin="20,20,0,0" VerticalAlignment="Center"/>
-                        <TextBox x:Name="BlockIDTextBox" Grid.Column="1" Margin="20,20,20,0" IsSpellCheckEnabled="False" BeforeTextChanging="BlockIDTextBox_BeforeTextChanging" TextChanged="BlockIDTextBox_TextChanged"/>
+                        <TextBlock x:Name="BlockIDLabel" Grid.Column="0" Margin="20,20,0,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="BlockIDTextBox" Grid.Column="1" Margin="20,20,20,0" PlaceholderText="namespace:path.to.foo.bar" IsSpellCheckEnabled="False" BeforeTextChanging="BlockIDTextBox_BeforeTextChanging" TextChanged="BlockIDTextBox_TextChanged"/>
                     </Grid>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
                         </Grid.ColumnDefinitions>
                         
-                        <TextBlock Text="接口: " Margin="20,20,20,20" Grid.Column="0"/>
-                        <CheckBox x:Name="LSlotCheckBox" Content="左" Grid.Column="1" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
-                        <CheckBox x:Name="TSlotCheckBox" Content="上" Grid.Column="2" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
-                        <CheckBox x:Name="RSlotCheckBox" Content="右" Grid.Column="3" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
-                        <CheckBox x:Name="BSlotCheckBox" Content="下" Grid.Column="4" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
+                        <TextBlock x:Name="SlotsLabel" Margin="20,20,20,20" Grid.Column="0"/>
+                        <CheckBox x:Name="LSlotCheckBox" Grid.Column="1" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
+                        <CheckBox x:Name="TSlotCheckBox" Grid.Column="2" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
+                        <CheckBox x:Name="RSlotCheckBox" Grid.Column="3" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
+                        <CheckBox x:Name="BSlotCheckBox" Grid.Column="4" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
                     </Grid>
                 </StackPanel>
             </Grid>
 
             <ScrollViewer x:Name="RightScroller" Grid.Column="1" Margin="10,0,0,0">
                 <StackPanel>
-                    <Expander BorderBrush="{ThemeResource FlatBorderColorBrush}" CornerRadius="10" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <Expander BorderBrush="{ThemeResource FlatBorderColorBrush}"
+                              CornerRadius="10" Padding="0" HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Stretch" IsExpanded="True">
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <FontIcon Glyph="&#xF2B7;"/>
-                                <TextBlock Margin="16,0,0,0" Text="翻译字典"/>
+                                <TextBlock x:Name="TranslationsDictEditorHeader" Margin="16,0,0,0" Text="翻译字典"/>
                             </StackPanel>
                         </Expander.Header>
                         <Expander.Content>
                             <ctrl:DictionaryEditBox x:Name="TranslationsDictoraryEditor"/>
                         </Expander.Content>
                     </Expander>
+
+                    <TextBox Margin="0,20,0,0" Header="Code"
+                             AcceptsReturn="True" IsSpellCheckEnabled="False"/>
                 </StackPanel>
             </ScrollViewer>
         </Grid>
