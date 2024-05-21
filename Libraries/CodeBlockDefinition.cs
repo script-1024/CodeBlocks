@@ -174,6 +174,7 @@ internal static class FileOperations
 
     public static int GetDictionaryFromData(byte[] data, int bytesIndex, int dictCount, Dictionary<string, string> dict)
     {
+        dict.Clear();
         for (int c = 0; c < dictCount; c++)
         {
             int keyLength = data.ToShort(bytesIndex); bytesIndex += 2;
@@ -187,6 +188,7 @@ internal static class FileOperations
 
     public static int GetDictionaryFromData(byte[] data, int bytesIndex, int dictCount, Dictionary<string, byte> dict)
     {
+        dict.Clear();
         for (int c = 0; c < dictCount; c++)
         {
             int keyLength = data.ToShort(bytesIndex); bytesIndex += 2;

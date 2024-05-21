@@ -100,6 +100,7 @@ namespace CodeBlocks.Core
         public static short ToShort(this byte[] bytes, int index = 0, int length = 2, bool isBigEndian = false) => (short)BytesToInteger(bytes, index, length, isBigEndian);
 
         public static bool IsEqual(this BlockValueType type, BlockValueType other) => ((type & other) == other);
+        public static bool HasSpecificBits(this int self, int bits) => ((self & bits) == bits);
     }
 
     public static class ColorHelper

@@ -6,7 +6,7 @@ namespace CodeBlocks.Core
 {
     public enum BlockType
     {
-        Undefined = 0, Value = 1, Event = 2, Control = 3, Action = 4
+        Undefined = 0, Event = 1, Control = 2, Action = 3, Value = 4
     }
 
     public struct BlockMetaData
