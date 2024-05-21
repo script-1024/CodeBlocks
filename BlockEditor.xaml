@@ -62,7 +62,8 @@
                     <RowDefinition Height="160"/>
                 </Grid.RowDefinitions>
 
-                <Border x:Name="CanvasBorder" Grid.Row="0" Margin="0,0,0,0" CornerRadius="10" BorderBrush="{ThemeResource FlatBorderColorBrush}" BorderThickness="1">
+                <Border x:Name="CanvasBorder" Grid.Row="0" Margin="0,0,0,0"
+                        CornerRadius="10" BorderThickness="1" BorderBrush="{ThemeResource FlatBorderColorBrush}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
@@ -129,7 +130,10 @@
                         </Grid.ColumnDefinitions>
                         
                         <TextBlock x:Name="BlockIDLabel" Grid.Column="0" Margin="20,20,0,0" VerticalAlignment="Center"/>
-                        <TextBox x:Name="BlockIDTextBox" Grid.Column="1" Margin="20,20,20,0" PlaceholderText="namespace:path.to.foo.bar" IsSpellCheckEnabled="False" BeforeTextChanging="BlockIDTextBox_BeforeTextChanging" TextChanged="BlockIDTextBox_TextChanged"/>
+                        <TextBox x:Name="BlockIDTextBox" Grid.Column="1" Margin="20,20,20,0"
+                                 PlaceholderText="namespace:path.to.foo.bar" IsSpellCheckEnabled="False"
+                                 BeforeTextChanging="BlockIDTextBox_BeforeTextChanging"
+                                 TextChanged="BlockIDTextBox_TextChanged"/>
                     </Grid>
 
                     <Grid>
@@ -158,7 +162,7 @@
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <FontIcon Glyph="&#xF2B7;"/>
-                                <TextBlock x:Name="TranslationsDictEditorHeader" Margin="16,0,0,0" Text="翻译字典"/>
+                                <TextBlock x:Name="TranslationsDictEditorHeader" Margin="16,0,0,0"/>
                             </StackPanel>
                         </Expander.Header>
                         <Expander.Content>
