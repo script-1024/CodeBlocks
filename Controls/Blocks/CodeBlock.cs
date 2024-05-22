@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using CodeBlocks.Core;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Documents;
-using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
+using CodeBlocks.Core;
 
 namespace CodeBlocks.Controls;
 public class BlockCreatedEventArgs : EventArgs
@@ -181,14 +181,14 @@ public class CodeBlock : BlockControl
         }
     }
 
-    private void Resize((int w, int h) size)
+    private void Resize(Core.Size size)
     {
         // 确保方块高度合法
         var minHeight = (metaData.Slots > 0) ? SlotWidth * (metaData.Slots * 3) + SlotHeight : 58;
-        if (size.h < minHeight) size.h = minHeight;
+        if (size.Height < minHeight) size.Height = minHeight;
 
         // 确保方块宽度合法
-        if (size.w < 100) size.w = 100;
+        if (size.Width < 100) size.Width = 100;
 
         metaData.Size = size;
         painter.MetaData = metaData;
@@ -197,7 +197,7 @@ public class CodeBlock : BlockControl
     }
 
     #region "Properties"
-    public (int Width, int Height) Size
+    public Core.Size Size
     {
         get => metaData.Size;
         set => Resize(value);
@@ -283,7 +283,7 @@ public class CodeBlock : BlockControl
                 data.Slots = (int)value;
                 break;
             case BlockProperties.Size:
-                data.Size = ((int w, int h))value;
+                data.Size = (Core.Size)value;
                 break;
             case BlockProperties.Width:
                 data.Size.Width = (int)value;
