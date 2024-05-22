@@ -14,6 +14,7 @@ namespace CodeBlocks.Pages
         private bool canCanvasScroll = false;
         private readonly MessageDialog dialog = new();
         private readonly App app = Application.Current as App;
+        private readonly BlockDragger dragger;
         private string GetLocalizedString(string key) => app.Localizer.GetString(key);
 
         public bool Edited { get; private set; } = false;
@@ -24,11 +25,7 @@ namespace CodeBlocks.Pages
         public object FocusBlock
         {
             get => focusblock;
-            set
-            {
-                focusblock = value;
-                OnBlockFocusChanged?.Invoke();
-            }
+            set { focusblock = value; OnBlockFocusChanged?.Invoke(); }
         }
 
         public CodingPage()
@@ -36,6 +33,8 @@ namespace CodeBlocks.Pages
             InitializeComponent();
             InitializePage();
             this.Loaded += Page_Loaded;
+            dragger = new(BlockCanvas, ghostBlock);
+            InitializeBlockDragger();
         }
 
         private void InitializePage()
@@ -43,6 +42,8 @@ namespace CodeBlocks.Pages
             UICanvas.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             UICanvas.ManipulationDelta += UICanvas_ManipulationDelta;
             this.OnBlockFocusChanged += CodingPage_OnBlockFocusChanged;
+
+            #region "Test Only"
 
             var hButton = new Button() { Content = "New Hat Block" };
             var pButton = new Button() { Content = "New Process Block" };
@@ -75,9 +76,29 @@ namespace CodeBlocks.Pages
                 Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
             };
 
+            #endregion
+
             ZoomIn.PointerPressed += (_, _) => ZoomChange(zoomIn: true);
             ZoomOut.PointerPressed += (_, _) => ZoomChange(zoomIn: false);
         }
+        private void InitializeBlockDragger()
+        {
+            dragger.GetTrashCanPosition = (_, _) => new Point()
+            {
+                X = Canvas.GetLeft(TrashCan) + TrashCan.ActualWidth / 2,
+                Y = Canvas.GetTop(TrashCan) + TrashCan.ActualHeight / 2
+            };
+
+            dragger.GetCenterPosition = (self, size) => new Point()
+            {
+                X = (self.X * Scroller.ZoomFactor - Scroller.HorizontalOffset) + (size.Width * Scroller.ZoomFactor) / 2,
+                Y = (self.Y * Scroller.ZoomFactor - Scroller.VerticalOffset) + (size.Height * Scroller.ZoomFactor) / 2
+            };
+
+            dragger.RemoveBlock = CodeBlock_RemoveAsync;
+        }
+
+        #region "Events"
 
         private void ZoomChange(bool zoomIn = true)
         {
@@ -102,12 +123,10 @@ namespace CodeBlocks.Pages
 
             Scroller.ChangeView(dx, dy, newFactor);
         }
-
         private void CodingPage_OnBlockFocusChanged()
         {
             
         }
-
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             dialog.XamlRoot = this.XamlRoot;
@@ -120,7 +139,6 @@ namespace CodeBlocks.Pages
             Scroller.PointerPressed += (_, _) => canCanvasScroll = (FocusBlock == null);
             Scroller.PointerReleased += (_, _) => canCanvasScroll = false;
         }
-
         private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Canvas.SetLeft(ZoomIn, UICanvas.ActualWidth - 90);
@@ -133,7 +151,6 @@ namespace CodeBlocks.Pages
             Scroller.Width = UICanvas.ActualWidth;
             if (UICanvas.ActualHeight > 12) Scroller.Height = UICanvas.ActualHeight - 12;
         }
-
         private void UICanvas_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (canCanvasScroll)
@@ -143,7 +160,6 @@ namespace CodeBlocks.Pages
                 Scroller.ChangeView(newX, newY, null, true);
             }
         }
-
         private void BlockCreated(CodeBlock block, BlockCreatedEventArgs e)
         {
             e ??= BlockCreatedEventArgs.Null;
@@ -159,23 +175,10 @@ namespace CodeBlocks.Pages
             block.ManipulationDelta += CodeBlock_ManipulationDelta;
             block.ManipulationCompleted += CodeBlock_ManipulationCompleted;
         }
-
-        private void GhostBlock_Reset(bool hide = true)
-        {
-            if (hide) ghostBlock.Visibility = Visibility.Collapsed;
-
-            // 复原暫时移动的块
-            if (ghostBlock.ParentBlock != null)
-            {
-                ghostBlock.ParentBlock.ReturnToPreviousPosition();
-                ghostBlock.ParentBlock = null;
-            }
-        }
-
         private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             Edited = true;
-            GhostBlock_Reset();
+            dragger.ResetGhostBlock();
             var thisBlock = sender as CodeBlock;
             thisBlock.SetZIndex(+5, true);
             ghostBlock.CopyDataFrom(thisBlock);
@@ -209,7 +212,6 @@ namespace CodeBlocks.Pages
 
             thisBlock.DependentSlot = 0;
         }
-
         private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (FocusBlock is null) return;
@@ -228,9 +230,8 @@ namespace CodeBlocks.Pages
             thisBlock.SetPosition(newX, newY);
 
             // 碰撞检查
-            CodeBlock_CheckCollisions(thisBlock);
+            dragger.CheckCollisions(thisBlock);
         }
-
         private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             FocusBlock = null;
@@ -242,7 +243,7 @@ namespace CodeBlocks.Pages
             {
                 // 移动到示意矩形的位置
                 thisBlock.MoveToBlock(ghostBlock);
-                GhostBlock_Reset();
+                dragger.ResetGhostBlock();
 
                 // 移动其他子块
                 var parentBlock = thisBlock.ParentBlock;
@@ -263,121 +264,13 @@ namespace CodeBlocks.Pages
             }
         }
 
-        private void CodeBlock_CheckCollisions(CodeBlock thisBlock)
-        {
-            var self = new Point(Canvas.GetLeft(thisBlock), Canvas.GetTop(thisBlock));
-            var selfW = thisBlock.Size.Width;
-            var selfH = thisBlock.Size.Height;
-            bool isAligned = false;
-
-            // 判断是否和垃圾桶重叠
-            {
-                // 计算中心点距离
-                var trashCanCenter = new Point()
-                {
-                    X = Canvas.GetLeft(TrashCan) + TrashCan.ActualWidth / 2,
-                    Y = Canvas.GetTop(TrashCan) + TrashCan.ActualHeight / 2
-                };
-
-                var selfCenter = new Point()
-                {
-                    X = (self.X * Scroller.ZoomFactor - Scroller.HorizontalOffset) + (selfW * Scroller.ZoomFactor) / 2,
-                    Y = (self.Y * Scroller.ZoomFactor - Scroller.VerticalOffset) + (selfH * Scroller.ZoomFactor) / 2
-                };
-
-                var dx = trashCanCenter.X - selfCenter.X;
-                var dy = trashCanCenter.Y - selfCenter.Y;
-
-                var distance = Math.Sqrt(dx * dx + dy * dy);
-
-                // 距离小于 取较大值(宽, 高) 的三分之一 --> 方块已和垃圾桶重叠;
-                var threshold = Utils.GetBigger(selfW, selfH) / 3;
-                if (distance < threshold)
-                {
-                    CodeBlock_RemoveAsync(thisBlock);
-                    return;
-                }
-            }
-
-            // 碰撞检查
-            foreach (var uiElement in BlockCanvas.Children)
-            {
-                if (uiElement == ghostBlock || uiElement == thisBlock) continue; // 跳过，仅判断除自身以外的块
-
-                var target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
-                if (uiElement is CodeBlock targetBlock)
-                {
-                    // 获取自身的相对方位
-                    var (x, y, dx, dy) = thisBlock.GetRelativeQuadrant(targetBlock);
-
-                    // 在四个角落 不和目标相邻 --> 跳过
-                    if (x * y != 0)
-                    {
-                        GhostBlock_Reset();
-                        continue;
-                    }
-
-                    // 取得方块资料值
-                    int selfVar = thisBlock.MetaData.Variant;
-                    int targetVar = targetBlock.MetaData.Variant;
-
-                    // 在左侧时不可吸附 --> 跳过
-                    if (x == -1) continue;
-
-                    // 在上方时不可吸附 --> 跳过
-                    if (y == -1) continue;
-
-                    // 在右侧时不可吸附 --> 跳过
-                    if (x == 1 && (!Utils.GetFlag(targetVar, 2) || !Utils.GetFlag(selfVar, 0))) continue;
-
-                    // 在下方时不可吸附 --> 跳过
-                    if (y == 1 && (!Utils.GetFlag(targetVar, 3) || !Utils.GetFlag(selfVar, 1))) continue;
-
-                    // 开始尝试自动吸附
-                    int threshold = 30;
-                    int slot = (int)((self.Y - target.Y) / 48);
-                    if (dx > 0 && (dx - selfW + CodeBlock.SlotHeight) < threshold)
-                    {
-                        self.X -= (dx - selfW + CodeBlock.SlotHeight) * x;
-                        self.Y = target.Y + slot * 48;
-                        thisBlock.DependentSlot = slot+1;
-                        isAligned = true;
-                    }
-                    else if (dy > 0 && (dy - selfH + CodeBlock.SlotHeight) < threshold)
-                    {
-                        self.Y -= (dy - selfH + CodeBlock.SlotHeight) * y;
-                        self.X = target.X;
-                        thisBlock.DependentSlot = -1;
-                        isAligned = true;
-                    }
-
-                    if (isAligned)
-                    {
-                        thisBlock.ParentBlock = targetBlock;
-                        ghostBlock.SetPosition(self.X, self.Y);
-                        ghostBlock.Visibility = Visibility.Visible;
-                        if (thisBlock.DependentSlot == -1)
-                        {
-                            GhostBlock_Reset(hide: false);
-                            ghostBlock.ParentBlock = targetBlock.BottomBlock;
-                            targetBlock.BottomBlock?.MoveToBack(ghostBlock, false);
-                        }
-                        return;
-                    }
-                    else
-                    {
-                        thisBlock.ParentBlock = null;
-                        GhostBlock_Reset();
-                    }
-                }
-            }
-        }
+        #endregion
 
         private async Task CodeBlock_RemoveAsync(CodeBlock thisBlock)
         {
             FocusBlock = null;
             int count = thisBlock.GetRelatedBlockCount();
-            if (ghostBlock.Visibility == Visibility.Visible) GhostBlock_Reset();
+            if (ghostBlock.Visibility == Visibility.Visible) dragger.ResetGhostBlock();
             if (count > 0)
             {
                 var result = await dialog.ShowAsync("RemovingMultipleBlocks", DialogVariant.YesCancel);
