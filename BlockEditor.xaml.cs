@@ -143,8 +143,9 @@ namespace CodeBlocks
             gridView.Items.Clear();
 
             resourceDict = resourceDict.ThemeDictionaries["Default"] as ResourceDictionary;
-            foreach (SolidColorBrush brush in resourceDict.Values)
+            foreach (var obj in resourceDict.Values)
             {
+                if (obj is not SolidColorBrush brush) continue;
                 var rect = new Rectangle();
                 var color = brush.Color;
                 rect.Fill = new SolidColorBrush(color);
@@ -212,7 +213,6 @@ namespace CodeBlocks
             openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
 
             // 文件类型
-            string fileDescription = GetLocalizedString("Misc.CBDFile");
             openPicker.FileTypeFilter.Add(".cbd");
 
             StorageFile file = await openPicker.PickSingleFileAsync();
@@ -226,8 +226,7 @@ namespace CodeBlocks
         private void BlockTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (BlockTypeComboBox.SelectedIndex < 0) { BlockTypeComboBox.SelectedIndex = (int)DemoBlock.MetaData.Type; return; }
-            var selection = BlockTypeComboBox.SelectedItem as ComboBoxItem;
-            if (selection is null) return;
+            if (BlockTypeComboBox.SelectedItem is not ComboBoxItem selection) return;
 
             BlockType type;
             switch (selection.Tag?.ToString())
@@ -264,8 +263,7 @@ namespace CodeBlocks
             var color = ((SolidColorBrush)rect.Fill).Color;
 
             CurrentColor.Background = new SolidColorBrush(color);
-            DemoBlock.BlockColor = color;
-            cbd.ColorHex = color.ToInt();
+            SaveBlockColor();
             isFileSaved = false;
 
             // Delay required to circumvent GridView bug: https://github.com/microsoft/microsoft-ui-xaml/issues/6350
@@ -315,6 +313,13 @@ namespace CodeBlocks
 
         #region "Methods"
 
+        private void SaveBlockColor()
+        {
+            var color = (CurrentColor.Background as SolidColorBrush).Color;
+            DemoBlock.BlockColor = color;
+            cbd.ColorHex = color.ToInt();
+        }
+
         private async Task<TaskResult> ExportFileAsync()
         {
             if (hasSaveDialogShown) return new TaskResult(failed: true, "ExistsSaveDialog");
@@ -343,9 +348,11 @@ namespace CodeBlocks
             savePicker.FileTypeChoices.Add(fileDescription, [".cbd"]);
 
             // 保存数据
-            cbd.Variant = (byte)DemoBlock.MetaData.Variant;
+            cbd.Variant = DemoBlock.MetaData.Variant;
             if (cbd.BlockType == BlockType.Undefined) cbd.BlockType = BlockType.Action;
             TranslationsDictoraryEditor.GetDictionary(cbd.TranslationsDict);
+            cbd.McfCode = CodeTextBox.Text;
+            SaveBlockColor();
 
             hasSaveDialogShown = true;
             StorageFile file = await savePicker.PickSaveFileAsync();
@@ -406,6 +413,8 @@ namespace CodeBlocks
                 TSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_0010);
                 RSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_0100);
                 BSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_1000);
+
+                CodeTextBox.Text = cbd.McfCode;
                 isFileSaved = true;
             }
 
@@ -429,14 +438,6 @@ namespace CodeBlocks
             cbd.Variant = variant;
         }
 
-        private bool IsValidNamingCharacter(char c)
-        {
-            return
-                (c >= 'a' && c <= 'z') ||
-                (c >= '0' && c <= '9') ||
-                (c == '.' || c == ':' || c == '-' || c == '_');
-        }
-
         private void SetTipState(TeachingTip target, bool isOpen, uint errorCode, string title = "", string subTitle = "")
         {
             if (isOpen)
@@ -451,6 +452,14 @@ namespace CodeBlocks
                 invalidDataCount &= (~errorCode);
                 if (invalidDataCount == 0) target.IsOpen = false;
             }
+        }
+
+        private static bool IsValidNamingCharacter(char c)
+        {
+            return
+                (c >= 'a' && c <= 'z') ||
+                (c >= '0' && c <= '9') ||
+                (c == '.' || c == ':' || c == '-' || c == '_');
         }
 
         public static int CheckIsNamespaceValid(string str)

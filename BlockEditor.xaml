@@ -170,7 +170,7 @@
                         </Expander.Content>
                     </Expander>
 
-                    <TextBox Margin="0,20,0,0" Header="Code"
+                    <TextBox x:Name="CodeTextBox" Margin="0,20,0,0" Header="Code"
                              AcceptsReturn="True" IsSpellCheckEnabled="False"/>
                 </StackPanel>
             </ScrollViewer>
