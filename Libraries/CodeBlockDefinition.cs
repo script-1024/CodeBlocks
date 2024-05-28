@@ -80,7 +80,7 @@ public sealed class CodeBlockDefinition
         // 读取文本  UTF-16字符每个占2字节
         Identifier = metaData.ToUnicodeString(index, lengthIdentifier * 2); index += lengthIdentifier * 2;
         if (Identifier.Length != lengthIdentifier) return Failed("FileDataIncorrectOrMissing");
-        McfCode = metaData.ToUnicodeString(index, lengthCode); index += lengthCode * 2;
+        McfCode = metaData.ToUnicodeString(index, lengthCode * 2); index += lengthCode * 2;
         if (McfCode.Length != lengthCode) return Failed("FileDataIncorrectOrMissing");
 
         // 读取字典数据
@@ -141,7 +141,7 @@ internal static class FileOperations
     public static byte GetCheckDigit(byte[] data, int startIndex = 0, int endIndex = 7)
     {
         byte result = 0, offset = 0;
-        if (startIndex >= endIndex || startIndex < 0 || endIndex > data.Length) throw new ArgumentOutOfRangeException();
+        if (startIndex >= endIndex || startIndex < 0 || endIndex > data.Length) throw new ArgumentOutOfRangeException(null, "Specified index out of range");
         for (int i = startIndex; i < data.Length && offset < endIndex - startIndex; i++, offset++)
         {
             result ^= (byte)(data[i] ^ offset);
