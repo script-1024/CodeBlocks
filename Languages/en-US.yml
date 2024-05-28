@@ -106,6 +106,8 @@ BlockEditor:
         ColumnTitles:
             ID: Lang ID
             Text: Text
+    Tips:
+        ExistInvalidKeys: Exists invalid key value pairs
 
 Blocks:
     ValueBlock:

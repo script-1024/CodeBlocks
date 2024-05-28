@@ -13,8 +13,6 @@ public sealed class CodeBlockDefinition
     public string FilePath { get; private set; }
     public bool Success { get; private set; } = true;
     public ushort Version { get; private set; } = BlockEditor.CurrentCBDFormat;
-    public Dictionary<string, string> TranslationsDict { get; private set; } = new();
-    public Dictionary<string, byte> SlotsTypeDict { get; private set; } = new();
 
     // 可变属性
     public string McfCode { get; set; } = "";
@@ -22,6 +20,8 @@ public sealed class CodeBlockDefinition
     public byte Variant { get; set; } = 0b_0000;
     public int ColorHex { get; set; } = 0xFFFFFF;
     public BlockType BlockType { get; set; } = BlockType.Undefined;
+    public Dictionary<string, string> TranslationsDict { get; set; } = new();
+    public Dictionary<string, byte> SlotsTypeDict { get; set; } = new();
 
     #endregion
 

@@ -106,6 +106,8 @@ BlockEditor:
         ColumnTitles:
             ID: 語言ID
             Text: 文字
+    Tips:
+        ExistInvalidKeys: 存在無效鍵值
 
 Blocks:
     Demo: 文字樣式

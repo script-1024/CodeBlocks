@@ -21,10 +21,10 @@
                             <Setter Property="Background" Value="{ThemeResource FlatBackgroundFillColorSecondaryBrush}"/>
                         </Style>
                         <Style TargetType="TextBox">
-                            <Setter Property="CornerRadius" Value="5"/>
+                            <Setter Property="CornerRadius" Value="0"/>
                             <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
                         </Style>
-                        <Style TargetType="Button">
+                        <Style TargetType="AppBarButton">
                             <Setter Property="CornerRadius" Value="5"/>
                             <Setter Property="FontFamily" Value="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC"/>
                         </Style>
@@ -52,6 +52,10 @@
                 <TextBlock x:Name="LangLabel" Grid.Column="0" Margin="30,0,0,0" VerticalAlignment="Center"/>
                 <TextBlock x:Name="TextLabel" Grid.Column="1" VerticalAlignment="Center"/>
             </Grid>
+
+            <TeachingTip x:Name="Tip"
+                         PreferredPlacement="Top" PlacementMargin="24"
+                         FontFamily="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
 
             <ListView x:Name="DictionaryView" MaxHeight="302" SelectionMode="Extended"
                       Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}"
