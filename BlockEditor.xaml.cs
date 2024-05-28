@@ -163,9 +163,11 @@ namespace CodeBlocks
             Scroller_BackToCenter();
             LoadBlock();
 
-            TranslationsDictoraryEditor.UpdateDictionary += () => {
-                DemoBlock.TranslationsDict = TranslationsDictoraryEditor.GetDictionary(cbd.TranslationsDict);
+            TranslationsDictoraryEditor.DictionaryUpdated += () => {
+                var dict = TranslationsDictoraryEditor.Content;
+                DemoBlock.TranslationsDict = dict;
                 DemoBlock.RefreshBlockText();
+                cbd.TranslationsDict = dict;
             };
         }
         private void AppWindow_SizeChanged(object sender, AppWindowChangedEventArgs args)
@@ -350,7 +352,6 @@ namespace CodeBlocks
             // 保存数据
             cbd.Variant = DemoBlock.MetaData.Variant;
             if (cbd.BlockType == BlockType.Undefined) cbd.BlockType = BlockType.Action;
-            TranslationsDictoraryEditor.GetDictionary(cbd.TranslationsDict);
             cbd.McfCode = CodeTextBox.Text;
             SaveBlockColor();
 

@@ -10,8 +10,11 @@ namespace CodeBlocks.Controls;
 
 public sealed partial class DictionaryEditBox : UserControl
 {
-    public delegate void UpdateDictionaryEventHandler();
-    public event UpdateDictionaryEventHandler UpdateDictionary;
+    public delegate void DictionaryUpdatedEventHandler();
+    public event DictionaryUpdatedEventHandler DictionaryUpdated;
+
+    // 隐藏基底类型的 Content 属性: DictionaryEditBox 不是容器也不支持承载内容控件
+    public new Dictionary<string, string> Content { get; private set; } = new();
 
     private readonly App app = Application.Current as App;
     private string GetLocalizedString(string key) => app.Localizer.GetString(key);
@@ -23,8 +26,7 @@ public sealed partial class DictionaryEditBox : UserControl
         GetLocalized();
 
         AddNewItem();
-
-        this.LostFocus += (_, _) => UpdateDictionary?.Invoke();
+        Tip.Target = DictionaryView;
     }
 
     private void GetLocalized()
@@ -35,6 +37,7 @@ public sealed partial class DictionaryEditBox : UserControl
         }
         LangLabel.Text = GetLocalizedString("BlockEditor.TranslationsDictionary.ColumnTitles.ID");
         TextLabel.Text = GetLocalizedString("BlockEditor.TranslationsDictionary.ColumnTitles.Text");
+        Tip.Title = GetLocalizedString("BlockEditor.Tips.ExistInvalidKeys");
     }
 
     #region "User Input Event"
@@ -54,12 +57,19 @@ public sealed partial class DictionaryEditBox : UserControl
             await Task.Delay(10);
             AddNewItem();
         }
+
+        // 字典更新事件
+        BeforeDictionaryUpdate();
     }
     private async void ClearButton_Click(object sender, RoutedEventArgs e)
     {
         DictionaryView.Items.Clear();
         await Task.Delay(10);
+        Tip.IsOpen = false;
         AddNewItem();
+
+        // 字典更新事件
+        BeforeDictionaryUpdate();
     }
 
     #endregion
@@ -85,7 +95,6 @@ public sealed partial class DictionaryEditBox : UserControl
         {
             Text = key,
             Margin = new(0, 0, 0, 0),
-            CornerRadius = new(0),
             IsSpellCheckEnabled = false,
             TextWrapping = TextWrapping.Wrap /* 设置这个属性以隐藏 “X” 清除按键 */
         };
@@ -94,7 +103,6 @@ public sealed partial class DictionaryEditBox : UserControl
         {
             Text = val,
             Margin = new(10, 0, 0, 0),
-            CornerRadius = new(0),
             IsSpellCheckEnabled = false
         };
 
@@ -192,20 +200,27 @@ public sealed partial class DictionaryEditBox : UserControl
         DictionaryView.Items.Add(grid);
         DictionaryView.SelectedItem = grid;
         keyTxtBox.Loaded += (_, _) => keyTxtBox.Focus(FocusState.Programmatic); // 将焦点设置到新添加的第一个文字框上
+        valTxtBox.LostFocus += (_, _) => BeforeDictionaryUpdate();              // 值方块失去焦点时更新字典
     }
 
-    public Dictionary<string, string> GetDictionary(Dictionary<string, string> dict = null)
+    public void BeforeDictionaryUpdate()
     {
-        dict ??= new(DictionaryView.Items.Count);
+        bool existInvalidKeys = false;
+
+        this.Content.Clear();
         foreach (var item in DictionaryView.Items)
         {
             var grid = item as Grid;
             string key = (grid.Children[0] as TextBox).Text;
             string val = (grid.Children[1] as TextBox).Text;
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(val)) continue;
-            dict.TryAdd(key, val);
+            if (! Content.TryAdd(key, val)) existInvalidKeys = true;
         }
-        return dict;
+
+        Tip.IsOpen = existInvalidKeys;
+
+        // 通知订阅者更新字典
+        DictionaryUpdated?.Invoke();
     }
 
     public void LoadDictionary(Dictionary<string, string> dict)

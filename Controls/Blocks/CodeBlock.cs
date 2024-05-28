@@ -149,8 +149,7 @@ public class CodeBlock : BlockControl
         string langId = App.RegisteredLanguages[App.CurrentLanguage];
         if (TranslationsDict != null)
         {
-            string text;
-            if (TranslationsDict.TryGetValue(langId, out text))
+            if (TranslationsDict.TryGetValue(langId, out string text))
             {
                 SetText(text);
                 return;
@@ -164,8 +163,8 @@ public class CodeBlock : BlockControl
         }
 
         // fallback
-        // LocalizeBlock();
-        SetText(id);
+        if (string.IsNullOrEmpty(id)) TranslationKey = "Blocks.Demo";
+        else SetText(id);
     }
 
     private void LocalizeMenu()
