@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace CodeBlocks.Controls
@@ -29,9 +29,10 @@ namespace CodeBlocks.Controls
             }
         }
 
-        public new Control Content
+        // 隐藏基底类型的属性
+        public new object Content
         {
-            get => ContentPresenter.Content as Control;
+            get => ContentPresenter.Content;
             set => ContentPresenter.Content = value;
         }
 
