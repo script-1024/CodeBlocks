@@ -1,7 +1,7 @@
 ﻿using Windows.UI;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
-using System.Collections.Generic;
 using CodeBlocks.Core;
 
 namespace CodeBlocks.Controls
@@ -26,12 +26,30 @@ namespace CodeBlocks.Controls
             BlockBorder.Fill = fillColorBrush;
         }
 
+        internal virtual void OnInteractionStateChanged()
+        {
+            if (disabled)
+            {
+                this.ManipulationMode = ManipulationModes.None;
+            }
+            else
+            {
+                this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            }
+        }
+
         #region "Properties"
-        public int DependentSlot;
-        public CodeBlock ParentBlock;
-        public CodeBlock BottomBlock;
-        public CodeBlock[] RightBlocks = [];
-        public Dictionary<string, int> ValueIndex { get; private set; } = new();
+
+        private bool disabled = false;
+        public bool IsInteractionDisabled
+        {
+            get => disabled;
+            set
+            {
+                disabled = value;
+                OnInteractionStateChanged();
+            }
+        }
         
         public Color BlockColor
         {
@@ -43,6 +61,7 @@ namespace CodeBlocks.Controls
                 SetColor(fillColor);
             }
         }
+
         #endregion
     }
 }

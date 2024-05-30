@@ -18,7 +18,7 @@
         <Canvas x:Name="UICanvas" Grid.Row="1">
             <ScrollViewer x:Name="Scroller" ZoomMode="Enabled" MinZoomFactor="0.25" MaxZoomFactor="2.0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
                 <Canvas x:Name="BlockCanvas" Width="6000" Height="6000">
-                    <ctrl:CodeBlock x:Name="ghostBlock" BlockColor="Gray" Visibility="Collapsed"/>
+                    <ctrl:CodeBlock x:Name="ghostBlock" BlockColor="Gray" Visibility="Collapsed" IsInteractionDisabled="true"/>
                 </Canvas>
             </ScrollViewer>
 

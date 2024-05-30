@@ -10,19 +10,19 @@ using Microsoft.UI.Xaml;
 using CodeBlocks.Core;
 
 namespace CodeBlocks.Controls;
-public class BlockCreatedEventArgs : EventArgs
+public class BlockCreatedEventArgs
 {
     public readonly CodeBlock Source;
     public readonly Point Position;
     public static readonly BlockCreatedEventArgs Null = new();
 
-    public BlockCreatedEventArgs(double x = 0, double y = 0, CodeBlock source = null) : base()
+    public BlockCreatedEventArgs(double x = 0, double y = 0, CodeBlock source = null)
     {
         Position = new Point(x, y);
         Source = source;
     }
 
-    public BlockCreatedEventArgs(Point pos, CodeBlock source = null) : base()
+    public BlockCreatedEventArgs(Point pos, CodeBlock source = null)
     {
         Position = pos;
         Source = source;
@@ -59,10 +59,12 @@ public class CodeBlock : BlockControl
         OnBlockCreated?.Invoke(this, args);
 
         Canvas.SetLeft(BlockDescription, SlotHeight + SlotWidth);
-        RefreshBlockText();
     }
 
-    public CodeBlock() : this(null, null) { }
+    public CodeBlock() : this(null, null) 
+    {
+        
+    }
 
     private void InitializeMenu()
     {
@@ -163,6 +165,7 @@ public class CodeBlock : BlockControl
         }
 
         // fallback
+        if (IsInteractionDisabled) return; // 若已禁用交互，并且没有指定翻译字典，则该方块不需要翻译，例如:  GhostBlock
         if (string.IsNullOrEmpty(id)) TranslationKey = "Blocks.Demo";
         else SetText(id);
     }
@@ -196,6 +199,7 @@ public class CodeBlock : BlockControl
     }
 
     #region "Properties"
+
     public Core.Size Size
     {
         get => metaData.Size;
@@ -226,7 +230,14 @@ public class CodeBlock : BlockControl
 
     public Dictionary<string, string> TranslationsDict;
 
+    public int DependentSlot;
+    public CodeBlock ParentBlock;
+    public CodeBlock BottomBlock;
+    public CodeBlock[] RightBlocks = [];
+    public Dictionary<string, int> ValueIndex { get; private set; } = new();
+
     public bool HasBeenRemoved = false;
+
     #endregion
 
     #region "Methods"
