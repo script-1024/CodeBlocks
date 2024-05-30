@@ -161,7 +161,6 @@ namespace CodeBlocks
             }
 
             Scroller_BackToCenter();
-            LoadBlock();
 
             TranslationsDictoraryEditor.DictionaryUpdated += () => {
                 var dict = TranslationsDictoraryEditor.Content;
@@ -169,6 +168,8 @@ namespace CodeBlocks
                 DemoBlock.RefreshBlockText();
                 cbd.TranslationsDict = dict;
             };
+
+            LoadBlock();
         }
         private void AppWindow_SizeChanged(object sender, AppWindowChangedEventArgs args)
         {
@@ -391,6 +392,8 @@ namespace CodeBlocks
 
         private void LoadBlock()
         {
+            DemoBlock.MetaData = new();
+
             if (activeFile == null)
             {
                 DemoBlock.BlockColor = ColorHelper.FromInt(0xFFC800);
@@ -400,27 +403,28 @@ namespace CodeBlocks
             else
             {
                 DemoBlock.BlockColor = ColorHelper.FromInt(cbd.ColorHex);
-                DemoBlock.MetaData = new() { Type = cbd.BlockType, Variant = cbd.Variant };
                 TranslationsDictoraryEditor.LoadDictionary(cbd.TranslationsDict);
                 DemoBlock.TranslationsDict = cbd.TranslationsDict;
+                DemoBlock.Identifier = cbd.Identifier;
                 DemoBlock.RefreshBlockText();
+
+                int variant = cbd.Variant;
+                LSlotCheckBox.IsChecked = variant.CheckIfContain(0b_0001);
+                TSlotCheckBox.IsChecked = variant.CheckIfContain(0b_0010);
+                RSlotCheckBox.IsChecked = variant.CheckIfContain(0b_0100);
+                BSlotCheckBox.IsChecked = variant.CheckIfContain(0b_1000);
 
                 BlockIDTextBox.Text = cbd.Identifier;
                 BlockTypeComboBox.SelectedIndex = (int)cbd.BlockType;
                 CurrentColor.Background = new SolidColorBrush(DemoBlock.BlockColor);
 
-                int variant = cbd.Variant;
-                LSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_0001);
-                TSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_0010);
-                RSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_0100);
-                BSlotCheckBox.IsChecked = variant.HasSpecificBits(0b_1000);
+                DemoBlock.SetData(BlockProperties.Type, cbd.BlockType);
+                DemoBlock.SetData(BlockProperties.Variant, variant);
 
                 CodeTextBox.Text = cbd.McfCode;
                 isFileSaved = true;
             }
 
-            Canvas.SetLeft(DemoBlock.BlockDescription, 24);
-            Canvas.SetTop(DemoBlock.BlockDescription, 16);
             var blockX = (DisplayCanvas.ActualWidth - DemoBlock.Size.Width) / 2;
             var blockY = (DisplayCanvas.ActualHeight - DemoBlock.Size.Height) / 2;
             Canvas.SetLeft(DemoBlock, blockX);
