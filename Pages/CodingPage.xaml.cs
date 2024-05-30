@@ -56,6 +56,7 @@ namespace CodeBlocks.Pages
                 var block = new ActionBlock(dragger.BlockCreated);
                 Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
                 Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
+                block.SetData(BlockProperties.Variant, 14);
             };
 
             vButton.Click += (_, _) =>

@@ -35,9 +35,9 @@ namespace CodeBlocks.Controls
         public ValueBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(null, args)
         {
             MetaData = new() { Type = BlockType.Value, Variant = 1, Size = this.Size };
-            t1.Foreground = t2.Foreground = BlockDescription.Foreground;
-            t1.FontFamily = t2.FontFamily = txtbox.FontFamily = BlockDescription.FontFamily;
-            t1.FontSize = t2.FontSize = BlockDescription.FontSize;
+            t1.Foreground = t2.Foreground = new SolidColorBrush(Colors.White);
+            t1.FontFamily = t2.FontFamily = txtbox.FontFamily = CodeBlock.FontFamily;
+            t1.FontSize = t2.FontSize = CodeBlock.FontSize;
             var c = this.Content as Canvas;
             c.Children.Add(t1); c.Children.Add(txtbox); c.Children.Add(t2);
             Canvas.SetTop(t1, 8); Canvas.SetTop(txtbox, 8); Canvas.SetTop(t2, 8);
@@ -51,7 +51,7 @@ namespace CodeBlocks.Controls
 
             app.OnLanguageChanged += () =>
             {
-                string key = $"Blocks.ValueBlock.{(type.IsEqual(BlockValueType.String) ? "Text" : "Number")}.PlaceholderText";
+                string key = $"Blocks.ValueBlock.{(type.CheckIfContain(BlockValueType.String) ? "Text" : "Number")}.PlaceholderText";
                 txtbox.PlaceholderText = GetLocalizedString(key);
             };
 
@@ -63,20 +63,20 @@ namespace CodeBlocks.Controls
 
         private void OnTypeChanged()
         {
-            if (type.IsEqual(BlockValueType.String))
+            if (type.CheckIfContain(BlockValueType.String))
             {
                 t1.Visibility = t2.Visibility = Visibility.Visible;
                 BlockColor = (app.Resources["ValueBlockTextColorBrush"] as SolidColorBrush).Color;
-                Canvas.SetLeft(txtbox, 34);
+                Canvas.SetLeft(txtbox, 30);
                 txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Text.PlaceholderText");
 
                 txtbox.TextChanged -= CheckIllegalCharacter;
             }
-            if (type.IsEqual(BlockValueType.Number))
+            if (type.CheckIfContain(BlockValueType.Number))
             {
                 t1.Visibility = t2.Visibility = Visibility.Collapsed;
                 BlockColor = (app.Resources["ValueBlockNumberColorBrush"] as SolidColorBrush).Color;
-                Canvas.SetLeft(txtbox, 20);
+                Canvas.SetLeft(txtbox, 12);
                 txtbox.PlaceholderText = GetLocalizedString("Blocks.ValueBlock.Number.PlaceholderText");
 
                 txtbox.TextChanged += CheckIllegalCharacter;
@@ -85,11 +85,11 @@ namespace CodeBlocks.Controls
 
         private void CheckIllegalCharacter(object sender, TextChangedEventArgs e)
         {
-            if (type.IsEqual(BlockValueType.Decimal) && double.TryParse(txtbox.Text, out _))
+            if (type.CheckIfContain(BlockValueType.Decimal) && double.TryParse(txtbox.Text, out _))
             {
                 if (BlockTip.IsOpen) BlockTip.IsOpen = false;
             }
-            else if (type.IsEqual(BlockValueType.Integer) && int.TryParse(txtbox.Text, out _))
+            else if (type.CheckIfContain(BlockValueType.Integer) && int.TryParse(txtbox.Text, out _))
             {
                 if (BlockTip.IsOpen) BlockTip.IsOpen = false;
             }
@@ -104,9 +104,9 @@ namespace CodeBlocks.Controls
         private void ResizeTextBox()
         {
             int w = (int)txtbox.ActualWidth;
-            if (type.IsEqual(BlockValueType.String)) w += 58;
-            if (type.IsEqual(BlockValueType.Number)) w += 30;
-            Size = (w, Size.Height);
+            if (type.CheckIfContain(BlockValueType.String)) w += 58;
+            if (type.CheckIfContain(BlockValueType.Number)) w += 30;
+            SetData(BlockProperties.Width, w);
             double x = Canvas.GetLeft(txtbox);
             Canvas.SetLeft(t1, x-14);
             Canvas.SetLeft(t2, x+w-58);

@@ -11,7 +11,6 @@ namespace CodeBlocks.Controls
             BlockColor = (App.Current.Resources["ControlBlockColorBrush"] as SolidColorBrush).Color;
             MetaData = new() { Type = BlockType.Action, Variant = 10, Size = this.Size };
             TranslationKey = "Blocks.ActionBlock.Say.Text";
-            Canvas.SetTop(BlockDescription, 16);
         }
 
         public ActionBlock() : this(null, null) { }

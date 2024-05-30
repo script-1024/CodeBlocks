@@ -4,9 +4,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Canvas>
+    <Canvas x:Name="RootCanvas" x:FieldModifier="public">
         <Path x:Name="BlockBorder" x:FieldModifier="public" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-        <TextBlock x:Name="BlockDescription" x:FieldModifier="public" Foreground="White" FontSize="15" FontFamily="/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC"/>
 
         <TeachingTip
             x:Name="BlockTip"

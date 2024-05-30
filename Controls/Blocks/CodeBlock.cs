@@ -3,7 +3,6 @@ using System.Linq;
 using Windows.Foundation;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
@@ -57,8 +56,6 @@ public class CodeBlock : BlockControl
 
         OnBlockCreated += createdEventHandler;
         OnBlockCreated?.Invoke(this, args);
-
-        Canvas.SetLeft(BlockDescription, SlotHeight + SlotWidth);
     }
 
     public CodeBlock() : this(null, null) 
@@ -110,30 +107,62 @@ public class CodeBlock : BlockControl
         var parts = text.Split('{', '}');
         int slots = 0, maxWidth = 0, textWidth;
         ValueIndex.Clear();
-        BlockDescription.Inlines.Clear();
+
+        // 移除所有 TextBlock
+        var blocks = RootCanvas.Children.OfType<TextBlock>().ToList();
+        foreach (var block in blocks) { RootCanvas.Children.Remove(block); }
+
+        // 作用中的文字框
+        TextBlock currentTextBlock;
+        int currentY = SlotWidth - 4; // 暫时不知为何会差+4像素，扣回去
 
         foreach (var part in parts)
         {
-            if (part.StartsWith('%'))
+            if (string.IsNullOrWhiteSpace(part)) continue;
+
+            string str = part.Trim(); // 移除前后空格
+            if (str.StartsWith('%'))
             {
-                ValueIndex.Add(part.Trim('%'), slots++);
-                BlockDescription.Inlines.Add(new LineBreak());
+                ValueIndex.Add(str, slots++);
             }
             else
             {
-                BlockDescription.Inlines.Add(new Run() { Text = part });
-                textWidth = (int)(TextHelper.GetWidth(part) * BlockDescription.FontSize);
+                currentTextBlock = new()
+                {
+                    Text = str,
+                    Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
+                    FontFamily = CodeBlock.FontFamily,
+                    FontSize = CodeBlock.FontSize
+                };
+
+                textWidth = (int)(TextHelper.GetWidth(str) * FontSize);
                 if (textWidth > maxWidth) maxWidth = textWidth;
+                RootCanvas.Children.Add(currentTextBlock);
+
+                // 左边距
+                Canvas.SetLeft(currentTextBlock, SlotWidth);
+
+                // 上边距
+                Canvas.SetTop(currentTextBlock, currentY);
+
+                int newpartY = 0;
+                if (RightBlocks.TryGetValue(slots, out CodeBlock block) && block is not null)
+                {
+                    newpartY += block.Height;
+                }
+                else newpartY += SlotWidth * 3;
+                
+                currentY += newpartY;
+                currentTextBlock = null;
             }
         }
 
-        if (slots > 0) metaData.Slots = slots;
+        metaData.Slots = slots;
 
         // 调整方块宽度
         (int w, int h) size = Size;
-        size.w = maxWidth + SlotWidth * 2;
-        size.w += (metaData.Variant & 0b_0001) == 0 ? SlotHeight : 0;
-        size.w += (metaData.Variant & 0b_0100) == 0 ? SlotHeight : 0;
+        size.w = maxWidth + SlotWidth * 3;
+        size.w += metaData.Variant.CheckIfContain(0b_0100) ? SlotHeight : 0;
         Resize(size);
     }
 
@@ -200,6 +229,20 @@ public class CodeBlock : BlockControl
 
     #region "Properties"
 
+    // 隐藏基类属性 FrameworkElement.Width
+    public new int Width
+    {
+        get => metaData.Size.Width;
+        set => SetData(BlockProperties.Width, value);
+    }
+
+    // 隐藏基类属性 FrameworkElement.Height
+    public new int Height
+    {
+        get => metaData.Size.Height;
+        set => SetData(BlockProperties.Height, value);
+    }
+
     public Core.Size Size
     {
         get => metaData.Size;
@@ -255,8 +298,11 @@ public class CodeBlock : BlockControl
         {
             MetaData = this.MetaData,
             BlockColor = this.BlockColor,
-            TranslationKey = this.TranslationKey
+            Identifier = this.Identifier
         };
+
+        if (TranslationsDict is null) block.TranslationKey = this.TranslationKey;
+        else block.TranslationsDict = this.TranslationsDict;
 
         for (int i = 0; i < this.RightBlocks.Length; i++)
         {
@@ -271,8 +317,7 @@ public class CodeBlock : BlockControl
             }
         }
 
-        Canvas.SetLeft(block.BlockDescription, Canvas.GetLeft(BlockDescription));
-        Canvas.SetTop(block.BlockDescription, Canvas.GetTop(BlockDescription));
+        block.RefreshBlockText();
         return block;
     }
     public void SetData(BlockProperties key, object value)
@@ -287,7 +332,8 @@ public class CodeBlock : BlockControl
                 data.Content = (string)value;
                 break;
             case BlockProperties.Variant:
-                data.Variant = (byte)value;
+                if (value is int n) data.Variant = (byte)n; // 若value为int类型，直接object转byte会崩溃
+                else if (value is byte b) data.Variant = b;
                 break;
             case BlockProperties.Slots:
                 data.Slots = (int)value;
@@ -462,6 +508,8 @@ public class CodeBlock : BlockControl
 
     public static readonly int SlotWidth = 16;
     public static readonly int SlotHeight = 10;
+    public static readonly new FontFamily FontFamily = new("/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC");
+    public static readonly new int FontSize = 15;
 
     #endregion
 }

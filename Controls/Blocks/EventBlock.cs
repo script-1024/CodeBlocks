@@ -11,7 +11,6 @@ namespace CodeBlocks.Controls
             BlockColor = (App.Current.Resources["EventBlockColorBrush"] as SolidColorBrush).Color;
             MetaData = new() { Type = BlockType.Event, Variant = 8, Size = this.Size };
             TranslationKey = "Blocks.EventBlock.FunctionEntry.Text";
-            Canvas.SetTop(BlockDescription, 14);
         }
 
         public EventBlock() : this(null, null) { }
