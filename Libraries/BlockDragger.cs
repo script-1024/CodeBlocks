@@ -1,40 +1,57 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using CodeBlocks.Controls;
 
 namespace CodeBlocks.Core;
 
-public class BlockDragger(Canvas workspace, CodeBlock ghostBlock)
+public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock ghostBlock)
 {
-    #region "Delegates"
-
-    public delegate Point GetPointDelegate(Point point = default, Size size = default);
-    public GetPointDelegate GetTrashCanPosition;
-    public GetPointDelegate GetCenterPosition;
-
-    #endregion
 
     #region "Properties"
 
-    public Func<CodeBlock, Task> RemoveBlock;
-    public Canvas Workspace { get; private set; } = workspace;
-    public CodeBlock GhostBlock { get; private set; } = ghostBlock;
+    private CodeBlock focusBlock;
+    public CodeBlock FocusBlock
+    {
+        get => focusBlock;
+        set { focusBlock = value; FocusChanged?.Invoke(); }
+    }
+
+    #endregion
+
+    #region "Fields"
+
+    // 方块焦点改变事件
+    public delegate void FocusChangedHandler();
+    public event FocusChangedHandler FocusChanged;
+
+    public Func<Point> GetTrashCanPosition;
+    public Action<CodeBlock> RemoveBlock;
 
     #endregion
 
     #region "Methods"
 
-    private bool IsContactedWithTrashCan(CodeBlock thisBlock, Point self, Size size)
+    private Point GetCenterPointRelativeToworkspace(Point self, Size size)
     {
+        var point = new Point()
+        {
+            X = (self.X * scroller.ZoomFactor - scroller.HorizontalOffset) + (size.Width * scroller.ZoomFactor) / 2,
+            Y = (self.Y * scroller.ZoomFactor - scroller.VerticalOffset) + (size.Height * scroller.ZoomFactor) / 2
+        };
+        return point;
+    }
+
+    private bool? IsContactedWithTrashCan(CodeBlock thisBlock, Point self, Size size)
+    {
+        // 未指定必要的函数，无法继续计算，直接返回
+        if (GetTrashCanPosition is null || RemoveBlock is null) return null;
+
         // 计算中心点距离
         var trashCanCenter = GetTrashCanPosition();
-        var selfCenter = GetCenterPosition(self, size);
+        var selfCenter = GetCenterPointRelativeToworkspace(self, size);
         var xDiff = trashCanCenter.X - selfCenter.X;
         var yDiff = trashCanCenter.Y - selfCenter.Y;
 
@@ -42,7 +59,12 @@ public class BlockDragger(Canvas workspace, CodeBlock ghostBlock)
 
         // 距离小于 取较大值(宽, 高) 的三分之一 --> 方块已和垃圾桶重叠;
         var threshold = Utils.GetBigger(size.Width, size.Height) / 3;
-        if (distance < threshold) { RemoveBlock(thisBlock); return true; }
+        if (distance < threshold)
+        {
+            FocusBlock = null;
+            RemoveBlock(thisBlock);
+            return true;
+        }
         else return false;
     }
 
@@ -52,13 +74,13 @@ public class BlockDragger(Canvas workspace, CodeBlock ghostBlock)
         var size = thisBlock.Size;
         bool isAligned = false;
 
-        // 若接触垃圾桶直接结束
-        if (IsContactedWithTrashCan(thisBlock, self, size)) return;
+        // 若判断与垃圾桶的接触状况为 ‘是’ 或 ‘未知’ 则直接结束
+        if (IsContactedWithTrashCan(thisBlock, self, size) != false) return;
 
         // 碰撞检查
-        foreach (var uiElement in Workspace.Children)
+        foreach (var uiElement in workspace.Children)
         {
-            if (uiElement == GhostBlock || uiElement == thisBlock ) continue; // 跳过特定目标
+            if (uiElement == ghostBlock || uiElement == thisBlock ) continue; // 跳过特定目标
 
             var target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
             if (uiElement is CodeBlock targetBlock)
@@ -110,13 +132,13 @@ public class BlockDragger(Canvas workspace, CodeBlock ghostBlock)
                 if (isAligned)
                 {
                     thisBlock.ParentBlock = targetBlock;
-                    GhostBlock.SetPosition(self.X, self.Y);
-                    GhostBlock.Visibility = Visibility.Visible;
+                    ghostBlock.SetPosition(self.X, self.Y);
+                    ghostBlock.Visibility = Visibility.Visible;
                     if (thisBlock.DependentSlot == -1)
                     {
                         ResetGhostBlock(hide: false);
-                        GhostBlock.ParentBlock = targetBlock.BottomBlock;
-                        targetBlock.BottomBlock?.MoveToBack(GhostBlock, false);
+                        ghostBlock.ParentBlock = targetBlock.BottomBlock;
+                        targetBlock.BottomBlock?.MoveToBack(ghostBlock, false);
                     }
                     return;
                 }
@@ -131,15 +153,123 @@ public class BlockDragger(Canvas workspace, CodeBlock ghostBlock)
 
     public void ResetGhostBlock(bool hide = true)
     {
-        if (hide) GhostBlock.Visibility = Visibility.Collapsed;
+        if (hide) ghostBlock.Visibility = Visibility.Collapsed;
 
         // 复原暫时移动的块
-        if (GhostBlock.ParentBlock != null)
+        if (ghostBlock.ParentBlock != null)
         {
-            GhostBlock.ParentBlock.ReturnToPreviousPosition();
-            GhostBlock.ParentBlock = null;
+            ghostBlock.ParentBlock.ReturnToPreviousPosition();
+            ghostBlock.ParentBlock = null;
         }
     }
 
     #endregion
+
+    #region "Events"
+
+    public void BlockCreated(CodeBlock block, BlockCreatedEventArgs e)
+    {
+        e ??= BlockCreatedEventArgs.Null;
+
+        workspace.Children.Add(block);
+        Canvas.SetLeft(block, e.Position.X);
+        Canvas.SetTop(block, e.Position.Y);
+
+        block.PointerPressed += (_, _) => FocusBlock = block;
+        block.PointerReleased += (_, _) => FocusBlock = null;
+        block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+        block.ManipulationStarted += CodeBlock_ManipulationStarted;
+        block.ManipulationDelta += CodeBlock_ManipulationDelta;
+        block.ManipulationCompleted += CodeBlock_ManipulationCompleted;
+    }
+    private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+    {
+        ResetGhostBlock();
+        var thisBlock = sender as CodeBlock;
+        thisBlock.SetZIndex(+5, true);
+        ghostBlock.CopyDataFrom(thisBlock);
+
+        ghostBlock.Size = thisBlock.Size;
+        var endBlock = thisBlock.BottomBlock;
+        while (endBlock != null)
+        {
+            ghostBlock.SetData(BlockProperties.Height, ghostBlock.Size.Height + endBlock.Size.Height - CodeBlock.SlotHeight);
+            endBlock = endBlock.BottomBlock;
+        }
+
+        foreach (var block in thisBlock.RightBlocks)
+        {
+            if (block != null)
+            {
+                // 第一个非null的方块
+                ghostBlock.SetData(BlockProperties.Width, ghostBlock.Size.Width + block.Size.Width - CodeBlock.SlotHeight);
+                ghostBlock.SetData(BlockProperties.Variant, ghostBlock.MetaData.Variant ^ 0b0100);
+                break;
+            }
+        }
+
+        var parentBlock = thisBlock.ParentBlock;
+        if (parentBlock != null)
+        {
+            thisBlock.ParentBlock = null;
+            if (thisBlock.DependentSlot == -1) { parentBlock.BottomBlock = null; }
+            else if (thisBlock.DependentSlot > 0) { parentBlock.RightBlocks[thisBlock.DependentSlot - 1] = null; }
+        }
+
+        thisBlock.DependentSlot = 0;
+    }
+    private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+    {
+        if (FocusBlock is null) return;
+        var thisBlock = sender as CodeBlock;
+
+        double newX = Canvas.GetLeft(thisBlock) + e.Delta.Translation.X / scroller.ZoomFactor;
+        double newY = Canvas.GetTop(thisBlock) + e.Delta.Translation.Y / scroller.ZoomFactor;
+        var maxX = workspace.ActualWidth - thisBlock.Size.Width;
+        var maxY = workspace.ActualHeight - thisBlock.Size.Height;
+
+        // 边界检查
+        newX = (newX < 0) ? 0 : (newX > maxX) ? maxX : newX;
+        newY = (newY < 0) ? 0 : (newY > maxY) ? maxY : newY;
+
+        // 移动方块
+        thisBlock.SetPosition(newX, newY);
+
+        // 碰撞检查
+        CheckCollisions(thisBlock);
+    }
+    private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+    {
+        FocusBlock = null;
+
+        var thisBlock = sender as CodeBlock;
+        thisBlock.SetZIndex(0, false);
+
+        if (ghostBlock.Visibility == Visibility.Visible)
+        {
+            // 移动到示意矩形的位置
+            thisBlock.MoveToBlock(ghostBlock);
+            ResetGhostBlock();
+
+            // 移动其他子块
+            var parentBlock = thisBlock.ParentBlock;
+            if (thisBlock.DependentSlot == -1) // 自己在下方
+            {
+                if (parentBlock.BottomBlock == null) { parentBlock.BottomBlock = thisBlock; }
+                else parentBlock.BottomBlock.MoveToBack(thisBlock);
+            }
+            else if (thisBlock.DependentSlot > 0) // 自己在右侧
+            {
+                var right = parentBlock.RightBlocks;
+                var targetSlot = thisBlock.DependentSlot - 1;
+
+                // 若位置已被其他块占据就将其弹出
+                if (right[targetSlot] != thisBlock) right[targetSlot]?.PopUp();
+                right[targetSlot] = thisBlock;
+            }
+        }
+    }
+
+    #endregion
+
 }
