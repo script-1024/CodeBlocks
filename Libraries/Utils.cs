@@ -1,9 +1,8 @@
 ﻿using System;
-using Windows.UI;
-using Microsoft.UI.Xaml;
 using System.Linq;
 using System.Text;
-using CodeBlocks.Controls;
+using Windows.UI;
+using Microsoft.UI.Xaml;
 
 namespace CodeBlocks.Core
 {
@@ -29,6 +28,12 @@ namespace CodeBlocks.Core
     public static class Extensions
     {
         public static Visibility ToVisibility(this bool value) => (value) ? Visibility.Visible : Visibility.Collapsed;
+
+        public static bool TryGetValue<T>(this T[] array, int index, out T value)
+        {
+            if (array is null || index < 0 || index >= array.Length) { value = default; return false; }
+            value = array[index]; return true;
+        }
 
         private static byte[] IntegerToBytes(ulong value, int length)
         {
@@ -99,8 +104,12 @@ namespace CodeBlocks.Core
         public static int ToInt(this byte[] bytes, int index = 0, int length = 4, bool isBigEndian = false) => (int)BytesToInteger(bytes, index, length, isBigEndian);
         public static short ToShort(this byte[] bytes, int index = 0, int length = 2, bool isBigEndian = false) => (short)BytesToInteger(bytes, index, length, isBigEndian);
 
-        public static bool IsEqual(this BlockValueType type, BlockValueType other) => ((type & other) == other);
-        public static bool HasSpecificBits(this int self, int bits) => ((self & bits) == bits);
+        public static bool CheckIfContain<T1, T2>(this T1 self, T2 other) where T1 : struct  where T2 : struct
+        {
+            long selfValue = Convert.ToInt64(self);
+            long otherValue = Convert.ToInt64(other);
+            return (selfValue & otherValue) == otherValue;
+        }
     }
 
     public static class ColorHelper
