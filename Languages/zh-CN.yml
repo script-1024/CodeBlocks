@@ -25,6 +25,10 @@ Settings:
             Light: 浅色
             Dark: 深色
 
+    OpenAppFolder:
+        Title: 应用安装目录
+        ActionButton: 打开文件夹
+
 MenuBar:
     File:
         Title: 文件

@@ -25,6 +25,10 @@ Settings:
             Light: 淺色
             Dark: 深色
 
+    OpenAppFolder:
+        Title: 應用程式安裝目錄
+        ActionButton: 開啟資料夾
+
 MenuBar:
     File:
         Title: 檔案

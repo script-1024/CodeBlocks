@@ -28,5 +28,8 @@
                 <ComboBoxItem Tag="Dark"/>
             </ComboBox>
         </ctrl:ContentBar>
+        <ctrl:ContentBar x:Name="OpenAppFolder" Tag="NoDescription" IconGlyph="&#xE8B7;">
+            <Button x:Name="AppFolderButton" Content="Open App Folder" Click="AppFolderButton_Click"/>
+        </ctrl:ContentBar>
     </StackPanel>
 </Page>

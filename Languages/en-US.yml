@@ -25,6 +25,10 @@ Settings:
             Light: Light
             Dark: Dark
 
+    OpenAppFolder:
+        Title: App Installation Path
+        ActionButton: Open
+
 MenuBar:
     File:
         Title: File

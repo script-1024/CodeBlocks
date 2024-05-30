@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using CodeBlocks.Controls;
+using System.Diagnostics;
 
 namespace CodeBlocks.Pages
 {
@@ -24,9 +25,8 @@ namespace CodeBlocks.Pages
             {
                 if (item is ContentBar thisItem)
                 {
-                    string tag = thisItem.Tag?.ToString();
-                    if (tag != "NoTitle") thisItem.Title = GetLocalizedString($"Settings.{thisItem.Name}.Title");
-                    if (tag != "NoDescription") thisItem.Description = GetLocalizedString($"Settings.{thisItem.Name}.Description");
+                    thisItem.Title = GetLocalizedString($"Settings.{thisItem.Name}.Title");
+                    if (thisItem.Tag?.ToString() != "NoDescription") thisItem.Description = GetLocalizedString($"Settings.{thisItem.Name}.Description");
                 }
             }
 
@@ -35,11 +35,14 @@ namespace CodeBlocks.Pages
                 item.Content = GetLocalizedString($"Settings.ThemeOptions.Options.{item.Tag}");
             }
             ComboBox_Theme.SelectedIndex = -1;
+
+            AppFolderButton.Content = GetLocalizedString("Settings.OpenAppFolder.ActionButton");
         }
 
         private void InitializePage()
         {
             VersionInfo.Description = App.Version;
+            OpenAppFolder.Description = App.Path;
             ComboBox_Language.ItemsSource = App.SupportedLanguagesByName;
             ComboBox_Language.SelectedItem = App.CurrentLanguage;
             ComboBox_Language.SelectionChanged += (_, _) =>
@@ -71,6 +74,17 @@ namespace CodeBlocks.Pages
             wnd.RootGrid.Children.Remove(this);
             wnd.Tab.Visibility = Visibility.Visible;
             wnd.UpdateDragRects();
+        }
+
+        private void AppFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"{App.Path}"
+            };
+
+            Process.Start(startInfo);
         }
     }
 }
