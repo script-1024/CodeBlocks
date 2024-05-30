@@ -145,7 +145,7 @@ public sealed partial class DictionaryEditBox : UserControl
                         return;
 
                     case VirtualKey.Back:
-                        if (keyTxtBox.Text.Length > 0 || index == 0) return;
+                        if (cursorPosition != 0 || index == 0) return;
                         DeleteButton_Click(null, null);
                         FocusTo(index - 1, 1);
                         return;
