@@ -43,7 +43,7 @@ namespace CodeBlocks.Core
         private readonly int h = CodeBlock.SlotHeight;
         private PathFigure pathFigure;
 
-        private void DrawTopOrDownCurve(int sign, int dir = 0)
+        private void DrawTopOrDownCurve(int sign)
         {
             // Sign : Top 1 | Down -1
             LineSegment line1 = new() { Point = new Point(x, y += h) };
@@ -56,7 +56,7 @@ namespace CodeBlocks.Core
             pathFigure.Segments.Add(line3);
         }
 
-        private void DrawLeftOrRightCurve(int sign, int dir = 0)
+        private void DrawLeftOrRightCurve(int sign)
         {
             // Sign : Left -1 | Right 1
             LineSegment line1 = new() { Point = new Point(x -= h, y) };
@@ -69,11 +69,22 @@ namespace CodeBlocks.Core
             pathFigure.Segments.Add(line3);
         }
 
-        private void DrawLine(int dx, int dy, bool relative = true)
+        private void DrawLine(int dx = 0, int dy = 0, int? newX = null, int? newY = null, bool isRelative = true)
         {
             LineSegment line = new();
-            if (relative) line.Point = new Point(x += dx, y += dy);
-            else line.Point = new Point(x = dx, y = dy);
+
+            if (isRelative)
+            { 
+                x += dx;
+                y += dy;
+            }
+            else
+            {
+                if (newX != null) x = (int)newX;
+                if (newY != null) y = (int)newY;
+            }
+
+            line.Point = new Point(x, y);
             pathFigure.Segments.Add(line);
         }
 
@@ -82,24 +93,21 @@ namespace CodeBlocks.Core
             Width = MetaData.Size.Width;
             Height = MetaData.Size.Height;
             int slots = MetaData.Slots;
-            bool hasLeft = Utils.GetFlag(MetaData.Variant, 0);
-            bool hasTop = Utils.GetFlag(MetaData.Variant, 1);
-            bool hasRight = Utils.GetFlag(MetaData.Variant, 2);
-            bool hasBottom = Utils.GetFlag(MetaData.Variant, 3);
+            bool hasLeft = MetaData.Variant.CheckIfContain(0b_0001);
+            bool hasTop = MetaData.Variant.CheckIfContain(0b_0010);
+            bool hasRight = MetaData.Variant.CheckIfContain(0b_0100);
+            bool hasBottom = MetaData.Variant.CheckIfContain(0b_1000);
             var pathGeo = new PathGeometry();
 
             // 从左上角开始
-            if (MetaData.Type == BlockType.Value || MetaData.Type == BlockType.Action) { x = h; y = 0; }
-            else if (MetaData.Type == BlockType.Event) { x = h; y = 0; }
-
-            pathFigure = new() { StartPoint = new Point(x, y) };
+            pathFigure = new() { StartPoint = new Point(x = 0, y = 0) };
 
             // 上边
             if (MetaData.Type == BlockType.Action)
             {
                 if (hasTop)
                 {
-                    DrawLine(w, 0); // 左半部分
+                    DrawLine(dx: w); // 左半部分
                     DrawTopOrDownCurve(1); // 凹口
                 }
             }
@@ -112,42 +120,42 @@ namespace CodeBlocks.Core
                 };
                 pathFigure.Segments.Add(arc);
             }
-            DrawLine(Width, y, false); // 其余部分
+            DrawLine(newX: Width - h, isRelative: false); // 其余部分
 
             // 右边
             if (hasRight)
             {
-                DrawLine(0, w); // 上半部分
+                DrawLine(dy: w); // 上半部分
                 while (slots >= 1)
                 {
                     DrawLeftOrRightCurve(1); // 凹口
                     if (--slots >= 1) DrawLine(0, w*2);
                 }
             }
-            DrawLine(x, Height - h, false); // 其余部分
+            DrawLine(newY: Height - h, isRelative: false); // 其余部分
 
             // 下边
             if (hasBottom && MetaData.Type != BlockType.Value)
             {
-                DrawLine(h + w * 2, y, false); // 右半部分
-                DrawTopOrDownCurve(-1, 1); // 凸起
+                DrawLine(newX: w * 2, isRelative: false); // 右半部分
+                DrawTopOrDownCurve(-1); // 凸起
             }
-            DrawLine(h, y, false); // 其余部分
+            DrawLine(newX: 0, isRelative: false); // 其余部分
 
             // 左边
             if (hasLeft)
             {
-                DrawLine(x, w * 2, false); // 下半部分
-                DrawLeftOrRightCurve(-1, 1); // 凸起
+                DrawLine(newY: w * 2, isRelative: false); // 下半部分
+                DrawLeftOrRightCurve(-1); // 凸起
             }
 
             if (MetaData.Type == BlockType.Value || MetaData.Type == BlockType.Action)
             {
-                DrawLine(x, 0, false); // 其余部分
+                DrawLine(newY: 0, isRelative: false); // 其余部分
             }
             else if (MetaData.Type == BlockType.Event)
             {
-                DrawLine(x, 0, false); // 其余部分
+                DrawLine(newY: 0, isRelative: false); // 其余部分
             }
 
             pathGeo.Figures.Add(pathFigure);
