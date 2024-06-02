@@ -19,7 +19,7 @@ namespace CodeBlocks.Core
         public string GetString(string key) => GetString(Content, key);
         private static string GetString(object source, string key)
         {
-            if (string.IsNullOrEmpty(key)) return string.Empty;
+            if (source is null || string.IsNullOrEmpty(key)) return string.Empty;
 
             var path = key.Split('.');
             var dict = source as Dictionary<object, object>;

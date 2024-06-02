@@ -87,14 +87,15 @@ namespace CodeBlocks
             args.Handled = true;
             var dialogResult = await FileNotSavedDialogShowAsync();
 
-            // 保存并推出
+            // 保存并退出
             if (dialogResult == ContentDialogResult.Primary)
             {
                 if (cbd.FilePath != null) cbd.SaveFile();  // 文件已存在
                 else                                       // 文件不存在，弹出保存对话框
                 {
-                    var taskResult = await ExportFileAsync();
-                    if (taskResult.Failed) return;
+                    var success = await ExportFileAsync();
+                    isFileSaved = (success != null) ? success == true : isFileSaved; // 记录保存状态，若保存窗口已存在则不覆盖状态
+                    if (success != true) return;
                 }
             }
 
@@ -323,9 +324,10 @@ namespace CodeBlocks
             cbd.ColorHex = color.ToInt();
         }
 
-        private async Task<TaskResult> ExportFileAsync()
+        private async Task<bool?> ExportFileAsync()
         {
-            if (hasSaveDialogShown) return new TaskResult(failed: true, "ExistsSaveDialog");
+            // 已存在保存对话框
+            if (hasSaveDialogShown) return null;
 
             if (invalidDataCount != 0)
             {
@@ -334,7 +336,9 @@ namespace CodeBlocks
                     EditorTip.Title = "当前存在无效内容，暫时无法保存文件";
                     EditorTip.IsOpen = true;
                 }
-                return new TaskResult(failed: true, "ExistsInvalidData");
+
+                // 存在无效内容，不予保存
+                return false;
             }
 
             FileSavePicker savePicker = new();
@@ -371,16 +375,17 @@ namespace CodeBlocks
                 var state = await CachedFileManager.CompleteUpdatesAsync(file);
                 if (state != FileUpdateStatus.Complete && state != FileUpdateStatus.CompleteAndRenamed)
                 {
-                    // Failed
+                    // 未能成功保存文件
                     await dialog.ShowAsync("Messages.FailedToSaveFile", DialogVariant.Confirm);
-                    return new TaskResult(failed: true, "FailedToSaveFile");
+                    return false;
                 }
-                else isFileSaved = true;
-                return new TaskResult(failed: false);
+                
+                // 成功
+                return true;
             }
 
-            isFileSaved = false;
-            return new TaskResult(failed: true, "NullFile");
+            // 操作被用户取消
+            return false;
         }
 
         private void Scroller_BackToCenter()
@@ -495,16 +500,5 @@ namespace CodeBlocks
         }
 
         #endregion
-    }
-
-    public struct TaskResult
-    {
-        public bool Failed = false;
-        public string Reason = string.Empty;
-        public TaskResult(bool failed = false, string reason= "")
-        {
-            Failed = failed;
-            if (Failed) Reason = reason;
-        }
     }
 }

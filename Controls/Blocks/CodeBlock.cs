@@ -328,8 +328,8 @@ public class CodeBlock : BlockControl
             case BlockProperties.Type:
                 data.Type = (BlockType)value;
                 break;
-            case BlockProperties.Content:
-                data.Content = (string)value;
+            case BlockProperties.Code:
+                data.Code = (string)value;
                 break;
             case BlockProperties.Variant:
                 if (value is int n) data.Variant = (byte)n; // 若value为int类型，直接object转byte会崩溃
@@ -518,7 +518,7 @@ public enum BlockProperties
 {
     Undefined = 0,
     Type      = 1,
-    Content   = 2,
+    Code      = 2,
     Variant   = 3,
     Slots     = 4,
     Size      = 5,

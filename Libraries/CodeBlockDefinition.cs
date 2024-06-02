@@ -14,7 +14,7 @@ public sealed class CodeBlockDefinition
     public bool Success { get; private set; } = true;
     public ushort Version { get; private set; } = BlockEditor.CurrentCBDFormat;
 
-    // 可变属性
+    // 可写属性
     public string McfCode { get; set; } = "";
     public string Identifier { get; set; } = "";
     public byte Variant { get; set; } = 0b_0000;

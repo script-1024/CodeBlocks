@@ -12,11 +12,11 @@ namespace CodeBlocks.Core
     public struct BlockMetaData
     {
         public BlockType Type;
-        public string Content;
         public byte Variant;
+        public string Code;
         public int Slots;
         public Size Size;
-        public static readonly BlockMetaData Null = new() { Type = 0, Content = "", Variant = 0, Slots = 0, Size = Size.Zero };
+        public static readonly BlockMetaData Null = new() { Type = 0, Code = "", Variant = 0, Slots = 0, Size = Size.Zero };
     }
 
     public struct Size(int w, int h)
