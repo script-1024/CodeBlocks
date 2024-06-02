@@ -140,15 +140,62 @@ namespace CodeBlocks.Core
             return Color.FromArgb(a, r, g, b);
         }
 
-        public static Color FromInt(int colorHex, bool allowAlpha = false)
+        public static Color FromInt(int colorInt, bool allowAlpha = false)
         {
             byte a = 0xFF, r, g, b;
 
             // 0xFFAABBCC -> Color.FromArgb(0xFF, 0xAA, 0xBB, 0xCC);
-            b = (byte)(colorHex & 0xFF); colorHex >>= 8;
-            g = (byte)(colorHex & 0xFF); colorHex >>= 8;
-            r = (byte)(colorHex & 0xFF); colorHex >>= 8;
-            if (allowAlpha) a = (byte)(colorHex & 0xFF);
+            b = (byte)(colorInt & 0xFF); colorInt >>= 8;
+            g = (byte)(colorInt & 0xFF); colorInt >>= 8;
+            r = (byte)(colorInt & 0xFF); colorInt >>= 8;
+            if (allowAlpha) a = (byte)(colorInt & 0xFF);
+
+            return Color.FromArgb(a, r, g, b);
+        }
+
+        public static Color FromHexString(string colorHex)
+        {
+            if (!colorHex.StartsWith('#')) return default;
+
+            byte a = 0xFF, r = 0xFF, g = 0xFF, b = 0xFF;
+
+            if (colorHex.Length == 9) // #FFAABBCC
+            {
+                a = (byte)Convert.ToInt32(colorHex[1..3], 16);
+                r = (byte)Convert.ToInt32(colorHex[3..5], 16);
+                g = (byte)Convert.ToInt32(colorHex[5..7], 16);
+                b = (byte)Convert.ToInt32(colorHex[7..9], 16);
+                return Color.FromArgb(a, r, g, b);
+            }
+            if (colorHex.Length == 7) // #AABBCC
+            {
+                r = (byte)Convert.ToInt32(colorHex[1..3], 16);
+                g = (byte)Convert.ToInt32(colorHex[3..5], 16);
+                b = (byte)Convert.ToInt32(colorHex[5..7], 16);
+                return Color.FromArgb(a, r, g, b);
+            }
+            if (colorHex.Length == 5) // #FABC --> #FFAABBCC
+            {
+                a = (byte)Convert.ToInt32(colorHex[1..2], 16); a = (byte)(a << 8 | a);
+                r = (byte)Convert.ToInt32(colorHex[2..3], 16); r = (byte)(r << 8 | r);
+                g = (byte)Convert.ToInt32(colorHex[3..4], 16); g = (byte)(g << 8 | g);
+                b = (byte)Convert.ToInt32(colorHex[4..5], 16); b = (byte)(b << 8 | b);
+                return Color.FromArgb(a, r, g, b);
+            }
+            if (colorHex.Length == 4) // #ABC --> #AABBCC
+            {
+                r = (byte)Convert.ToInt32(colorHex[1..2], 16); r = (byte)(r << 8 | r);
+                g = (byte)Convert.ToInt32(colorHex[2..3], 16); g = (byte)(g << 8 | g);
+                b = (byte)Convert.ToInt32(colorHex[3..4], 16); b = (byte)(b << 8 | b);
+                return Color.FromArgb(a, r, g, b);
+            }
+            if (colorHex.Length == 2) // #A --> #AAAAAA
+            {
+                var tmp = Convert.ToInt32(colorHex[1..2], 16);
+                tmp = tmp << 8 | tmp;
+                r = g = b = (byte)tmp;
+                return Color.FromArgb(a, r, g, b);
+            }
 
             return Color.FromArgb(a, r, g, b);
         }
