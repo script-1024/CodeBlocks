@@ -39,7 +39,7 @@ namespace CodeBlocks
             {
                 bool needResize = false;
                 var size = this.AppWindow.Size;
-                if (size.Width < 800) { needResize = true; size.Width = 800; }
+                if (size.Width < 600) { needResize = true; size.Width = 600; }
                 if (size.Height < 600) { needResize = true; size.Height = 600; }
                 if (needResize) AppWindow.Resize(size);
             }

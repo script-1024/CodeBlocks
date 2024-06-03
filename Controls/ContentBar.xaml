@@ -14,8 +14,8 @@
         <Grid x:Name="RootGrid" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <FontIcon x:Name="Icon" Grid.Column="0" Margin="20,0,0,0" FontSize="21" FontFamily="Segoe Fluent Icons" Visibility="Collapsed"/>

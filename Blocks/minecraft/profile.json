@@ -1,5 +1,16 @@
 {
     "categories": {
+        "event": {
+            "color": "#FFAA00",
+            "translation": {
+                "zh-TW": "事件",
+                "zh-CN": "事件",
+                "en-US": "Event"
+            },
+            "blocks": {
+                "minecraft:when_datapack_loaded": "event\\when_datapack_loaded"
+            }
+        },
         "command": {
             "color": "#FFC800",
             "translation": {

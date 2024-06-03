@@ -19,6 +19,7 @@
   <ItemGroup>
     <None Remove="Blocks\minecraft\command\say.cbd" />
     <None Remove="Blocks\minecraft\command\summon.cbd" />
+    <None Remove="Blocks\minecraft\event\when_datapack_loaded.cbd" />
     <None Remove="Blocks\minecraft\profile.json" />
   </ItemGroup>
   <ItemGroup>
@@ -26,6 +27,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Blocks\minecraft\command\summon.cbd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Blocks\minecraft\event\when_datapack_loaded.cbd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Blocks\minecraft\profile.json">
