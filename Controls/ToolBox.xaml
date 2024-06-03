@@ -22,8 +22,9 @@
             <StackPanel x:Name="BlocksDepot"
                         BorderThickness="0,0,1,0"
                         BorderBrush="{ThemeResource FlatBorderColorBrush}"
-                        Background="{ThemeResource FlatBackgroundFillColorTertiaryBrush}">
-                
+                        Background="{ThemeResource FlatBackgroundFillColorTertiaryBrush}"
+                        ManipulationDelta="BlocksDepot_ManipulationDelta"
+                        ManipulationMode="TranslateY">
             </StackPanel>
         </ScrollViewer>
 

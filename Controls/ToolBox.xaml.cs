@@ -21,6 +21,7 @@ namespace CodeBlocks.Controls
         private static readonly Dictionary<string /* ID */, CodeBlockDefinition /* FILE */> Register = new();
         private readonly App app = App.Current as App;
 
+        private bool canScroll = true;
         private int registedCategories = 0;
 
         private bool isOpen = true;
@@ -186,6 +187,15 @@ namespace CodeBlocks.Controls
             block.RefreshBlockText();
 
             return block;
+        }
+
+        private void BlocksDepot_ManipulationDelta(object sender, Microsoft.UI.Xaml.Input.ManipulationDeltaRoutedEventArgs e)
+        {
+            if (canScroll)
+            {
+                var newY = Scroller.VerticalOffset - e.Delta.Translation.Y;
+                Scroller.ChangeView(null, newY, null, true);
+            }
         }
     }
 }
