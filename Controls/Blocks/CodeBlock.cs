@@ -148,7 +148,7 @@ public class CodeBlock : BlockControl
                 int newpartY = 0;
                 if (RightBlocks.TryGetValue(slots, out CodeBlock block) && block is not null)
                 {
-                    newpartY += block.Height;
+                    newpartY += block.Size.Height;
                 }
                 else newpartY += SlotWidth * 3;
                 
@@ -177,10 +177,9 @@ public class CodeBlock : BlockControl
     // 新方法，从自带的翻译字典取得结果
     public virtual void RefreshBlockText()
     {
-        string langId = App.RegisteredLanguages[App.CurrentLanguage];
         if (TranslationsDict != null)
         {
-            if (TranslationsDict.TryGetValue(langId, out string text))
+            if (TranslationsDict.TryGetValue(App.CurrentLanguageId, out string text))
             {
                 SetText(text);
                 return;
@@ -222,18 +221,25 @@ public class CodeBlock : BlockControl
         if (size.Width < 100) size.Width = 100;
 
         metaData.Size = size;
+        this.Width = size.Width;
+        this.Height = size.Height;
         painter.MetaData = metaData;
         BlockBorder.Data = painter.DrawBlockBorder();
         Array.Resize(ref RightBlocks, metaData.Slots);
     }
 
     #region "Properties"
-
+    /*
     // 隐藏基类属性 FrameworkElement.Width
     public new int Width
     {
         get => metaData.Size.Width;
         set => SetData(BlockProperties.Width, value);
+    }
+
+    public new int ActualWidth
+    {
+        get => metaData.Size.Width;
     }
 
     // 隐藏基类属性 FrameworkElement.Height
@@ -243,6 +249,11 @@ public class CodeBlock : BlockControl
         set => SetData(BlockProperties.Height, value);
     }
 
+    public new int ActualHeight
+    {
+        get => metaData.Size.Height;
+    }
+    */
     public Core.Size Size
     {
         get => metaData.Size;

@@ -16,6 +16,22 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <PublishAot>False</PublishAot>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Blocks\minecraft\command\say.cbd" />
+    <None Remove="Blocks\minecraft\command\summon.cbd" />
+    <None Remove="Blocks\minecraft\profile.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Blocks\minecraft\command\say.cbd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Blocks\minecraft\command\summon.cbd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Blocks\minecraft\profile.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -113,9 +129,6 @@
     <Page Update="Controls\ContentBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Blocks\" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\DictionaryEditBox.xaml">

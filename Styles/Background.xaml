@@ -12,6 +12,7 @@
             <SolidColorBrush x:Key="FlatBorderColorBrush" Color="#40404040"/>
             <SolidColorBrush x:Key="FlatBackgroundFillColorPrimaryBrush" Color="#C8FFFFFF"/>
             <SolidColorBrush x:Key="FlatBackgroundFillColorSecondaryBrush" Color="#80F0F0F0"/>
+            <SolidColorBrush x:Key="FlatBackgroundFillColorTertiaryBrush" Color="#B5F9F9F9"/>
             
             <SolidColorBrush x:Key="TabViewBackgroundFillColorBrush" Color="#20FFFFFF"/>
         </ResourceDictionary>
@@ -24,7 +25,8 @@
             <SolidColorBrush x:Key="FlatBorderColorBrush" Color="#80101010"/>
             <SolidColorBrush x:Key="FlatBackgroundFillColorPrimaryBrush" Color="#60303030"/>
             <SolidColorBrush x:Key="FlatBackgroundFillColorSecondaryBrush" Color="#80202020"/>
-
+            <SolidColorBrush x:Key="FlatBackgroundFillColorTertiaryBrush" Color="#60303030"/>
+            
             <SolidColorBrush x:Key="TabViewBackgroundFillColorBrush" Color="#30202020"/>
         </ResourceDictionary>
         

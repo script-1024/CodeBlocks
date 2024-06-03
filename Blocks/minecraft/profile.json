@@ -1,0 +1,16 @@
+{
+    "categories": {
+        "command": {
+            "color": "#FFC800",
+            "translation": {
+                "zh-TW": "指令",
+                "zh-CN": "命令",
+                "en-US": "Command"
+            },
+            "blocks": {
+                "minecraft:say": "command\\say",
+                "minecraft:summon": "command\\summon"
+            }
+        }
+    }
+}

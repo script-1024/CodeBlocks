@@ -12,7 +12,7 @@ namespace CodeBlocks
         public App()
         {
             InitializeComponent();
-            CurrentLanguage = ApplicationData.Current.LocalSettings.Values["Language"]?.ToString();
+            CurrentLanguageName = ApplicationData.Current.LocalSettings.Values["Language"]?.ToString();
             CurrentTheme = (int)(ApplicationData.Current.LocalSettings.Values["RequestedTheme"] ?? 0);
 
             Localizer.ReloadLanguageFiles();
@@ -52,7 +52,8 @@ namespace CodeBlocks
 
         // 0:FollowSystem | 1:Light | 2:Dark
         public static int CurrentTheme;
-        public static string CurrentLanguage;
+        public static string CurrentLanguageId;
+        public static string CurrentLanguageName;
         public static string[] SupportedLanguagesByName;
 
         public static readonly string Version = "Beta 1.0.7 Build 0516";
@@ -65,13 +66,16 @@ namespace CodeBlocks
         public event ThemeChangedEventHandler OnThemeChanged;
         public void LanguageChanged()
         {
-            if (CurrentLanguage is null)
+            if (CurrentLanguageName is null)
             {
                 // 优先使用电脑现有的语言
                 var id = System.Globalization.CultureInfo.InstalledUICulture.Name;
-                CurrentLanguage = RegisteredLanguages.TryGetValue(id, out string value) ? value : "English";
+                CurrentLanguageName = RegisteredLanguages.TryGetValue(id, out string value) ? value : "English";
             }
-            this.Localizer = new(RegisteredLanguages[CurrentLanguage]);
+
+            CurrentLanguageId = RegisteredLanguages[CurrentLanguageName];
+
+            this.Localizer = new();
             OnLanguageChanged?.Invoke();
         }
 

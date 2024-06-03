@@ -44,13 +44,13 @@ namespace CodeBlocks.Pages
             VersionInfo.Description = App.Version;
             OpenAppFolder.Description = App.Path;
             ComboBox_Language.ItemsSource = App.SupportedLanguagesByName;
-            ComboBox_Language.SelectedItem = App.CurrentLanguage;
+            ComboBox_Language.SelectedItem = App.CurrentLanguageName;
             ComboBox_Language.SelectionChanged += (_, _) =>
             {
                 var lang = ComboBox_Language.SelectedItem.ToString();
-                if (App.CurrentLanguage == lang) return;
+                if (App.CurrentLanguageName == lang) return;
                 ApplicationData.Current.LocalSettings.Values["Language"] = lang;
-                App.CurrentLanguage = lang;
+                App.CurrentLanguageName = lang;
                 app.LanguageChanged();
             };
 

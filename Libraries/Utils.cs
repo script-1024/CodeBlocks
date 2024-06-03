@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using Windows.UI;
 using Microsoft.UI.Xaml;
 
 namespace CodeBlocks.Core

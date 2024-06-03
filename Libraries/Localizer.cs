@@ -8,6 +8,8 @@ namespace CodeBlocks.Core
     {
         public readonly object Content;
 
+        public Localizer() : this(App.CurrentLanguageId) { }
+
         public Localizer(string id)
         {
             string filePath = $"{App.Path}/Languages/{id}.yml";
