@@ -177,7 +177,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         // 复原暫时移动的块
         if (ghostBlock.ParentBlock != null)
         {
-            ghostBlock.ParentBlock.ReturnToPreviousPosition();
+            ghostBlock.ParentBlock.ReturnToLastRecordedPosition();
             ghostBlock.ParentBlock = null;
         }
     }
