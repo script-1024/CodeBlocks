@@ -60,10 +60,14 @@ Messages:
         Title: Version incompatible
         Description: The target version specified by the file is higher than the current application. Some data may not be loaded correctly. It is recommended to check for software updates. If you think this is a bug, please contact the developers.
 
+    SaveFileFailed:
+        Title: Unable to save file
+        Description: This file may be occupied or the specified path is inaccessible. Please try again later.
+
     ReadFileFailed:
-        UnknownException:
+        InternalException:
             Title: Unable to read file
-            Description: An unknown error occurred. It should not happen. Please contact the developers for assistance.
+            Description: An internal error has occurred! This exception is thrown by Windows and should not normally happen. It is recommended to try again later.
         FileNotAvailable:
             Title: Unable to read file
             Description: This file may be occupied or the specified path is inaccessible. Please try again later.

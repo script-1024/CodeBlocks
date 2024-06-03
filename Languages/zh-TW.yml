@@ -60,10 +60,14 @@ Messages:
         Title: 版本不兼容
         Description: 檔案指定的目標版本高於當前應用程式，部分資料可能無法正確載入，建議檢查軟體更新。如果你認為這是個錯誤，請聯絡開發人員。
 
+    SaveFileFailed:
+        Title: 無法保存檔案
+        Description: 檔案可能已被佔用或指定的路徑無法存取，請稍後再試。
+
     ReadFileFailed:
-        UnknownException:
+        InternalException:
             Title: 無法讀取檔案
-            Description: 出現未知錯誤，這通常不該發生，請聯絡開發人員協助處理。
+            Description: 出現內部錯誤！此異常由操作系統引發，通常不應該發生，建議稍後再試。
         FileNotAvailable:
             Title: 無法讀取檔案
             Description: 檔案可能已被佔用或指定的路徑無法存取，請稍後再試。

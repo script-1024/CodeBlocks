@@ -63,6 +63,7 @@ namespace CodeBlocks
             // 设置Tip的目标控件
             IdTip.Target = BlockIDTextBox;
         }
+
         public BlockEditor(StorageFile file) : this()
         {
             // 记录指定的文件
@@ -191,7 +192,7 @@ namespace CodeBlocks
         }
         private async void CBDFileReadFailed(string msg = "")
         {
-            if (string.IsNullOrEmpty(msg)) await dialog.ShowAsync("ReadFileFailed.UnknownException", DialogVariant.Confirm);
+            if (string.IsNullOrEmpty(msg)) await dialog.ShowAsync("ReadFileFailed.InternalException", DialogVariant.Confirm);
             else await dialog.ShowAsync($"ReadFileFailed.{msg}", DialogVariant.Confirm);
         }
 
@@ -321,7 +322,7 @@ namespace CodeBlocks
         {
             var color = (CurrentColor.Background as SolidColorBrush).Color;
             DemoBlock.BlockColor = color;
-            cbd.ColorHex = color.ToInt();
+            cbd.ColorInt = color.ToInt();
         }
 
         private async Task<bool?> ExportFileAsync()
@@ -376,7 +377,7 @@ namespace CodeBlocks
                 if (state != FileUpdateStatus.Complete && state != FileUpdateStatus.CompleteAndRenamed)
                 {
                     // 未能成功保存文件
-                    await dialog.ShowAsync("Messages.FailedToSaveFile", DialogVariant.Confirm);
+                    await dialog.ShowAsync("Messages.SaveFileFailed", DialogVariant.Confirm);
                     return false;
                 }
                 
@@ -407,7 +408,7 @@ namespace CodeBlocks
             }
             else
             {
-                DemoBlock.BlockColor = ColorHelper.FromInt(cbd.ColorHex);
+                DemoBlock.BlockColor = ColorHelper.FromInt(cbd.ColorInt);
                 TranslationsDictoraryEditor.LoadDictionary(cbd.TranslationsDict);
                 DemoBlock.TranslationsDict = cbd.TranslationsDict;
                 DemoBlock.Identifier = cbd.Identifier;

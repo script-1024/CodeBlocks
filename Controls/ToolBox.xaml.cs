@@ -44,10 +44,10 @@ namespace CodeBlocks.Controls
         public ToolBox()
         {
             InitializeComponent();
-            ReloadBlocks();
-
+            
             RootGrid.Loaded += (_, _) =>
             {
+                ReloadBlocks();
                 lastWindowWidth = app.MainWindow.AppWindow.Size.Width;
                 app.MainWindow.SizeChanged += (_, e) =>
                 {

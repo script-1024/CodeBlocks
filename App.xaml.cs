@@ -39,7 +39,7 @@ namespace CodeBlocks
                 }
                 else openWithValidFile = false;
             }
-
+            
             if (!openWithValidFile)
             {
                 // 常规启动
