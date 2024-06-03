@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctrl="using:CodeBlocks.Controls">
 
-    <Grid>
+    <Grid x:Name="RootGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
@@ -19,7 +19,7 @@
         </StackPanel>
 
         <ScrollViewer x:Name="Scroller" Grid.Column="1">
-            <StackPanel x:Name="BlocksDepot" Width="200"
+            <StackPanel x:Name="BlocksDepot"
                         BorderThickness="0,0,1,0"
                         BorderBrush="{ThemeResource FlatBorderColorBrush}"
                         Background="{ThemeResource FlatBackgroundFillColorTertiaryBrush}">

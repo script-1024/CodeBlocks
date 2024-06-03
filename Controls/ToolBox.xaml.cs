@@ -2,9 +2,11 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Shapes;
-using System.Collections.Generic;
 using Microsoft.UI.Xaml.Controls;
+using System.Collections.Generic;
+using Windows.Foundation;
 using Windows.Storage;
 using CodeBlocks.Core;
 
@@ -17,8 +19,9 @@ namespace CodeBlocks.Controls
     {
         // 暫存CBD以便可重复使用
         private static readonly Dictionary<string /* ID */, CodeBlockDefinition /* FILE */> Register = new();
-
         private readonly App app = App.Current as App;
+
+        private int registedCategories = 0;
 
         private bool isOpen = true;
         public bool IsOpen
@@ -35,14 +38,31 @@ namespace CodeBlocks.Controls
             }
         }
 
+        private void ClosePanelButton_Click(object sender, RoutedEventArgs e) => IsOpen = !isOpen;
+
+        private double lastWindowWidth = 0;
         public ToolBox()
         {
             InitializeComponent();
             ReloadBlocks();
+
+            RootGrid.Loaded += (_, _) =>
+            {
+                lastWindowWidth = app.MainWindow.AppWindow.Size.Width;
+                app.MainWindow.SizeChanged += (_, e) =>
+                {
+                    // 窗口正在缩小或放大时，检查是否应该自动调整工具箱占用的空间
+                    if (e.Size.Width < 750 && e.Size.Width < lastWindowWidth) IsOpen = false;
+                    else if (e.Size.Width > 1000 && e.Size.Width > lastWindowWidth) IsOpen = true;
+                    lastWindowWidth = e.Size.Width;
+                };
+            };
         }
 
         private async void ReloadBlocks()
         {
+            registedCategories = 0;
+            PositioningTags.Children.Clear();
             BlocksDepot.Children.Clear();
             var directories = Directory.GetDirectories($"{App.Path}Blocks\\");
             foreach (var dir in directories)
@@ -65,11 +85,14 @@ namespace CodeBlocks.Controls
                             {
                                 var blockFilePath = blockElement.Value.GetString();
                                 var block = await CreateBlockFromPathAsync($"{dir}\\{blockFilePath}.cbd");
-                                block.Margin = new(16,16,0,0);
-                                block.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Left;
+                                block.Margin = new(20, 20, 12, 0);
+                                block.HorizontalAlignment = HorizontalAlignment.Left;
                                 BlocksDepot.Children.Add(block);
                                 await Task.Delay(10);
                             }
+
+                            TextBlock blank = new() { Margin = new(24) };
+                            BlocksDepot.Children.Add(blank);
                         }
                     }
                 }
@@ -87,24 +110,34 @@ namespace CodeBlocks.Controls
                     Fill = ColorHelper.FromHexString(element.GetChildElement("color").GetString()).ToSolidColorBrush(),
                     Width = 36, Height = 36
                 },
-                Margin = new(5, 5, 5, 0),
-                Width = 40, Height = 50
+                Margin = new(5, 3, 5, 0),
+                Width = 40, Height = 50,
             };
 
             PositioningTags.Children.Add(btn);
+
             TextBlock label = new()
             {
                 FontSize = 14,
-                Margin = new(8, 8, 0, 0),
+                Margin = new(8, 8, 0, 16),
                 FontFamily = CodeBlock.FontFamily
             };
-
 
             void RefreshText()
             {
                 label.Text = dictionary[App.CurrentLanguageId].ToString();
+                ToolTipService.SetToolTip(btn, label.Text);
             }
 
+            void OnButtonClick()
+            {
+                IsOpen = true;
+                double position = label.TransformToVisual(BlocksDepot).TransformPoint(new Point(0, 0)).Y - 8;
+                Scroller.ChangeView(null, position, null);
+            }
+
+            btn.Click += (_, _) => OnButtonClick();
+            registedCategories += 1;
             app.OnLanguageChanged += RefreshText;
             BlocksDepot.Children.Add(label);
             RefreshText();
@@ -153,11 +186,6 @@ namespace CodeBlocks.Controls
             block.RefreshBlockText();
 
             return block;
-        }
-
-        private void ClosePanelButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            IsOpen = !isOpen;
         }
     }
 }
