@@ -31,43 +31,6 @@ namespace CodeBlocks.Pages
         {
             UICanvas.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             UICanvas.ManipulationDelta += UICanvas_ManipulationDelta;
-            /*
-            #region "Test Only"
-
-            var hButton = new Button() { Content = "New Hat Block" };
-            var pButton = new Button() { Content = "New Process Block" };
-            var vButton = new Button() { Content = "New Value Block" };
-            UICanvas.Children.Add(hButton);
-            UICanvas.Children.Add(pButton);
-            UICanvas.Children.Add(vButton);
-            Canvas.SetLeft(hButton, 10); Canvas.SetTop(hButton, 10);
-            Canvas.SetLeft(pButton, 10); Canvas.SetTop(pButton, 50);
-            Canvas.SetLeft(vButton, 10); Canvas.SetTop(vButton, 90);
-
-            hButton.Click += (_, _) =>
-            {
-                var block = new EventBlock(dragger.BlockCreated);
-                Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
-                Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
-            };
-
-            pButton.Click += (_, _) =>
-            {
-                var block = new ActionBlock(dragger.BlockCreated);
-                Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
-                Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
-                block.SetData(BlockProperties.Variant, 14);
-            };
-
-            vButton.Click += (_, _) =>
-            {
-                var block = new ValueBlock(dragger.BlockCreated) { Size = (90, 58), ValueType = BlockValueType.Int };
-                Canvas.SetLeft(block, Scroller.HorizontalOffset / Scroller.ZoomFactor + 240);
-                Canvas.SetTop(block, Scroller.VerticalOffset / Scroller.ZoomFactor + 50);
-            };
-
-            #endregion
-            */
             ZoomIn.PointerPressed += (_, _) => ZoomChange(zoomIn: true);
             ZoomOut.PointerPressed += (_, _) => ZoomChange(zoomIn: false);
         }
