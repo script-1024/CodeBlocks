@@ -74,7 +74,7 @@ public class CodeBlock : BlockControl
         {
             var left = Canvas.GetLeft(this) + 30;
             var top = Canvas.GetTop(this) + 30;
-            var block = Copy(new(left, top, this));
+            var block = this.Clone(new(left, top, this));
             ContextMenu.Hide();
         };
         ContextMenu.PrimaryCommands.Add(item_copy);
@@ -130,7 +130,7 @@ public class CodeBlock : BlockControl
                 currentTextBlock = new()
                 {
                     Text = str,
-                    Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
+                    Foreground = Microsoft.UI.Colors.White.GetSolidColorBrush(),
                     FontFamily = CodeBlock.FontFamily,
                     FontSize = CodeBlock.FontSize
                 };
@@ -166,7 +166,7 @@ public class CodeBlock : BlockControl
         Resize(size);
     }
 
-    // 旧方法，从全局翻译文件取得结果
+    // 旧方法，从全局翻译文件取得本地化字串
     private void LocalizeBlock()
     {
         if (string.IsNullOrEmpty(key)) return;
@@ -174,7 +174,9 @@ public class CodeBlock : BlockControl
         SetText(text);
     }
 
-    // 新方法，从自带的翻译字典取得结果
+    /// <summary>
+    /// 刷新方块的本地化文本
+    /// </summary>
     public virtual void RefreshBlockText()
     {
         if (TranslationsDict != null)
@@ -229,31 +231,7 @@ public class CodeBlock : BlockControl
     }
 
     #region "Properties"
-    /*
-    // 隐藏基类属性 FrameworkElement.Width
-    public new int Width
-    {
-        get => metaData.Size.Width;
-        set => SetData(BlockProperties.Width, value);
-    }
 
-    public new int ActualWidth
-    {
-        get => metaData.Size.Width;
-    }
-
-    // 隐藏基类属性 FrameworkElement.Height
-    public new int Height
-    {
-        get => metaData.Size.Height;
-        set => SetData(BlockProperties.Height, value);
-    }
-
-    public new int ActualHeight
-    {
-        get => metaData.Size.Height;
-    }
-    */
     public Core.Size Size
     {
         get => metaData.Size;
@@ -303,7 +281,11 @@ public class CodeBlock : BlockControl
         if (BottomBlock != null) count++;
         return count;
     }
-    public virtual CodeBlock Copy(BlockCreatedEventArgs args)
+
+    /// <summary>
+    /// 取得方块的克隆对象
+    /// </summary>
+    public virtual CodeBlock Clone(BlockCreatedEventArgs args)
     {
         var block = new CodeBlock(this.OnBlockCreated, args)
         {
@@ -324,13 +306,17 @@ public class CodeBlock : BlockControl
                 var left = Canvas.GetLeft(thisBlock) + 30;
                 var top = Canvas.GetTop(thisBlock) + 30;
                 var newArgs = new BlockCreatedEventArgs(left, top, thisBlock);
-                block.RightBlocks[i] = thisBlock.Copy(newArgs);
+                block.RightBlocks[i] = thisBlock.Clone(newArgs);
             }
         }
 
         block.RefreshBlockText();
         return block;
     }
+
+    /// <summary>
+    /// 更改方块数据
+    /// </summary>
     public void SetData(BlockProperties key, object value)
     {
         BlockMetaData data = this.MetaData;
@@ -363,10 +349,18 @@ public class CodeBlock : BlockControl
         }
         this.MetaData = data;
     }
+
+    /// <summary>
+    /// 使用指定方块的数据覆盖原始数据
+    /// </summary>
     public void CopyDataFrom(CodeBlock other)
     {
         this.MetaData = other.metaData;
     }
+
+    /// <summary>
+    /// 弹出方块，这会重置方块间的从属关系
+    /// </summary>
     public void PopUp()
     {
         if (this.ParentBlock is null) return;
@@ -379,6 +373,11 @@ public class CodeBlock : BlockControl
         this.ParentBlock = null;
         this.DependentSlot = 0;
     }
+
+    /// <summary>
+    /// 设置方块在画布上的遮挡关系
+    /// </summary>
+    /// <param name="isRelative">是否为相对值</param>
     public void SetZIndex(int value, bool isRelative = false)
     {
         if (isRelative) value = checked(value + Canvas.GetZIndex(this));
@@ -392,6 +391,11 @@ public class CodeBlock : BlockControl
 
     bool moved = false;
     private (double x, double y) prevPosition;
+
+    /// <summary>
+    /// 设置方块在画布上的坐标
+    /// </summary>
+    /// <param name="isRelative">是否为相对值</param>
     public void SetPosition(double x, double y, bool isRelative = false)
     {
         moved = true;
@@ -418,12 +422,24 @@ public class CodeBlock : BlockControl
             block?.SetPosition(x + Size.Width - SlotHeight, y + i * 48);
         }
     }
+
+    /// <summary>
+    /// 移动自身到指定方块的位置
+    /// </summary>
+    /// <param name="dx">水平偏移量</param>
+    /// <param name="dy">垂直偏移量</param>
     public void MoveToBlock(CodeBlock other, double dx = 0, double dy = 0)
     {
         double x = Canvas.GetLeft(other) + dx;
         double y = Canvas.GetTop(other) + dy;
         SetPosition(x, y);
     }
+
+    /// <summary>
+    /// 移动此方块到队列的尾端
+    /// </summary>
+    /// <param name="replacer">引发此事件的方块</param>
+    /// <param name="replace">是否取代原先的从属关系</param>
     public void MoveToBack(CodeBlock replacer, bool replace = true)
     {
         // 定位到队列的尾端
@@ -438,8 +454,19 @@ public class CodeBlock : BlockControl
         }
         this.MoveToBlock(endBlock, 0, endBlock.Size.Height - SlotHeight);
     }
-    public void ReturnToPreviousPosition() { if (moved) SetPosition(prevPosition.x, prevPosition.y); }
-    public async Task PlayScaleAnimation(double from = 1.0, double to = 0.0, int delay = 5)
+
+    /// <summary>
+    /// 将方块移到最后记录的坐标
+    /// </summary>
+    public void ReturnToLastRecordedPosition() { if (moved) SetPosition(prevPosition.x, prevPosition.y); moved = false; }
+
+    /// <summary>
+    /// 以指定间隔时间播放缩放动画
+    /// </summary>
+    /// <param name="from">开始前的缩放倍率</param>
+    /// <param name="to">结束后的缩放倍率</param>
+    /// <param name="delay">(可选) 间隔时间，单位毫秒</param>
+    public async Task PlayScaleAnimation(double from, double to, int delay = 5)
     {
         if (from == to) return;
         bool isAskedToZoomIn = (to > from);
@@ -458,13 +485,20 @@ public class CodeBlock : BlockControl
             await Task.Delay(delay);
         }
     }
+
+    /// <summary>
+    /// 从指定画布上移除方块
+    /// </summary>
+    /// <param name="rootCanvas">方块所在的画布</param>
+    /// <param name="deleteAll">(可选) 是否删除依附自身的所有方块</param>
+    /// <returns></returns>
     public async Task RemoveAsync(Canvas rootCanvas, bool deleteAll = true)
     {
         if (rootCanvas == null || HasBeenRemoved) return;
         if (ContextMenu.IsOpen) ContextMenu.Hide();
 
         // 删除方块的缩小动画
-        await PlayScaleAnimation(delay: 5);
+        await PlayScaleAnimation(1.0, 0.0);
 
         if (deleteAll) BottomBlock?.RemoveAsync(rootCanvas);
         else if(this.DependentSlot == -1)
@@ -487,6 +521,7 @@ public class CodeBlock : BlockControl
             else block?.PopUp();
         }
     }
+
     public (int x, int y, double dx, double dy) GetRelativeQuadrant(CodeBlock targetBlock)
     {
         //  x,  y 定义: 右下为正，左上为负，中间为零

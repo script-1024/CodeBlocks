@@ -25,25 +25,41 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
 
     // 方块焦点改变事件
     public delegate void FocusChangedHandler();
+
+    /// <summary>
+    /// 选中方块更变时将引发此事件
+    /// </summary>
     public event FocusChangedHandler FocusChanged;
 
+    /// <summary>
+    /// 用于取得垃圾桶的中心坐标，由外部指定
+    /// </summary>
     public Func<Point> GetTrashCanPosition;
+
+    /// <summary>
+    /// 删除方块的处理程序，由外部指定
+    /// </summary>
     public Action<CodeBlock> RemoveBlock;
 
     #endregion
 
     #region "Methods"
 
-    private Point GetCenterPointRelativeToworkspace(Point self, Size size)
+    /// <summary>
+    /// 取得控件在工作区的中心坐标
+    /// </summary>
+    private Point TransformPositionToWorkspace(Point position, Size size)
     {
-        var point = new Point()
+        return new Point()
         {
-            X = (self.X * scroller.ZoomFactor - scroller.HorizontalOffset) + (size.Width * scroller.ZoomFactor) / 2,
-            Y = (self.Y * scroller.ZoomFactor - scroller.VerticalOffset) + (size.Height * scroller.ZoomFactor) / 2
+            X = (position.X * scroller.ZoomFactor - scroller.HorizontalOffset) + (size.Width * scroller.ZoomFactor) / 2,
+            Y = (position.Y * scroller.ZoomFactor - scroller.VerticalOffset) + (size.Height * scroller.ZoomFactor) / 2
         };
-        return point;
     }
-
+    
+    /// <summary>
+    /// 检查方块是否已接触到垃圾桶
+    /// </summary>
     private bool? IsContactedWithTrashCan(CodeBlock thisBlock, Point self, Size size)
     {
         // 未指定必要的函数，无法继续计算，直接返回
@@ -51,7 +67,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
 
         // 计算中心点距离
         var trashCanCenter = GetTrashCanPosition();
-        var selfCenter = GetCenterPointRelativeToworkspace(self, size);
+        var selfCenter = TransformPositionToWorkspace(self, size);
         var xDiff = trashCanCenter.X - selfCenter.X;
         var yDiff = trashCanCenter.Y - selfCenter.Y;
 
@@ -68,6 +84,9 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         else return false;
     }
 
+    /// <summary>
+    /// 检查指定方块和其他物件的重叠状态
+    /// </summary>
     public void CheckCollisions(CodeBlock thisBlock)
     {
         var self = new Point(Canvas.GetLeft(thisBlock), Canvas.GetTop(thisBlock));
@@ -167,6 +186,9 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
 
     #region "Events"
 
+    /// <summary>
+    /// 方块被创建时引发的事件
+    /// </summary>
     public void BlockCreated(CodeBlock block, BlockCreatedEventArgs e)
     {
         e ??= BlockCreatedEventArgs.Null;
@@ -182,6 +204,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         block.ManipulationDelta += CodeBlock_ManipulationDelta;
         block.ManipulationCompleted += CodeBlock_ManipulationCompleted;
     }
+
     private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
     {
         ResetGhostBlock();
@@ -218,6 +241,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
 
         thisBlock.DependentSlot = 0;
     }
+
     private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
     {
         if (FocusBlock is null) return;
@@ -238,6 +262,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         // 碰撞检查
         CheckCollisions(thisBlock);
     }
+
     private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
     {
         FocusBlock = null;
@@ -271,5 +296,4 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
     }
 
     #endregion
-
 }
