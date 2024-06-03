@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using Windows.Storage;
+using System.Threading.Tasks;
 
 namespace CodeBlocks.Core;
 public sealed class CodeBlockDefinition
@@ -38,6 +39,13 @@ public sealed class CodeBlockDefinition
         FilePath = null;
         FileReadFailed?.Invoke(msg);
         return false; // 仅用于方法 ReadFile() 中回传 false
+    }
+
+    public async Task<bool> ReadFileAsync(string path)
+    {
+        string s = path;
+        StorageFile file = await StorageFile.GetFileFromPathAsync(path);
+        return ReadFile(file);
     }
 
     public bool ReadFile(StorageFile file)
