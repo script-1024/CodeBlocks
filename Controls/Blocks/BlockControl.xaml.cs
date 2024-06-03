@@ -14,13 +14,13 @@ namespace CodeBlocks.Controls
         public BlockControl()
         {
             InitializeComponent();
-            if (fillColor == default) BlockColor = ColorHelper.FromInt(0x505050);
+            if (fillColor == default) BlockColor = ColorHelper.FromHexString("#505050");
         }
 
         private void SetColor(Color value)
         {
-            var fillColorBrush = new SolidColorBrush(value);
-            var borderColorBrush = new SolidColorBrush(borderColor);
+            var fillColorBrush = value.GetSolidColorBrush();
+            var borderColorBrush = borderColor.GetSolidColorBrush();
             BlockBorder.Stroke = borderColorBrush;
             BlockBorder.StrokeThickness = 2;
             BlockBorder.Fill = fillColorBrush;

@@ -150,7 +150,7 @@ namespace CodeBlocks
                 if (obj is not SolidColorBrush brush) continue;
                 var rect = new Rectangle();
                 var color = brush.Color;
-                rect.Fill = new SolidColorBrush(color);
+                rect.Fill = color.GetSolidColorBrush();
                 gridView.Items.Add(rect);
             }
         }
@@ -267,7 +267,7 @@ namespace CodeBlocks
             var rect = (Rectangle)e.ClickedItem;
             var color = ((SolidColorBrush)rect.Fill).Color;
 
-            CurrentColor.Background = new SolidColorBrush(color);
+            CurrentColor.Background = color.GetSolidColorBrush();
             SaveBlockColor();
             isFileSaved = false;
 
@@ -402,7 +402,7 @@ namespace CodeBlocks
 
             if (activeFile == null)
             {
-                DemoBlock.BlockColor = ColorHelper.FromInt(0xFFC800);
+                DemoBlock.BlockColor = ColorHelper.FromHexString("#FFC800");
                 DemoBlock.MetaData = new() { Type = BlockType.Action, Variant = 10 };
                 DemoBlock.TranslationKey = "Blocks.Demo";
             }
@@ -422,7 +422,7 @@ namespace CodeBlocks
 
                 BlockIDTextBox.Text = cbd.Identifier;
                 BlockTypeComboBox.SelectedIndex = (int)cbd.BlockType;
-                CurrentColor.Background = new SolidColorBrush(DemoBlock.BlockColor);
+                CurrentColor.Background = DemoBlock.BlockColor.GetSolidColorBrush();
 
                 DemoBlock.SetData(BlockProperties.Type, cbd.BlockType);
                 DemoBlock.SetData(BlockProperties.Variant, variant);

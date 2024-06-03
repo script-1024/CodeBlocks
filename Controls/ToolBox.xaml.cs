@@ -107,7 +107,7 @@ namespace CodeBlocks.Controls
             {
                 Content = new Ellipse()
                 {
-                    Fill = ColorHelper.FromHexString(element.GetChildElement("color").GetString()).ToSolidColorBrush(),
+                    Fill = ColorHelper.FromHexString(element.GetChildElement("color").GetString()).GetSolidColorBrush(),
                     Width = 36, Height = 36
                 },
                 Margin = new(5, 3, 5, 0),
@@ -177,7 +177,7 @@ namespace CodeBlocks.Controls
 
             CodeBlock block = new()
             {
-                BlockColor = ColorHelper.FromInt(cbd.ColorHex),
+                BlockColor = ColorHelper.FromInt(cbd.ColorInt),
                 TranslationsDict = cbd.TranslationsDict,
                 Identifier = cbd.Identifier,
                 MetaData = data

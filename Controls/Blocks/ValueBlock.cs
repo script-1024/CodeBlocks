@@ -27,7 +27,7 @@ namespace CodeBlocks.Controls
         }
 
         private readonly TextBlock t1 = new() { Text = "“ " }, t2 = new() { Text = " ”" };
-        private readonly TextBox txtbox = new() { VerticalContentAlignment = VerticalAlignment.Center, BorderBrush = new SolidColorBrush(Colors.Transparent), CornerRadius = new(3) };
+        private readonly TextBox txtbox = new() { VerticalContentAlignment = VerticalAlignment.Center, BorderBrush = Colors.Transparent.GetSolidColorBrush(), CornerRadius = new(3) };
 
         // 覆写预设行为，用于修复方块被复制后未正确初始化的错误。
         public override event BlockCreatedEventHandler OnBlockCreated;
@@ -35,7 +35,7 @@ namespace CodeBlocks.Controls
         public ValueBlock(BlockCreatedEventHandler handler, BlockCreatedEventArgs args = null) : base(null, args)
         {
             MetaData = new() { Type = BlockType.Value, Variant = 1, Size = this.Size };
-            t1.Foreground = t2.Foreground = new SolidColorBrush(Colors.White);
+            t1.Foreground = t2.Foreground = Colors.White.GetSolidColorBrush();
             t1.FontFamily = t2.FontFamily = txtbox.FontFamily = CodeBlock.FontFamily;
             t1.FontSize = t2.FontSize = CodeBlock.FontSize;
             var c = this.Content as Canvas;
@@ -112,7 +112,7 @@ namespace CodeBlocks.Controls
             Canvas.SetLeft(t2, x+w-58);
         }
 
-        public override CodeBlock Copy(BlockCreatedEventArgs args)
+        public override CodeBlock Clone(BlockCreatedEventArgs args)
         {
             var block = new ValueBlock(this.OnBlockCreated, args)
             {
@@ -130,7 +130,7 @@ namespace CodeBlocks.Controls
                     var left = Canvas.GetLeft(thisBlock) + 30;
                     var top = Canvas.GetTop(thisBlock) + 30;
                     var newArgs = new BlockCreatedEventArgs(left, top, thisBlock);
-                    block.RightBlocks[i] = thisBlock.Copy(newArgs);
+                    block.RightBlocks[i] = thisBlock.Clone(newArgs);
                 }
             }
 
