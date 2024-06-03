@@ -7,15 +7,33 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
         </Grid.ColumnDefinitions>
-        
-        <StackPanel x:Name="PositioningTags" Grid.Column="0"/>
+
+        <StackPanel x:Name="PositioningTags"
+                    Background="{ThemeResource FlatBackgroundFillColorSecondaryBrush}"
+                    BorderBrush="{ThemeResource FlatBorderColorBrush}"
+                    BorderThickness="0,0,1,0" Grid.Column="0">
+        </StackPanel>
 
         <ScrollViewer x:Name="Scroller" Grid.Column="1">
-            <Canvas x:Name="BlockStore"/>
+            <StackPanel x:Name="BlocksDepot" Width="200"
+                        BorderThickness="0,0,1,0"
+                        BorderBrush="{ThemeResource FlatBorderColorBrush}"
+                        Background="{ThemeResource FlatBackgroundFillColorTertiaryBrush}">
+                
+            </StackPanel>
         </ScrollViewer>
-        
+
+        <AppBarButton
+            x:Name="ClosePanelButton" Grid.Column="2"
+            Width="40" Height="50" Click="ClosePanelButton_Click">
+            <AppBarButton.Icon>
+                <FontIcon Glyph="&#xE8A0;"/>
+            </AppBarButton.Icon>
+        </AppBarButton>
+
     </Grid>
 </UserControl>

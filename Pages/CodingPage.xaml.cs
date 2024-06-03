@@ -31,7 +31,7 @@ namespace CodeBlocks.Pages
         {
             UICanvas.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             UICanvas.ManipulationDelta += UICanvas_ManipulationDelta;
-
+            /*
             #region "Test Only"
 
             var hButton = new Button() { Content = "New Hat Block" };
@@ -67,7 +67,7 @@ namespace CodeBlocks.Pages
             };
 
             #endregion
-
+            */
             ZoomIn.PointerPressed += (_, _) => ZoomChange(zoomIn: true);
             ZoomOut.PointerPressed += (_, _) => ZoomChange(zoomIn: false);
         }
@@ -135,6 +135,7 @@ namespace CodeBlocks.Pages
             Canvas.SetLeft(TrashCan, UICanvas.ActualWidth - 100);
             Canvas.SetTop(TrashCan, UICanvas.ActualHeight - 100);
 
+            ToolBox.Height = UICanvas.ActualHeight;
             Scroller.Width = UICanvas.ActualWidth;
             if (UICanvas.ActualHeight > 12) Scroller.Height = UICanvas.ActualHeight - 12;
         }
