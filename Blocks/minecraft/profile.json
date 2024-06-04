@@ -8,7 +8,8 @@
                 "en-US": "Event"
             },
             "blocks": {
-                "minecraft:when_datapack_loaded": "event\\when_datapack_loaded"
+                "minecraft:when_datapack_loaded": "event\\when_datapack_loaded",
+                "minecraft:when_each_tick_starts": "event\\when_each_tick_starts"
             }
         },
         "command": {
