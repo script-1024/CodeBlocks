@@ -228,12 +228,12 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         Canvas.SetTop(block, e.Position.Y);
 
         block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-        block.ManipulationStarted += CodeBlock_ManipulationStarted;
-        block.ManipulationDelta += CodeBlock_ManipulationDelta;
-        block.ManipulationCompleted += CodeBlock_ManipulationCompleted;
+        block.ManipulationStarted += BlockManipulationStarted;
+        block.ManipulationDelta += BlockManipulationDelta;
+        block.ManipulationCompleted += BlockManipulationCompleted;
     }
 
-    private void CodeBlock_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+    public void BlockManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
     {
         ResetGhostBlock();
         var thisBlock = sender as CodeBlock;
@@ -272,7 +272,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         thisBlock.DependentSlot = 0;
     }
 
-    private void CodeBlock_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+    public void BlockManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
     {
         if (FocusBlock is null) return;
         var thisBlock = sender as CodeBlock;
@@ -293,7 +293,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         CheckCollisions(thisBlock);
     }
 
-    private void CodeBlock_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+    public void BlockManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
     {
         FocusBlock = null;
 
@@ -323,14 +323,6 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
                 right[targetSlot] = thisBlock;
             }
         }
-    }
-
-    public void ForceToManipulateBlock(CodeBlock block, ManipulationDeltaRoutedEventArgs e)
-    {
-        if (block is null) return;
-
-        FocusBlock = block;
-        CodeBlock_ManipulationDelta(block, e);
     }
 
     #endregion
