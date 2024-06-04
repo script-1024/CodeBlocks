@@ -23,44 +23,33 @@ public class MessageDialog
     
     private void SetDialogButtons(DialogVariant variant)
     {
-        bool hasPrimaryButton = false;
+        // 重置对话框按钮文本
+        dialog.PrimaryButtonText = dialog.SecondaryButtonText = dialog.CloseButtonText = null;
 
-        if ((int)(variant & DialogVariant.Yes) > 0)
-        {
+        // 主要按钮
+        if (variant.HasFlag(DialogVariant.Yes))
             dialog.PrimaryButtonText = GetLocalizedString("Messages.Button.Yes");
-            hasPrimaryButton = true;
-        }
-        if ((int)(variant & DialogVariant.Confirm) > 0)
-        {
 
+        if (variant.HasFlag(DialogVariant.Confirm))
             dialog.PrimaryButtonText = GetLocalizedString("Messages.Button.Confirm");
-            hasPrimaryButton = true;
-        }
-        if ((int)(variant & DialogVariant.Save) > 0)
-        {
+
+        if (variant.HasFlag(DialogVariant.Save))
             dialog.PrimaryButtonText = GetLocalizedString("Messages.Button.Save");
-            hasPrimaryButton = true;
-        }
-        if ((int)(variant & DialogVariant.Giveup) > 0)
-        {
+
+        // 次要按钮
+        if (variant.HasFlag(DialogVariant.Giveup))
             dialog.SecondaryButtonText = GetLocalizedString("Messages.Button.Giveup");
-        }
-        if ((int)(variant & DialogVariant.Cancel) > 0)
-        {
+
+        // 关闭按钮
+        if (variant.HasFlag(DialogVariant.Cancel))
             dialog.CloseButtonText = GetLocalizedString("Messages.Button.Cancel");
-        }
 
-        if (variant == DialogVariant.No || variant == DialogVariant.YesNo)
-        {
-            dialog.CloseButtonText = GetLocalizedString("Messages.Button.No");
-        }
-        else if (variant == DialogVariant.YesNoCancel)
-        {
-            dialog.SecondaryButtonText = GetLocalizedString("Messages.Button.No");
-        }
+        // 'No' 的位置不固定，需要特别判断
+        if (variant == DialogVariant.No || variant == DialogVariant.YesNo) dialog.CloseButtonText = GetLocalizedString("Messages.Button.No");
+        else if (variant == DialogVariant.YesNoCancel) dialog.SecondaryButtonText = GetLocalizedString("Messages.Button.No");
 
-        if (hasPrimaryButton) dialog.DefaultButton = ContentDialogButton.Primary;
-        else dialog.DefaultButton = ContentDialogButton.Close;
+        // 若未指定主要按钮，则将预设按键设为关闭按钮
+        dialog.DefaultButton = (dialog.PrimaryButtonText is null) ? ContentDialogButton.Close : ContentDialogButton.Primary;
     }
 
     public async Task<ContentDialogResult> ShowAsync(string msgId, DialogVariant variant = DialogVariant.Confirm)
@@ -76,7 +65,6 @@ public class MessageDialog
         
         dialog.Title = GetLocalizedString($"Messages.{msgId}.Title");
         dialog.Content = GetLocalizedString($"Messages.{msgId}.Description");
-        dialog.PrimaryButtonText = dialog.SecondaryButtonText = dialog.CloseButtonText = null; // 重置按键文本
 
         SetDialogButtons(variant);
 
