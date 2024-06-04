@@ -46,28 +46,58 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
     #region "Methods"
 
     /// <summary>
-    /// 取得控件在工作区的中心坐标
+    /// 将控件坐标由工作区变换至窗口空间
     /// </summary>
-    private Point TransformPositionToWorkspace(Point position, Size size)
+    /// <returns>控件对应于窗口空间的左上角坐标。若指定了控件的尺寸，则改为中心点坐标</returns>
+    public Point TransformPositionFromWorkspaceToWindow(Point position, Size? size = null)
     {
-        return new Point()
+        var point = new Point()
         {
-            X = (position.X * scroller.ZoomFactor - scroller.HorizontalOffset) + (size.Width * scroller.ZoomFactor) / 2,
-            Y = (position.Y * scroller.ZoomFactor - scroller.VerticalOffset) + (size.Height * scroller.ZoomFactor) / 2
+            X = (position.X * scroller.ZoomFactor - scroller.HorizontalOffset),
+            Y = (position.Y * scroller.ZoomFactor - scroller.VerticalOffset)
         };
+
+        if (size != null)
+        {
+            point.X += (size.Value.Width * scroller.ZoomFactor) / 2;
+            point.Y += (size.Value.Height * scroller.ZoomFactor) / 2;
+        }
+
+        return point;
     }
-    
+
+    /// <summary>
+    /// 将控件坐标由窗口空间变换至工作区
+    /// </summary>
+    /// <returns>控件对应于工作区的左上角坐标。若指定了控件的尺寸，则改为中心点坐标</returns>
+    public Point TransformPositionFromWindowToWorkspace(Point position, Size? size = null)
+    {
+        var point = new Point()
+        {
+            X = (position.X + scroller.HorizontalOffset / scroller.ZoomFactor),
+            Y = (position.Y + scroller.VerticalOffset / scroller.ZoomFactor)
+        };
+
+        if (size != null)
+        {
+            point.X += (size.Value.Width * scroller.ZoomFactor) / 2;
+            point.Y += (size.Value.Height * scroller.ZoomFactor) / 2;
+        }
+
+        return point;
+    }
+
     /// <summary>
     /// 检查方块是否已接触到垃圾桶
     /// </summary>
-    private bool? IsContactedWithTrashCan(CodeBlock thisBlock, Point self, Size size)
+    private bool? IsContactedWithTrashCan(CodeBlock thisBlock, Point position, Size size)
     {
         // 未指定必要的函数，无法继续计算，直接返回
         if (GetTrashCanPosition is null || RemoveBlock is null) return null;
 
         // 计算中心点距离
         var trashCanCenter = GetTrashCanPosition();
-        var selfCenter = TransformPositionToWorkspace(self, size);
+        var selfCenter = TransformPositionFromWorkspaceToWindow(position, size);
         var xDiff = trashCanCenter.X - selfCenter.X;
         var yDiff = trashCanCenter.Y - selfCenter.Y;
 
@@ -197,8 +227,6 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         Canvas.SetLeft(block, e.Position.X);
         Canvas.SetTop(block, e.Position.Y);
 
-        block.PointerPressed += (_, _) => FocusBlock = block;
-        block.PointerReleased += (_, _) => FocusBlock = null;
         block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
         block.ManipulationStarted += CodeBlock_ManipulationStarted;
         block.ManipulationDelta += CodeBlock_ManipulationDelta;
@@ -209,8 +237,10 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
     {
         ResetGhostBlock();
         var thisBlock = sender as CodeBlock;
-        thisBlock.SetZIndex(+5, true);
         ghostBlock.CopyDataFrom(thisBlock);
+        thisBlock.SetZIndex(+5, true);
+
+        FocusBlock = thisBlock;
 
         ghostBlock.Size = thisBlock.Size;
         var endBlock = thisBlock.BottomBlock;
@@ -293,6 +323,14 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
                 right[targetSlot] = thisBlock;
             }
         }
+    }
+
+    public void ForceToManipulateBlock(CodeBlock block, ManipulationDeltaRoutedEventArgs e)
+    {
+        if (block is null) return;
+
+        FocusBlock = block;
+        CodeBlock_ManipulationDelta(block, e);
     }
 
     #endregion

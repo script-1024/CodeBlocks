@@ -285,9 +285,9 @@ public class CodeBlock : BlockControl
     /// <summary>
     /// 取得方块的克隆对象
     /// </summary>
-    public virtual CodeBlock Clone(BlockCreatedEventArgs args)
+    public virtual CodeBlock Clone(BlockCreatedEventHandler eventHandler, BlockCreatedEventArgs args = null)
     {
-        var block = new CodeBlock(this.OnBlockCreated, args)
+        var block = new CodeBlock(eventHandler, args)
         {
             MetaData = this.MetaData,
             BlockColor = this.BlockColor,
@@ -299,20 +299,26 @@ public class CodeBlock : BlockControl
 
         for (int i = 0; i < this.RightBlocks.Length; i++)
         {
-            var thisBlock = this.RightBlocks[i];
-            if (thisBlock is null) block.RightBlocks[i] = null;
-            else
+            if (this.RightBlocks.TryGetValue(i, out var thisBlock))
             {
+                if (thisBlock is null) continue;
                 var left = Canvas.GetLeft(thisBlock) + 30;
                 var top = Canvas.GetTop(thisBlock) + 30;
-                var newArgs = new BlockCreatedEventArgs(left, top, thisBlock);
-                block.RightBlocks[i] = thisBlock.Clone(newArgs);
+                var newArgs = new BlockCreatedEventArgs(left, top, block);
+                var newBlock = thisBlock.Clone(eventHandler, newArgs);
+                block.RightBlocks.TrySetValue(i, newBlock);
             }
+            else block.RightBlocks.TrySetValue(i, null);
         }
 
         block.RefreshBlockText();
         return block;
     }
+
+    /// <summary>
+    /// 取得方块的克隆对象
+    /// </summary>
+    public virtual CodeBlock Clone(BlockCreatedEventArgs args = null) => Clone(this.OnBlockCreated, args);
 
     /// <summary>
     /// 更改方块数据

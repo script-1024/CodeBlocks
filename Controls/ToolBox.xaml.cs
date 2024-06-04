@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.Generic;
@@ -10,9 +11,6 @@ using Windows.Foundation;
 using Windows.Storage;
 using CodeBlocks.Core;
 
-/// <summary>
-/// 工具箱
-/// </summary>
 namespace CodeBlocks.Controls
 {
     public sealed partial class ToolBox : UserControl
@@ -20,9 +18,7 @@ namespace CodeBlocks.Controls
         // 暫存CBD以便可重复使用
         private static readonly Dictionary<string /* ID */, CodeBlockDefinition /* FILE */> Register = new();
         private readonly App app = App.Current as App;
-
         private bool canScroll = true;
-        private int registedCategories = 0;
 
         private bool isOpen = true;
         public bool IsOpen
@@ -38,6 +34,8 @@ namespace CodeBlocks.Controls
                 else fontIcon.Glyph = "\uE89F";
             }
         }
+
+        public BlockDragger BlockDragger { get; set; }
 
         private void ClosePanelButton_Click(object sender, RoutedEventArgs e) => IsOpen = !isOpen;
 
@@ -62,7 +60,6 @@ namespace CodeBlocks.Controls
 
         private async void ReloadBlocks()
         {
-            registedCategories = 0;
             PositioningTags.Children.Clear();
             BlocksDepot.Children.Clear();
             var directories = Directory.GetDirectories($"{App.Path}Blocks\\");
@@ -88,8 +85,12 @@ namespace CodeBlocks.Controls
                                 var block = await CreateBlockFromPathAsync($"{dir}\\{blockFilePath}.cbd");
                                 block.Margin = new(20, 20, 12, 0);
                                 block.HorizontalAlignment = HorizontalAlignment.Left;
+                                block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+
+                                block.ManipulationStarted += Block_ManipulationStart;
+                                block.ManipulationDelta += Block_ManipulationDelta;
+                                block.ManipulationCompleted += Block_ManipulationCompleted;
                                 BlocksDepot.Children.Add(block);
-                                await Task.Delay(10);
                             }
 
                             TextBlock blank = new() { Margin = new(24) };
@@ -138,7 +139,6 @@ namespace CodeBlocks.Controls
             }
 
             btn.Click += (_, _) => OnButtonClick();
-            registedCategories += 1;
             app.OnLanguageChanged += RefreshText;
             BlocksDepot.Children.Add(label);
             RefreshText();
@@ -189,13 +189,34 @@ namespace CodeBlocks.Controls
             return block;
         }
 
-        private void BlocksDepot_ManipulationDelta(object sender, Microsoft.UI.Xaml.Input.ManipulationDeltaRoutedEventArgs e)
+        private void BlocksDepot_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (canScroll)
-            {
-                var newY = Scroller.VerticalOffset - e.Delta.Translation.Y;
-                Scroller.ChangeView(null, newY, null, true);
-            }
+            if (!canScroll) return;
+            var newY = Scroller.VerticalOffset - e.Delta.Translation.Y;
+            Scroller.ChangeView(null, newY, null, true);
         }
+
+        private void Block_ManipulationStart(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            canScroll = false;
+            var thisBlock = sender as CodeBlock;
+            var selfPosition = thisBlock.TransformToVisual(BlocksDepot).TransformPoint(new(PositioningTags.ActualWidth, Scroller.VerticalOffset));
+            var transformedPosition = BlockDragger.TransformPositionFromWindowToWorkspace(selfPosition);
+            var args = new BlockCreatedEventArgs(transformedPosition, thisBlock);
+            var newBlock = thisBlock.Clone(BlockDragger.BlockCreated, args);
+            thisBlock.Tag = newBlock;
+        }
+        private void Block_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var clonedBlock = (sender as CodeBlock).Tag as CodeBlock;
+            if (!clonedBlock.HasBeenRemoved) BlockDragger.ForceToManipulateBlock(clonedBlock, e);
+        }
+
+        private void Block_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            (sender as CodeBlock).Tag = null;
+            canScroll = true;
+        }
+
     }
 }
