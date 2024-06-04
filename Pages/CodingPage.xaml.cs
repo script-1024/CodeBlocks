@@ -10,7 +10,7 @@ namespace CodeBlocks.Pages
 {
     public sealed partial class CodingPage : Page
     {
-        private bool canCanvasScroll = true;
+        private bool canCanvasScroll = false;
         private readonly MessageDialog dialog = new();
         private readonly App app = Application.Current as App;
         private readonly BlockDragger dragger;
@@ -85,6 +85,10 @@ namespace CodeBlocks.Pages
             var centerX = (BlockCanvas.ActualWidth - Scroller.ActualWidth) / 2;
             var centerY = (BlockCanvas.ActualHeight - Scroller.ActualHeight) / 2;
             Scroller.ChangeView(centerX, centerY, null, true);
+
+            // 鼠标离开作用区后禁止画布能被拖动
+            Scroller.PointerPressed += (_, _) => canCanvasScroll = (dragger.FocusBlock == null);
+            Scroller.PointerReleased += (_, _) => canCanvasScroll = false;
         }
         private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
         {
