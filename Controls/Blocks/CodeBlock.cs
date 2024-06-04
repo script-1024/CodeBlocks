@@ -216,7 +216,8 @@ public class CodeBlock : BlockControl
     private void Resize(Core.Size size)
     {
         // 确保方块高度合法
-        var minHeight = (metaData.Slots > 0) ? SlotWidth * (metaData.Slots * 3) + SlotHeight : 58;
+        var minHeight = (metaData.Slots > 1) ? SlotWidth * (metaData.Slots * 3) : SlotWidth * 3;
+        if (metaData.Variant.CheckIfContain(0b_1000)) minHeight += SlotHeight;
         if (size.Height < minHeight) size.Height = minHeight;
 
         // 确保方块宽度合法
@@ -539,11 +540,11 @@ public class CodeBlock : BlockControl
         int targetW = targetBlock.Size.Width;
         int targetH = targetBlock.Size.Height;
 
-        if (self.X + 10 > target.X + targetW - 10) rq.x = 1;
-        if (self.X + Size.Width < target.X + 10) rq.x = -1;
+        if (self.X + SlotHeight > target.X + targetW - SlotHeight) rq.x = 1;
+        if (self.X + Size.Width < target.X + SlotHeight) rq.x = -1;
 
-        if (self.Y + 10 > target.Y + targetH - 10) rq.y = 1;
-        if (self.Y + Size.Height < target.Y + 10) rq.y = -1;
+        if (self.Y + SlotHeight > target.Y + targetH - SlotHeight) rq.y = 1;
+        if (self.Y + Size.Height < target.Y + SlotHeight) rq.y = -1;
 
         if (rq.x > 0) rq.dx = (self.X + Size.Width) - (target.X + targetW);
         else if (rq.x < 0) rq.dx = target.X - self.X;
@@ -559,7 +560,7 @@ public class CodeBlock : BlockControl
     #region "Static"
 
     public static readonly int SlotWidth = 16;
-    public static readonly int SlotHeight = 10;
+    public static readonly int SlotHeight = 8;
     public static readonly new FontFamily FontFamily = new("/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC");
     public static readonly new int FontSize = 15;
 
