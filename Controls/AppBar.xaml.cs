@@ -63,7 +63,7 @@ namespace CodeBlocks.Controls
             var wnd = app.MainWindow;
             wnd.Tab.Visibility = Visibility.Collapsed;
             wnd.RootGrid.Children.Add(new SettingsPage());
-            wnd.UpdateDragRects(48);
+            wnd.UpdateDragRects(54);
         }
     }
 }

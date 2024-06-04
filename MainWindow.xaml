@@ -6,7 +6,7 @@
     xmlns:ctrl="using:CodeBlocks.Controls">
 
     <Grid x:Name="RootGrid" x:FieldModifier="public">
-        <TabView x:Name="Tab" x:FieldModifier="public" IsAddTabButtonVisible="False">
+        <TabView x:Name="Tab" x:FieldModifier="public">
 
             <TabView.Resources>
                 <ResourceDictionary>

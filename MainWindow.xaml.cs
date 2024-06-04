@@ -33,6 +33,7 @@ namespace CodeBlocks
                 fe.RequestedTheme = (ElementTheme)app.CurrentThemeId;
 
             this.SizeChanged += (_, _) => UpdateDragRects();
+            Tab.AddTabButtonClick += (_, _) => AddNewTab(typeof(CodingPage));
             AddNewTab(typeof(CodingPage));
         }
 
@@ -50,15 +51,19 @@ namespace CodeBlocks
 
         public void UpdateDragRects()
         {
-            int split = Tab.TabItems.Count * 240 + 48;
-            var left = new Windows.Graphics.RectInt32(0, 0, split, 24);
-            var right = new Windows.Graphics.RectInt32(split, 0, AppWindow.Size.Width, 48);
-            AppWindow.TitleBar.SetDragRectangles([left, right]);
+            const int iconSize = 54; // 应用图示尺寸，同时也是标题栏的高度
+
+            // 标签页宽度 240, 上方间距(可拖动) 24, 右侧 '添加按钮' 宽度 40
+            int split = Tab.TabItems.Count * 240 + iconSize + 40;
+            var icon = new Windows.Graphics.RectInt32(0, 0, iconSize, iconSize);
+            var tab = new Windows.Graphics.RectInt32(0, 0, split, 24);
+            var footer = new Windows.Graphics.RectInt32(split, 0, AppWindow.Size.Width, iconSize);
+            AppWindow.TitleBar.SetDragRectangles([icon, tab, footer]);
         }
 
         public void UpdateDragRects(int split)
         {
-            var right = new Windows.Graphics.RectInt32(split, 0, AppWindow.Size.Width, 48);
+            var right = new Windows.Graphics.RectInt32(split, 0, AppWindow.Size.Width, 54);
             AppWindow.TitleBar.SetDragRectangles([right]);
         }
 
@@ -102,6 +107,15 @@ namespace CodeBlocks
             int split = (int)(item.ActualOffset.X + item.ActualWidth);
             if (split == 0) split = 240;
             UpdateDragRects();
+
+            item.CloseRequested += TabItem_CloseRequested;
+        }
+
+        private void TabItem_CloseRequested(TabViewItem sender, TabViewTabCloseRequestedEventArgs args)
+        {
+            Tab.TabItems.Remove(sender);
+            if (Tab.TabItems.Count == 0) Close(true);
+            else UpdateDragRects();
         }
     }
 }
