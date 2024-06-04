@@ -286,7 +286,21 @@ namespace CodeBlocks
         private void BlockIDTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             isFileSaved = false;
-            string id = BlockIDTextBox.Text;
+
+            if (CheckBlockIDTextBlock(out string id))
+            {
+                DemoBlock.Identifier = id;
+                cbd.Identifier = id;
+            }
+        }
+
+        #endregion
+
+        #region "Methods"
+
+        private bool CheckBlockIDTextBlock(out string id)
+        {
+            id = BlockIDTextBox.Text;
             int checkResult = CheckIsNamespaceValid(id);
             if (checkResult > 1)
             {
@@ -302,21 +316,13 @@ namespace CodeBlocks
                 else if (checkResult == 4) subtitle = "格式错误";
 
                 SetTipState(IdTip, isOpen: true, 0x1, title, subtitle);
-                return;
+                return false;
             }
-            else
-            {
-                SetTipState(IdTip, isOpen: false, 0x1);
-                if (checkResult == 0) id = $"custom:{id}";
-            }
-
-            DemoBlock.Identifier = id;
-            cbd.Identifier = id;
+                
+            SetTipState(IdTip, isOpen: false, 0x1);
+            if (checkResult == 0) id = $"custom:{id}";
+            return true;
         }
-
-        #endregion
-
-        #region "Methods"
 
         private void SaveBlockColor()
         {
@@ -382,6 +388,7 @@ namespace CodeBlocks
                 }
                 
                 // 成功
+                isFileSaved = true;
                 return true;
             }
 
@@ -428,13 +435,17 @@ namespace CodeBlocks
                 DemoBlock.SetData(BlockProperties.Variant, variant);
 
                 CodeTextBox.Text = cbd.McfCode;
-                isFileSaved = true;
             }
 
             var blockX = (DisplayCanvas.ActualWidth - DemoBlock.Size.Width) / 2;
             var blockY = (DisplayCanvas.ActualHeight - DemoBlock.Size.Height) / 2;
             Canvas.SetLeft(DemoBlock, blockX);
             Canvas.SetTop(DemoBlock, blockY);
+            CheckBlockIDTextBlock(out _);
+
+            // 延迟设置文件保存状态，确保其他控件载入完成
+            // 因为控件状态被更新时会认为文件尚未保存
+            Task.Delay(50).ContinueWith(_ => isFileSaved = true);
         }
 
         private void UpdateBlockVariant()
