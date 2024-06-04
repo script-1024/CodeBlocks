@@ -10,7 +10,7 @@ namespace CodeBlocks.Pages
 {
     public sealed partial class CodingPage : Page
     {
-        private bool canCanvasScroll = false;
+        private bool canCanvasScroll = true;
         private readonly MessageDialog dialog = new();
         private readonly App app = Application.Current as App;
         private readonly BlockDragger dragger;
@@ -24,6 +24,7 @@ namespace CodeBlocks.Pages
             InitializePage();
             this.Loaded += Page_Loaded;
             dragger = new(BlockCanvas, Scroller, ghostBlock);
+            ToolBox.BlockDragger = dragger;
             InitializeBlockDragger();
         }
 
@@ -44,7 +45,6 @@ namespace CodeBlocks.Pages
             };
 
             dragger.RemoveBlock = CodeBlock_RemoveAsync;
-
             dragger.FocusChanged += Dragger_FocusChanged;
         }
 
@@ -52,7 +52,7 @@ namespace CodeBlocks.Pages
 
         private void Dragger_FocusChanged()
         {
-
+            canCanvasScroll = (dragger.FocusBlock is null);
         }
         private void ZoomChange(bool zoomIn = true)
         {
@@ -85,9 +85,6 @@ namespace CodeBlocks.Pages
             var centerX = (BlockCanvas.ActualWidth - Scroller.ActualWidth) / 2;
             var centerY = (BlockCanvas.ActualHeight - Scroller.ActualHeight) / 2;
             Scroller.ChangeView(centerX, centerY, null, true);
-
-            Scroller.PointerPressed += (_, _) => canCanvasScroll = (dragger.FocusBlock == null);
-            Scroller.PointerReleased += (_, _) => canCanvasScroll = false;
         }
         private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -104,18 +101,17 @@ namespace CodeBlocks.Pages
         }
         private void UICanvas_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (canCanvasScroll)
-            {
-                var newX = Scroller.HorizontalOffset - e.Delta.Translation.X;
-                var newY = Scroller.VerticalOffset - e.Delta.Translation.Y;
-                Scroller.ChangeView(newX, newY, null, true);
-            }
+            if (!canCanvasScroll) return;
+            var newX = Scroller.HorizontalOffset - e.Delta.Translation.X;
+            var newY = Scroller.VerticalOffset - e.Delta.Translation.Y;
+            Scroller.ChangeView(newX, newY, null, true);
         }
 
         #endregion
 
         private async void CodeBlock_RemoveAsync(CodeBlock thisBlock)
         {
+            canCanvasScroll = false;
             int count = thisBlock.GetRelatedBlockCount();
             if (ghostBlock.Visibility == Visibility.Visible) dragger.ResetGhostBlock();
             if (count > 0)
@@ -124,6 +120,7 @@ namespace CodeBlocks.Pages
                 if (result == ContentDialogResult.None) { thisBlock.SetPosition(-100, -100, true); return; }
             }
             await thisBlock.RemoveAsync(BlockCanvas);
+            canCanvasScroll = true;
         }
     }
 }
