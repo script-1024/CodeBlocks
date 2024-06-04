@@ -87,7 +87,7 @@ namespace CodeBlocks.Controls
                                 block.HorizontalAlignment = HorizontalAlignment.Left;
                                 block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
 
-                                block.ManipulationStarted += Block_ManipulationStart;
+                                block.ManipulationStarted += Block_ManipulationStarted;
                                 block.ManipulationDelta += Block_ManipulationDelta;
                                 block.ManipulationCompleted += Block_ManipulationCompleted;
                                 BlocksDepot.Children.Add(block);
@@ -196,25 +196,31 @@ namespace CodeBlocks.Controls
             Scroller.ChangeView(null, newY, null, true);
         }
 
-        private void Block_ManipulationStart(object sender, ManipulationStartedRoutedEventArgs e)
+        private void Block_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             canScroll = false;
             var thisBlock = sender as CodeBlock;
             var selfPosition = thisBlock.TransformToVisual(BlocksDepot).TransformPoint(new(PositioningTags.ActualWidth, Scroller.VerticalOffset));
             var transformedPosition = BlockDragger.TransformPositionFromWindowToWorkspace(selfPosition);
             var args = new BlockCreatedEventArgs(transformedPosition, thisBlock);
-            var newBlock = thisBlock.Clone(BlockDragger.BlockCreated, args);
-            thisBlock.Tag = newBlock;
+            var clonedBlock = thisBlock.Clone(BlockDragger.BlockCreated, args);
+            thisBlock.Tag = clonedBlock;
+
+            BlockDragger.BlockManipulationStarted(clonedBlock, e);
         }
         private void Block_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var clonedBlock = (sender as CodeBlock).Tag as CodeBlock;
-            if (!clonedBlock.HasBeenRemoved) BlockDragger.ForceToManipulateBlock(clonedBlock, e);
+            BlockDragger.BlockManipulationDelta(clonedBlock, e);
         }
 
         private void Block_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            (sender as CodeBlock).Tag = null;
+            var thisBlock = sender as CodeBlock;
+            var clonedBlock = thisBlock.Tag as CodeBlock;
+            BlockDragger.BlockManipulationCompleted(clonedBlock, e);
+
+            thisBlock.Tag = null;
             canScroll = true;
         }
 
