@@ -49,9 +49,9 @@ namespace CodeBlocks
             this.SystemBackdrop = new MicaBackdrop();
             this.ExtendsContentIntoTitleBar = true;
             var fe = this.Content as FrameworkElement;
-            app.OnThemeChanged += () => fe.RequestedTheme = (ElementTheme)App.CurrentTheme;
-            if (fe.RequestedTheme != (ElementTheme)App.CurrentTheme)
-                fe.RequestedTheme = (ElementTheme)App.CurrentTheme;
+            app.ThemeChanged += () => fe.RequestedTheme = (ElementTheme)app.CurrentThemeId;
+            if (fe.RequestedTheme != (ElementTheme)app.CurrentThemeId)
+                fe.RequestedTheme = (ElementTheme)app.CurrentThemeId;
 
             // 读取颜色清单
             ColorButton_ReloadItems();

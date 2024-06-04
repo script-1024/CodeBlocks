@@ -13,7 +13,7 @@ namespace CodeBlocks
         {
             InitializeComponent();
             CurrentLanguageName = ApplicationData.Current.LocalSettings.Values["Language"]?.ToString();
-            CurrentTheme = (int)(ApplicationData.Current.LocalSettings.Values["RequestedTheme"] ?? 0);
+            CurrentThemeId = (int)(ApplicationData.Current.LocalSettings.Values["RequestedTheme"] ?? 0);
 
             Localizer.ReloadLanguageFiles();
             LanguageChanged();
@@ -46,12 +46,8 @@ namespace CodeBlocks
                 MainWindow = new();
                 MainWindow.Activate();
             }
-
-            ThemeChanged();
         }
 
-        // 0:FollowSystem | 1:Light | 2:Dark
-        public static int CurrentTheme;
         public static string CurrentLanguageId;
         public static string CurrentLanguageName;
         public static string[] SupportedLanguagesByName;
@@ -63,7 +59,7 @@ namespace CodeBlocks
         public delegate void LanguageChangedEventHandler();
         public delegate void ThemeChangedEventHandler();
         public event LanguageChangedEventHandler OnLanguageChanged;
-        public event ThemeChangedEventHandler OnThemeChanged;
+        public event ThemeChangedEventHandler ThemeChanged;
         public void LanguageChanged()
         {
             if (CurrentLanguageName is null)
@@ -79,7 +75,17 @@ namespace CodeBlocks
             OnLanguageChanged?.Invoke();
         }
 
-        public void ThemeChanged() => OnThemeChanged?.Invoke();
+        // 0:FollowSystem | 1:Light | 2:Dark
+        private static int theme = 0;
+        public int CurrentThemeId
+        {
+            get => theme;
+            set
+            {
+                theme = value;
+                ThemeChanged?.Invoke();
+            }
+        }
 
         public Localizer Localizer { get; private set; }
     }

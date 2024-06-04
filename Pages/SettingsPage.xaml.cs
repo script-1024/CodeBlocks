@@ -54,15 +54,14 @@ namespace CodeBlocks.Pages
                 app.LanguageChanged();
             };
 
-            ComboBox_Theme.SelectedIndex = App.CurrentTheme;
+            ComboBox_Theme.SelectedIndex = app.CurrentThemeId;
             ComboBox_Theme.SelectionChanged += (_, _) =>
             {
                 var theme = ComboBox_Theme.SelectedIndex;
-                if (theme == -1) theme = ComboBox_Theme.SelectedIndex = App.CurrentTheme;
-                if (App.CurrentTheme == theme) return;
+                if (theme == -1) theme = ComboBox_Theme.SelectedIndex = app.CurrentThemeId;
+                if (app.CurrentThemeId == theme) return;
                 ApplicationData.Current.LocalSettings.Values["RequestedTheme"] = theme;
-                App.CurrentTheme = theme;
-                app.ThemeChanged();
+                app.CurrentThemeId = theme;
             };
 
             GetLocalized();

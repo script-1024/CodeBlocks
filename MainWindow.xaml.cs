@@ -27,7 +27,10 @@ namespace CodeBlocks
             // 外观
             SystemBackdrop = new MicaBackdrop();
             ExtendsContentIntoTitleBar = true;
-            app.OnThemeChanged += () => (this.Content as FrameworkElement).RequestedTheme = (ElementTheme)App.CurrentTheme;
+            var fe = this.Content as FrameworkElement;
+            app.ThemeChanged += () => fe.RequestedTheme = (ElementTheme)app.CurrentThemeId;
+            if (fe.RequestedTheme != (ElementTheme)app.CurrentThemeId)
+                fe.RequestedTheme = (ElementTheme)app.CurrentThemeId;
 
             this.SizeChanged += (_, _) => UpdateDragRects();
             AddNewTab(typeof(CodingPage));

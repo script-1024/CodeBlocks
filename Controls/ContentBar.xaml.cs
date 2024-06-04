@@ -43,7 +43,7 @@ namespace CodeBlocks.Controls
             InitializeComponent();
             Content = control as Control;
             IconGlyph = iconGlyph;
-            app.OnThemeChanged += () => this.RequestedTheme = (ElementTheme)App.CurrentTheme;
+            app.ThemeChanged += () => this.RequestedTheme = (ElementTheme)app.CurrentThemeId;
         }
     }
 }
