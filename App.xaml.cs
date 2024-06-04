@@ -12,11 +12,11 @@ namespace CodeBlocks
         public App()
         {
             InitializeComponent();
+            Localizer.ReloadLanguageFiles();
+
             CurrentLanguageName = ApplicationData.Current.LocalSettings.Values["Language"]?.ToString();
             CurrentThemeId = (int)(ApplicationData.Current.LocalSettings.Values["RequestedTheme"] ?? 0);
 
-            Localizer.ReloadLanguageFiles();
-            LanguageChanged();
         }
 
         public MainWindow MainWindow;
@@ -48,8 +48,6 @@ namespace CodeBlocks
             }
         }
 
-        public static string CurrentLanguageId;
-        public static string CurrentLanguageName;
         public static string[] SupportedLanguagesByName;
 
         public static readonly string Version = "Beta 1.0.8 Build 0604";
@@ -58,22 +56,8 @@ namespace CodeBlocks
 
         public delegate void LanguageChangedEventHandler();
         public delegate void ThemeChangedEventHandler();
-        public event LanguageChangedEventHandler OnLanguageChanged;
+        public event LanguageChangedEventHandler LanguageChanged;
         public event ThemeChangedEventHandler ThemeChanged;
-        public void LanguageChanged()
-        {
-            if (CurrentLanguageName is null)
-            {
-                // 优先使用电脑现有的语言
-                var id = System.Globalization.CultureInfo.InstalledUICulture.Name;
-                CurrentLanguageName = RegisteredLanguages.TryGetValue(id, out string value) ? value : "English";
-            }
-
-            CurrentLanguageId = RegisteredLanguages[CurrentLanguageName];
-
-            this.Localizer = new();
-            OnLanguageChanged?.Invoke();
-        }
 
         // 0:FollowSystem | 1:Light | 2:Dark
         private static int theme = 0;
@@ -84,6 +68,30 @@ namespace CodeBlocks
             {
                 theme = value;
                 ThemeChanged?.Invoke();
+            }
+        }
+
+        public static string CurrentLanguageId { get; private set; }
+
+        private string langName = "";
+        public string CurrentLanguageName
+        {
+            get => langName;
+            set
+            {
+                langName = value;
+
+                if (string.IsNullOrEmpty(langName))
+                {
+                    // 优先使用电脑现有的语言
+                    var id = System.Globalization.CultureInfo.InstalledUICulture.Name;
+                    langName = RegisteredLanguages.TryGetValue(id, out string name) ? name : "English";
+                }
+
+                CurrentLanguageId = RegisteredLanguages[langName];
+                this.Localizer = new();
+
+                LanguageChanged?.Invoke();
             }
         }
 

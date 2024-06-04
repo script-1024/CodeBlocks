@@ -57,7 +57,7 @@ namespace CodeBlocks
             ColorButton_ReloadItems();
 
             // 本地化翻译
-            app.OnLanguageChanged += GetLocalized;
+            app.LanguageChanged += GetLocalized;
             GetLocalized();
 
             // 设置Tip的目标控件
@@ -75,7 +75,7 @@ namespace CodeBlocks
         public void Close(bool forceQuit)
         {
             if (forceQuit) this.Closed -= Window_Closed; // 取消订阅 Closed 事件
-            app.OnLanguageChanged -= GetLocalized;       // 取消订阅翻译事件
+            app.LanguageChanged -= GetLocalized;       // 取消订阅翻译事件
             this.Close(); // 关闭窗口。如果 forceQuit == false，则此函数的表现和无参数 Close() 方法一致
         }
         private async Task<ContentDialogResult> FileNotSavedDialogShowAsync()

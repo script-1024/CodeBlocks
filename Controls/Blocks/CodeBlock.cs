@@ -50,8 +50,8 @@ public class CodeBlock : BlockControl
 
     public CodeBlock(BlockCreatedEventHandler createdEventHandler, BlockCreatedEventArgs args = null) : base()
     {
-        app.OnLanguageChanged += RefreshBlockText;
-        app.OnLanguageChanged += LocalizeMenu;
+        app.LanguageChanged += RefreshBlockText;
+        app.LanguageChanged += LocalizeMenu;
         InitializeMenu();
 
         OnBlockCreated += createdEventHandler;

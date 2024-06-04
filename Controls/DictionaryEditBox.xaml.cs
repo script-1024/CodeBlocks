@@ -22,7 +22,7 @@ public sealed partial class DictionaryEditBox : UserControl
     public DictionaryEditBox()
     {
         this.InitializeComponent();
-        app.OnLanguageChanged += GetLocalized;
+        app.LanguageChanged += GetLocalized;
         GetLocalized();
 
         AddNewItem();

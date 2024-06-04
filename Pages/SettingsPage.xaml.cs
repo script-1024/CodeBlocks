@@ -15,7 +15,7 @@ namespace CodeBlocks.Pages
         {
             InitializeComponent();
             InitializePage();
-            app.OnLanguageChanged += GetLocalized;
+            app.LanguageChanged += GetLocalized;
         }
 
         private void GetLocalized()
@@ -44,14 +44,13 @@ namespace CodeBlocks.Pages
             VersionInfo.Description = App.Version;
             OpenAppFolder.Description = App.Path;
             ComboBox_Language.ItemsSource = App.SupportedLanguagesByName;
-            ComboBox_Language.SelectedItem = App.CurrentLanguageName;
+            ComboBox_Language.SelectedItem = app.CurrentLanguageName;
             ComboBox_Language.SelectionChanged += (_, _) =>
             {
                 var lang = ComboBox_Language.SelectedItem.ToString();
-                if (App.CurrentLanguageName == lang) return;
+                if (app.CurrentLanguageName == lang) return;
                 ApplicationData.Current.LocalSettings.Values["Language"] = lang;
-                App.CurrentLanguageName = lang;
-                app.LanguageChanged();
+                app.CurrentLanguageName = lang;
             };
 
             ComboBox_Theme.SelectedIndex = app.CurrentThemeId;

@@ -139,7 +139,7 @@ namespace CodeBlocks.Controls
             }
 
             btn.Click += (_, _) => OnButtonClick();
-            app.OnLanguageChanged += RefreshText;
+            app.LanguageChanged += RefreshText;
             BlocksDepot.Children.Add(label);
             RefreshText();
         }

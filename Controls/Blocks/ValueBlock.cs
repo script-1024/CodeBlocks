@@ -48,7 +48,7 @@ namespace CodeBlocks.Controls
                 ResizeTextBox();
             };
 
-            app.OnLanguageChanged += () =>
+            app.LanguageChanged += () =>
             {
                 string key = $"Blocks.ValueBlock.{(type.CheckIfContain(BlockValueType.String) ? "Text" : "Number")}.PlaceholderText";
                 txtbox.PlaceholderText = GetLocalizedString(key);

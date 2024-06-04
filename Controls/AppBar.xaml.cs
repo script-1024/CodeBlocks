@@ -13,7 +13,7 @@ namespace CodeBlocks.Controls
         public AppBar()
         {
             this.InitializeComponent();
-            app.OnLanguageChanged += GetLocalized;
+            app.LanguageChanged += GetLocalized;
             SubscribeClickEvent();
             GetLocalized();
         }
