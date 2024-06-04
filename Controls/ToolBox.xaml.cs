@@ -200,7 +200,7 @@ namespace CodeBlocks.Controls
         {
             canScroll = false;
             var thisBlock = sender as CodeBlock;
-            var selfPosition = thisBlock.TransformToVisual(BlocksDepot).TransformPoint(new(PositioningTags.ActualWidth, Scroller.VerticalOffset));
+            var selfPosition = thisBlock.TransformToVisual(BlocksDepot).TransformPoint(new(PositioningTags.ActualWidth, -Scroller.VerticalOffset));
             var transformedPosition = BlockDragger.TransformPositionFromWindowToWorkspace(selfPosition);
             var args = new BlockCreatedEventArgs(transformedPosition, thisBlock);
             var clonedBlock = thisBlock.Clone(BlockDragger.BlockCreated, args);
