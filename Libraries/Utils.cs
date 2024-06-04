@@ -34,6 +34,12 @@ namespace CodeBlocks.Core
             value = array[index]; return true;
         }
 
+        public static bool TrySetValue<T>(this T[] array, int index, T value)
+        {
+            if (array is null || index < 0 || index >= array.Length) return false;
+            array[index] = value; return true;
+        }
+
         private static byte[] IntegerToBytes(ulong value, int length)
         {
             var bytes = new byte[length];
