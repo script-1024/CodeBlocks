@@ -81,8 +81,10 @@ namespace CodeBlocks.Controls
                             var blocks = element.GetChildElement("blocks");
                             foreach(var blockElement in blocks.EnumerateObject())
                             {
-                                var blockFilePath = blockElement.Value.GetString();
-                                var block = await CreateBlockFromPathAsync($"{dir}\\{blockFilePath}.cbd");
+                                var blockFilePath = $"{dir}\\{blockElement.Value.GetString()}.cbd";
+                                if (!File.Exists(blockFilePath)) continue;
+
+                                var block = await CreateBlockFromPathAsync(blockFilePath);
                                 block.Margin = new(20, 20, 12, 0);
                                 block.HorizontalAlignment = HorizontalAlignment.Left;
                                 block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
@@ -91,6 +93,9 @@ namespace CodeBlocks.Controls
                                 block.ManipulationDelta += Block_ManipulationDelta;
                                 block.ManipulationCompleted += Block_ManipulationCompleted;
                                 BlocksDepot.Children.Add(block);
+                                block.RefreshBlockText();
+
+                                if (block.MetaData.Type == BlockType.Value) Task.Delay(50).ContinueWith(_ => { if (block.IsExpand) block.IsExpand = false; }, TaskScheduler.FromCurrentSynchronizationContext());
                             }
 
                             TextBlock blank = new() { Margin = new(24) };
@@ -185,7 +190,6 @@ namespace CodeBlocks.Controls
             };
 
             block.RefreshBlockText();
-
             return block;
         }
 

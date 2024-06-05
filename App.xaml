@@ -10,6 +10,7 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="/Styles/Background.xaml"/>
                 <ResourceDictionary Source="/Styles/BlockColor.xaml"/>
+                <ResourceDictionary Source="/Styles/Controls.xaml"/>
                 <ResourceDictionary Source="/Styles/Text.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->

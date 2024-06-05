@@ -123,11 +123,11 @@ namespace CodeBlocks
             BlockTypeComboBox.SelectedIndex = -1;
 
             BlockIDLabel.Text = GetLocalizedString("BlockEditor.BlockData.ID");
-            SlotsLabel.Text = GetLocalizedString("BlockEditor.BlockData.Slots.Label");
-            LSlotCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Slots.Left");
-            TSlotCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Slots.Top");
-            RSlotCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Slots.Right");
-            BSlotCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Slots.Bottom");
+            StyleLabel.Text = GetLocalizedString("BlockEditor.BlockData.Style.Label");
+            PlugCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Style.Plug");
+            ExpandCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Style.Expand");
+            NotchCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Style.Notch");
+            BumpCheckBox.Content = GetLocalizedString("BlockEditor.BlockData.Style.Bump");
 
             TranslationsDictEditorHeader.Text = GetLocalizedString($"BlockEditor.TranslationsDictionary.Header");
         }
@@ -238,27 +238,40 @@ namespace CodeBlocks
             {
                 case "Event":
                     type = BlockType.Event;
-                    LSlotCheckBox.IsEnabled = false;
-                    LSlotCheckBox.IsChecked = false;
-                    TSlotCheckBox.IsEnabled = false;
-                    TSlotCheckBox.IsChecked = false;
+                    PlugCheckBox.IsEnabled = false;
+                    PlugCheckBox.IsChecked = false;
+                    NotchCheckBox.IsEnabled = false;
+                    NotchCheckBox.IsChecked = false;
+                    BumpCheckBox.IsEnabled = true;
                     break;
                 case "Control":
                     type = BlockType.Control;
-                    LSlotCheckBox.IsEnabled = true;
-                    TSlotCheckBox.IsEnabled = true;
+                    PlugCheckBox.IsEnabled = true;
+                    NotchCheckBox.IsEnabled = true;
+                    BumpCheckBox.IsEnabled = true;
                     break;
                 case "Action":
                     type = BlockType.Action;
-                    LSlotCheckBox.IsEnabled = true;
-                    TSlotCheckBox.IsEnabled = true;
+                    PlugCheckBox.IsEnabled = true;
+                    PlugCheckBox.IsChecked = false;
+                    NotchCheckBox.IsEnabled = true;
+                    BumpCheckBox.IsEnabled = true;
+                    break;
+                case "Value":
+                    type = BlockType.Value;
+                    PlugCheckBox.IsEnabled = false;
+                    PlugCheckBox.IsChecked = true;
+                    NotchCheckBox.IsEnabled = false;
+                    NotchCheckBox.IsChecked = false;
+                    BumpCheckBox.IsEnabled = false;
+                    BumpCheckBox.IsChecked = false;
                     break;
                 default:
                     return;
             }
 
             DemoBlock.SetData(BlockProperties.Type, type);
-            UpdateBlockVariant();
+            UpdateBlockVariant(null);
             cbd.BlockType = type;
             isFileSaved = false;
         }
@@ -274,7 +287,7 @@ namespace CodeBlocks
             // Delay required to circumvent GridView bug: https://github.com/microsoft/microsoft-ui-xaml/issues/6350
             Task.Delay(10).ContinueWith(_ => ColorButton.Flyout.Hide(), TaskScheduler.FromCurrentSynchronizationContext());
         }
-        private void CheckBox_Click(object sender, RoutedEventArgs e) => UpdateBlockVariant();
+        private void CheckBox_Click(object sender, RoutedEventArgs e) => UpdateBlockVariant(sender);
 
         private void BlockIDTextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
@@ -304,16 +317,16 @@ namespace CodeBlocks
             int checkResult = CheckIsNamespaceValid(id);
             if (checkResult > 1)
             {
-                string title = "无效的名称空间";
+                string title = GetLocalizedString("Tips.InvalidNamespace");
                 string subtitle = "";
 
                 if (checkResult == 2)
                 {
-                    title = "方块ID不可为空";
+                    title = GetLocalizedString("Tips.EmptyBlockID");
                     DemoBlock.TranslationKey = "Blocks.Demo";
                 }
-                else if (checkResult == 3) subtitle = "\':\' 只可出现一次";
-                else if (checkResult == 4) subtitle = "格式错误";
+                else if (checkResult == 3) subtitle = GetLocalizedString("Tips.OnlyOneColonCanBeHere");
+                else if (checkResult == 4) subtitle = GetLocalizedString("Tips.WrongFormat");
 
                 SetTipState(IdTip, isOpen: true, 0x1, title, subtitle);
                 return false;
@@ -340,7 +353,7 @@ namespace CodeBlocks
             {
                 if (!EditorTip.IsOpen)
                 {
-                    EditorTip.Title = "当前存在无效内容，暫时无法保存文件";
+                    EditorTip.Title = GetLocalizedString("Tips.FileCannotBeSavedDueToInvalidContent");
                     EditorTip.IsOpen = true;
                 }
 
@@ -406,11 +419,12 @@ namespace CodeBlocks
         private void LoadBlock()
         {
             DemoBlock.MetaData = new();
+            DemoBlock.ContextFlyout = null; // 禁用右键选单
 
             if (activeFile == null)
             {
                 DemoBlock.BlockColor = ColorHelper.FromHexString("#FFC800");
-                DemoBlock.MetaData = new() { Type = BlockType.Action, Variant = 10 };
+                DemoBlock.MetaData = new() { Type = BlockType.Action, Variant = 0b_1110 };
                 DemoBlock.TranslationKey = "Blocks.Demo";
             }
             else
@@ -422,10 +436,11 @@ namespace CodeBlocks
                 DemoBlock.RefreshBlockText();
 
                 int variant = cbd.Variant;
-                LSlotCheckBox.IsChecked = variant.CheckIfContain(0b_0001);
-                TSlotCheckBox.IsChecked = variant.CheckIfContain(0b_0010);
-                RSlotCheckBox.IsChecked = variant.CheckIfContain(0b_0100);
-                BSlotCheckBox.IsChecked = variant.CheckIfContain(0b_1000);
+                PlugCheckBox.IsChecked = variant.HasFlag(0b_0001);
+                NotchCheckBox.IsChecked = variant.HasFlag(0b_0010);
+                BumpCheckBox.IsChecked = variant.HasFlag(0b_1000);
+                if (cbd.BlockType != BlockType.Value) ExpandCheckBox.IsChecked = true;
+                else ExpandCheckBox.IsChecked = false;
 
                 BlockIDTextBox.Text = cbd.Identifier;
                 BlockTypeComboBox.SelectedIndex = (int)cbd.BlockType;
@@ -445,16 +460,21 @@ namespace CodeBlocks
 
             // 延迟设置文件保存状态，确保其他控件载入完成
             // 因为控件状态被更新时会认为文件尚未保存
-            Task.Delay(50).ContinueWith(_ => isFileSaved = true);
+            Task.Delay(10).ContinueWith(_ => isFileSaved = true);
         }
 
-        private void UpdateBlockVariant()
+        private void UpdateBlockVariant(object sender)
         {
-            byte variant = 0b_0000;
-            if (LSlotCheckBox.IsChecked == true) variant |= 0b_0001;
-            if (TSlotCheckBox.IsChecked == true) variant |= 0b_0010;
-            if (RSlotCheckBox.IsChecked == true) variant |= 0b_0100;
-            if (BSlotCheckBox.IsChecked == true) variant |= 0b_1000;
+            if (sender as CheckBox == ExpandCheckBox)
+            {
+                DemoBlock.IsExpand = ExpandCheckBox.IsChecked == true;
+                return; // 避免重复呼叫 CodeBlock.Resize();
+            }
+
+            byte variant = 0b_0100;
+            if (PlugCheckBox.IsChecked == true) variant |= 0b_0001;
+            if (NotchCheckBox.IsChecked == true) variant |= 0b_0010;
+            if (BumpCheckBox.IsChecked == true) variant |= 0b_1000;
 
             DemoBlock.SetData(BlockProperties.Variant, variant);
             cbd.Variant = variant;

@@ -81,12 +81,18 @@ Messages:
             Title: Unable to read file
             Description: The data is incorrect. This file may be corrupted or tampered with.
 
+    ExportDatapack:
+        Title: Export datapack
+
 ContentMenu:
     CodeBlock:
         Copy: Copy
         Delete: Delete
         DeleteThis: Delete This
         DeleteAll: Delete All Attached Blocks
+        ChangeExpandState:
+            ToEmbedded: Embedded Input
+            ToExpanded: Expand Input
 
 BlockEditor:
     Title: Block Editor
@@ -97,14 +103,15 @@ BlockEditor:
         Event: Event
         Control: Control
         Action: Action
+        Value: Value
     BlockData:
         ID: Block ID
-        Slots:
-            Label: Slots
-            Left: Left
-            Top: Top
-            Right: Right
-            Bottom: Down
+        Style:
+            Label: Style
+            Plug: Left plug
+            Expand: Expand the block
+            Notch: Top notch
+            Bump: Bottom bump
     TranslationsDictionary:
         Header: Translations
         Buttons:
@@ -115,8 +122,16 @@ BlockEditor:
         ColumnTitles:
             ID: Lang ID
             Text: Text
-    Tips:
-        ExistInvalidKeys: Exists invalid key value pairs
+
+Tips:
+    ExistInvalidKeys: Exists invalid key value pairs
+    InvalidNamespace: Invalid namespace
+    EmptyBlockID: Block ID can't be empty
+    OnlyOneColonCanBeHere: Only one colon can be here
+    WrongFormat: wrong format
+    FileCannotBeSavedDueToInvalidContent: The file cannot be saved temporarily due to invalid content
+    IllegalCharacters: Illegal characters
+    UnableToConvertType: Unable to convert type
 
 Blocks:
     ValueBlock:

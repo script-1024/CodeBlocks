@@ -103,7 +103,7 @@ namespace CodeBlocks.Core
         public static int ToInt(this byte[] bytes, int index = 0, int length = 4, bool isBigEndian = false) => (int)BytesToInteger(bytes, index, length, isBigEndian);
         public static short ToShort(this byte[] bytes, int index = 0, int length = 2, bool isBigEndian = false) => (short)BytesToInteger(bytes, index, length, isBigEndian);
 
-        public static bool CheckIfContain<T1, T2>(this T1 self, T2 other) where T1 : struct  where T2 : struct
+        public static bool HasFlag<T1, T2>(this T1 self, T2 other) where T1 : struct  where T2 : struct
         {
             long selfValue = Convert.ToInt64(self);
             long otherValue = Convert.ToInt64(other);

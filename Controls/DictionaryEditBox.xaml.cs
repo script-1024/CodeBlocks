@@ -37,7 +37,7 @@ public sealed partial class DictionaryEditBox : UserControl
         }
         LangLabel.Text = GetLocalizedString("BlockEditor.TranslationsDictionary.ColumnTitles.ID");
         TextLabel.Text = GetLocalizedString("BlockEditor.TranslationsDictionary.ColumnTitles.Text");
-        Tip.Title = GetLocalizedString("BlockEditor.Tips.ExistInvalidKeys");
+        Tip.Title = GetLocalizedString("Tips.ExistInvalidKeys");
     }
 
     #region "User Input Event"

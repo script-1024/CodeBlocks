@@ -29,8 +29,8 @@
 
         <Grid x:Name="ContentGrid" Grid.Row="1" Margin="40,40,40,40">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="50*"/>
-                <ColumnDefinition Width="50*"/>
+                <ColumnDefinition Width="400"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <Grid.Resources>
@@ -59,7 +59,7 @@
             <Grid x:Name="LeftGrid" Grid.Column="0" Margin="0,0,10,0">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
-                    <RowDefinition Height="160"/>
+                    <RowDefinition Height="180"/>
                 </Grid.RowDefinitions>
 
                 <Border x:Name="CanvasBorder" Grid.Row="0" Margin="0,0,0,0"
@@ -89,8 +89,9 @@
                                 <ComboBox.Items>
                                     <ComboBoxItem Tag="Tip" IsEnabled="False"/>
                                     <ComboBoxItem Tag="Event"/>
-                                    <ComboBoxItem Tag="Control"/>
+                                    <ComboBoxItem Tag="Control" IsEnabled="False"/>
                                     <ComboBoxItem Tag="Action"/>
+                                    <ComboBoxItem Tag="Value"/>
                                 </ComboBox.Items>
                             </ComboBox>
 
@@ -137,19 +138,22 @@
                     </Grid>
 
                     <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="3*"/>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="2*"/>
-                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
                         
-                        <TextBlock x:Name="SlotsLabel" Margin="20,20,20,20" Grid.Column="0"/>
-                        <CheckBox x:Name="LSlotCheckBox" Grid.Column="1" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
-                        <CheckBox x:Name="TSlotCheckBox" Grid.Column="2" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
-                        <CheckBox x:Name="RSlotCheckBox" Grid.Column="3" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
-                        <CheckBox x:Name="BSlotCheckBox" Grid.Column="4" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock x:Name="StyleLabel" Grid.Row="0" Grid.Column="0" Margin="20,20,20,20"/>
+                        <CheckBox x:Name="PlugCheckBox" Grid.Row="0" Grid.Column="1" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="False"/>
+                        <CheckBox x:Name="ExpandCheckBox" Grid.Row="0" Grid.Column="2" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
+                        <CheckBox x:Name="NotchCheckBox" Grid.Row="1" Grid.Column="1" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
+                        <CheckBox x:Name="BumpCheckBox" Grid.Row="1" Grid.Column="2" Click="CheckBox_Click" FontFamily="/Fonts/HarmonyOS_Sans_M.ttf#HarmonyOS Sans SC" IsChecked="True"/>
                     </Grid>
                 </StackPanel>
             </Grid>

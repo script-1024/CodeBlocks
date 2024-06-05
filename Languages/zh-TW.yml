@@ -81,12 +81,18 @@ Messages:
             Title: 無法讀取檔案
             Description: 資料錯誤，檔案可能已損壞或遭到篡改。
 
+    ExportDatapack:
+        Title: 導出資料包
+
 ContentMenu:
     CodeBlock:
         Copy: 複製
         Delete: 刪除
         DeleteThis: 刪除此程式塊
         DeleteAll: 刪除後續所有程式塊
+        ChangeExpandState:
+            ToEmbedded: 內嵌輸入項
+            ToExpanded: 展開輸入項
 
 BlockEditor:
     Title: 程式塊編輯器
@@ -97,14 +103,15 @@ BlockEditor:
         Event: 事件
         Control: 控制
         Action: 操作
+        Value: 數值
     BlockData:
         ID: 方塊標識符
-        Slots:
-            Label: 可用接口
-            Left: 左
-            Top: 上
-            Right: 右
-            Bottom: 下
+        Style:
+            Label: 外觀樣式
+            Plug: 擁有插頭
+            Expand: 展開方塊
+            Notch: 上方接口
+            Bump: 下方接口
     TranslationsDictionary:
         Header: 翻譯字典
         Buttons:
@@ -115,8 +122,16 @@ BlockEditor:
         ColumnTitles:
             ID: 語言ID
             Text: 文字
-    Tips:
-        ExistInvalidKeys: 存在無效鍵值
+
+Tips:
+    ExistInvalidKeys: 存在無效鍵值
+    InvalidNamespace: 無效的命名空間
+    EmptyBlockID: 方塊ID不可為空
+    OnlyOneColonCanBeHere: 冒號至多只能出現一次
+    WrongFormat: 格式錯誤
+    FileCannotBeSavedDueToInvalidContent: 當前存在無效内容，暫時無法保存檔案
+    IllegalCharacters: 非法字元
+    UnableToConvertType: 無法轉成指定類型
 
 Blocks:
     Demo: 文字樣式

@@ -80,6 +80,10 @@ Messages:
         FileDataIncorrectOrMissing:
             Title: 无法读取文件
             Description: 数据错误，文件可能已损坏或遭到篡改。
+    
+    ExportDatapack:
+        Title: 导出数据包
+        
 
 ContentMenu:
     CodeBlock:
@@ -87,6 +91,9 @@ ContentMenu:
         Delete: 删除
         DeleteThis: 删除此代码块
         DeleteAll: 删除后续所有代码块
+        ChangeExpandState:
+            ToEmbedded: 内嵌输入项
+            ToExpanded: 展开输入项
 
 BlockEditor:
     Title: 代码块编辑器
@@ -95,16 +102,17 @@ BlockEditor:
     BlockType:
         Tip: 外观类型
         Event: 事件
-        Control: 控制
+        Control: 流程
         Action: 操作
+        Value: 数值
     BlockData:
         ID: 方块标识符
-        Slots:
-            Label: 可用接口
-            Left: 左
-            Top: 上
-            Right: 右
-            Bottom: 下
+        Style:
+            Label: 外观样式
+            Plug: 拥有插头
+            Expand: 展开方块
+            Notch: 上方接口
+            Bump: 下方接口
     TranslationsDictionary:
         Header: 翻译字典
         Buttons:
@@ -115,8 +123,17 @@ BlockEditor:
         ColumnTitles:
             ID: 语言ID
             Text: 文本
-    Tips:
-        ExistInvalidKeys: 存在无效键值
+
+Tips:
+    ExistInvalidKeys: 存在无效键值
+    InvalidNamespace: 无效的命名空间
+    EmptyBlockID: 方块ID不可为空
+    OnlyOneColonCanBeHere: 冒号至多只能出现一次
+    WrongFormat: 格式错误
+    FileCannotBeSavedDueToInvalidContent: "当前存在无效内容，暫时无法保存文件"
+    IllegalCharacters: 非法字符
+    UnableToConvertType: 无法转成指定类型
+
 
 Blocks:
     Demo: 文字样式

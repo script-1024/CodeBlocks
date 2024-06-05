@@ -16,7 +16,7 @@ namespace CodeBlocks.Pages
         private readonly BlockDragger dragger;
         private string GetLocalizedString(string key) => app.Localizer.GetString(key);
 
-        public bool Edited { get; private set; } = false;
+        public bool IsSaved { get; private set; } = true;
 
         public CodingPage()
         {
@@ -52,6 +52,7 @@ namespace CodeBlocks.Pages
 
         private void Dragger_FocusChanged()
         {
+            IsSaved = false;
             canCanvasScroll = (dragger.FocusBlock is null);
         }
         private void ZoomChange(bool zoomIn = true)

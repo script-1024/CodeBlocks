@@ -23,6 +23,8 @@ namespace CodeBlocks.Core
     {
         public double Width { get; set; }
         public double Height { get; set; }
+
+        public bool IsExpand;
         public BlockMetaData MetaData;
 
         private double x, y;
@@ -80,10 +82,10 @@ namespace CodeBlocks.Core
             Width = MetaData.Size.Width;
             Height = MetaData.Size.Height;
             int slots = MetaData.Slots;
-            bool hasLeft = MetaData.Variant.CheckIfContain(0b_0001);
-            bool hasTop = MetaData.Variant.CheckIfContain(0b_0010);
-            bool hasRight = MetaData.Variant.CheckIfContain(0b_0100);
-            bool hasBottom = MetaData.Variant.CheckIfContain(0b_1000);
+            bool hasLeft = MetaData.Variant.HasFlag(0b_0001);
+            bool hasTop = MetaData.Variant.HasFlag(0b_0010);
+            bool hasRight = MetaData.Variant.HasFlag(0b_0100);
+            bool hasBottom = MetaData.Variant.HasFlag(0b_1000);
             var pathGeo = new PathGeometry();
 
             // 从左上角开始
@@ -112,12 +114,20 @@ namespace CodeBlocks.Core
             // 右边
             if (hasRight)
             {
-                DrawLine(dy: w); // 上半部分
-                while (slots >= 1)
+                if (IsExpand)
                 {
-                    DrawLeftOrRightCurve(1); // 凹口
-                    if (--slots >= 1) DrawLine(0, w*2);
+                    DrawLine(dy: w); // 上半部分
+                    while (slots >= 1)
+                    {
+                        DrawLeftOrRightCurve(1); // 凹口
+                        if (--slots >= 1) DrawLine(0, w * 2);
+                    }
                 }
+            }
+            else
+            {
+                // 后续版本才会加入方块省略状态
+                // 此时不显示右侧方块，且不允许添加/删除子方块，右侧无法互动
             }
             DrawLine(newY: Height - h, isRelative: false); // 其余部分
 

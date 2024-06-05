@@ -155,10 +155,10 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
                 if (y == -1) continue;
 
                 // 在右侧时不可吸附 --> 跳过
-                if (x == 1 && (!Utils.GetFlag(targetVar, 2) || !Utils.GetFlag(selfVar, 0))) continue;
+                if (x == 1 && (!targetVar.HasFlag(0b_0100) || !selfVar.HasFlag(0b_0001)) && !targetBlock.IsExpand) continue;
 
                 // 在下方时不可吸附 --> 跳过
-                if (y == 1 && (!Utils.GetFlag(targetVar, 3) || !Utils.GetFlag(selfVar, 1))) continue;
+                if (y == 1 && (!targetVar.HasFlag(0b_1000) || !selfVar.HasFlag(0b_0010))) continue;
 
                 // 开始尝试自动吸附
                 int threshold = 30;
