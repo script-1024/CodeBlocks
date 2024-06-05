@@ -162,11 +162,11 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
 
                 // 开始尝试自动吸附
                 int threshold = 30;
-                int slot = (int)((self.Y - target.Y) / 48);
+                int slot = (int)((self.Y - target.Y) / (CodeBlock.SlotWidth * 3));
                 if (dx > 0 && (dx - size.Width + CodeBlock.SlotHeight) < threshold)
                 {
                     self.X -= (dx - size.Width + CodeBlock.SlotHeight) * x;
-                    self.Y = target.Y + slot * 48;
+                    self.Y = target.Y + slot * (CodeBlock.SlotWidth * 3);
                     thisBlock.DependentSlot = slot + 1;
                     isAligned = true;
                 }
