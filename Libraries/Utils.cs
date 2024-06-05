@@ -110,26 +110,4 @@ namespace CodeBlocks.Core
             return (selfValue & otherValue) == otherValue;
         }
     }
-
-    public static class TextHelper
-    {
-        public static double GetWidth(string str)
-        {
-            double totalWidth = 0;
-            foreach (char c in str)
-            {
-                if (IsFullWidth(c)) totalWidth += 1;
-                else totalWidth += 0.5;
-            }
-            return totalWidth;
-        }
-
-        public static bool IsFullWidth(char c)
-        {
-            return
-            /* 中文字符 */ c >= 0x4E00 && c <= 0x9FFF ||
-            /* 全角字符 */ c >= 0xFF01 && c <= 0xFF5E ||
-            /* 全角空格 */ c == 0x3000;
-        }
-    }
 }
