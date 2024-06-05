@@ -257,8 +257,8 @@ public sealed partial class DictionaryEditBox : UserControl
         foreach (var item in DictionaryView.Items)
         {
             var grid = item as Grid;
-            string key = (grid.Children[0] as TextBox).Text;
-            string val = (grid.Children[1] as TextBox).Text;
+            string key = (grid.Children[0] as TextBox).Text.Trim(['\t', '\r', '\n']);
+            string val = (grid.Children[1] as TextBox).Text.Trim(['\t', '\r', '\n']);
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(val)) continue;
             if (! Content.TryAdd(key, val)) existInvalidKeys = true;
         }
