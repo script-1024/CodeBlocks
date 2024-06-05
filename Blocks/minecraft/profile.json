@@ -23,6 +23,29 @@
                 "minecraft:say": "command\\say",
                 "minecraft:summon": "command\\summon"
             }
+        },
+        "text": {
+            "color": "#962020",
+            "translation": {
+                "zh-TW": "文字",
+                "zh-CN": "文字",
+                "en-US": "Text"
+            },
+            "blocks": {
+                "minecraft:string": "text\\string"
+            }
+        },
+        "math": {
+            "color": "#0060FF",
+            "translation": {
+                "zh-TW": "數學",
+                "zh-CN": "数学",
+                "en-US": "Math"
+            },
+            "blocks": {
+                "minecraft:int": "math\\int",
+                "minecraft:decimal": "math\\decimal"
+            }
         }
     }
 }

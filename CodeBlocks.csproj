@@ -21,8 +21,11 @@
     <None Remove="Blocks\minecraft\command\summon.cbd" />
     <None Remove="Blocks\minecraft\event\when_datapack_loaded.cbd" />
     <None Remove="Blocks\minecraft\event\when_each_tick_starts.cbd" />
-    <None Remove="Blocks\minecraft\profile.json" />
+    <None Remove="Blocks\minecraft\math\decimal.cbd" />
+    <None Remove="Blocks\minecraft\math\int.cbd" />
+    <None Remove="Blocks\minecraft\text\string.cbd" />
   </ItemGroup>
+  
   <ItemGroup>
     <Content Include="Blocks\minecraft\command\say.cbd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -34,6 +37,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Blocks\minecraft\event\when_each_tick_starts.cbd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Blocks\minecraft\math\decimal.cbd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Blocks\minecraft\math\int.cbd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Blocks\minecraft\profile.json">
@@ -49,6 +58,9 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Blocks\minecraft\text\string.cbd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -142,8 +154,6 @@
     <Page Update="Controls\DictionaryEditBox.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="Styles\BlockColor.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
@@ -151,9 +161,6 @@
     <Page Update="Styles\Text.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Styles\Background.xaml">
-      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
