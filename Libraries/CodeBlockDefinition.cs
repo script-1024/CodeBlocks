@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Storage;
+using CodeBlocks.Controls;
 
 namespace CodeBlocks.Core;
 public sealed class CodeBlockDefinition
@@ -20,8 +21,8 @@ public sealed class CodeBlockDefinition
     public byte Variant { get; set; } = 0b_0000;
     public int ColorInt { get; set; } = 0xFFFFFF;
     public BlockType BlockType { get; set; } = BlockType.Undefined;
+    public BlockValueType[] SlotTypes { get; set; } = [];
     public Dictionary<string, string> TranslationsDict { get; set; } = new();
-    public Dictionary<string, byte> SlotsTypeDict { get; set; } = new();
 
     #endregion
 
@@ -104,8 +105,8 @@ public sealed class CodeBlockDefinition
         if (McfCode.Length != lengthCode) return Failed("FileDataIncorrectOrMissing");
 
         // 读取字典数据
-        index = FileOperations.GetDictionaryFromData(data, index, countSlots, SlotsTypeDict);
-        if (SlotsTypeDict.Count != countSlots) return Failed("FileDataIncorrectOrMissing");
+        index = FileOperations.GetArrayFromData(data, index, countSlots, SlotTypes);
+        if (SlotTypes.Length != countSlots) return Failed("FileDataIncorrectOrMissing");
         index = FileOperations.GetDictionaryFromData(data, index, countTranslations, TranslationsDict);
         if (TranslationsDict.Count != countTranslations) return Failed("FileDataIncorrectOrMissing");
 
@@ -124,7 +125,7 @@ public sealed class CodeBlockDefinition
         data.AddRange(Version.ToBytes());                               // 01 00       -> 02..03  版本号
         data.Add((byte)BlockType);                                      // 02          -> 04      方块类型
         data.Add(Variant);                                              // 0A          -> 05      方块变体
-        data.Add((byte)SlotsTypeDict.Count);                            // 00          -> 06      右侧插槽个数
+        data.Add((byte)SlotTypes.Length);                               // 00          -> 06      右侧插槽个数
         data.Add(FileOperations.GetCheckDigit([.. data], 0x00, 0x07));  // Check Digit -> 07      校验码
         data.AddRange(ColorInt.ToBytes(3).Reverse());                   // FF FF FF    -> 08..0A  方块颜色
         data.Add((byte)TranslationsDict.Count);                         // 03          -> 0B      翻译字典元素个数
@@ -139,7 +140,7 @@ public sealed class CodeBlockDefinition
         data.AddRange(McfCode.ToBytes());
 
         // 插槽定义
-        FileOperations.AppendDictionaryToData(data, SlotsTypeDict);
+        FileOperations.AppendArrayToData(data, SlotTypes);
 
         // 本地化翻译字典键值对
         FileOperations.AppendDictionaryToData(data, TranslationsDict);
@@ -176,41 +177,36 @@ internal static class FileOperations
         }
     }
 
-    public static void AppendDictionaryToData(List<byte> data, Dictionary<string, byte> dict)
+    public static void AppendArrayToData(List<byte> data, BlockValueType[] arr)
     {
-        foreach (string key in dict.Keys)
+        foreach (var type in arr)
         {
-            byte value = dict[key];
-            data.AddRange(key.Length.ToBytes(2));    // 键字数
-            data.AddRange(key.ToBytes());            // 键：UTF-16 文本
-            data.Add(value);                         // 值
+            data.Add((byte)type);
         }
     }
 
-    public static int GetDictionaryFromData(byte[] data, int bytesIndex, int dictCount, Dictionary<string, string> dict)
+    public static int GetDictionaryFromData(byte[] data, int startIndex, int count, Dictionary<string, string> dict)
     {
         dict.Clear();
-        for (int c = 0; c < dictCount; c++)
+        for (int i = 0; i < count; i++)
         {
-            int keyLength = data.ToShort(bytesIndex); bytesIndex += 2;
-            int valLength = data.ToShort(bytesIndex); bytesIndex += 2;
-            var key = data.ToUnicodeString(bytesIndex, keyLength * 2); bytesIndex += keyLength * 2;
-            var val = data.ToUnicodeString(bytesIndex, valLength * 2); bytesIndex += valLength * 2;
+            int keyLength = data.ToShort(startIndex); startIndex += 2;
+            int valLength = data.ToShort(startIndex); startIndex += 2;
+            var key = data.ToUnicodeString(startIndex, keyLength * 2); startIndex += keyLength * 2;
+            var val = data.ToUnicodeString(startIndex, valLength * 2); startIndex += valLength * 2;
             dict.Add(key, val);
         }
-        return bytesIndex;
+        return startIndex;
     }
 
-    public static int GetDictionaryFromData(byte[] data, int bytesIndex, int dictCount, Dictionary<string, byte> dict)
+    public static int GetArrayFromData(byte[] data, int startIndex, int count, BlockValueType[] arr)
     {
-        dict.Clear();
-        for (int c = 0; c < dictCount; c++)
+        arr = new BlockValueType[count];
+        for (int i = 0; i < count; i++)
         {
-            int keyLength = data.ToShort(bytesIndex); bytesIndex += 2;
-            var key = data.ToUnicodeString(bytesIndex, keyLength * 2); bytesIndex += keyLength * 2;
-            var val = data[bytesIndex++];
-            dict.Add(key, val);
+            arr[i] = (BlockValueType)data[startIndex];
+            startIndex++;
         }
-        return bytesIndex;
+        return startIndex;
     }
 }
