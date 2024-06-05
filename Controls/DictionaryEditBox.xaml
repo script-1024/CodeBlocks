@@ -34,6 +34,7 @@
         </Grid.Resources>
 
         <CommandBar x:Name="CommandBar" Grid.Row="0" DefaultLabelPosition="Right" Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}">
+            <AppBarButton Icon="Refresh" Tag="Refresh" Click="RefreshButton_Click"/>
             <AppBarButton Icon="Add" Tag="Add" Click="AddButton_Click"/>
             <AppBarButton Icon="Delete" Tag="Delete" Click="DeleteButton_Click"/>
             <AppBarButton Icon="Clear" Tag="Clear" Click="ClearButton_Click"/>

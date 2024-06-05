@@ -42,6 +42,7 @@ public sealed partial class DictionaryEditBox : UserControl
 
     #region "User Input Event"
 
+    private void RefreshButton_Click(object sender, RoutedEventArgs e) => BeforeDictionaryUpdate();
     private void AddButton_Click(object sender, RoutedEventArgs e) => AddNewItem();
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
@@ -74,12 +75,29 @@ public sealed partial class DictionaryEditBox : UserControl
 
     #endregion
 
-    private void FocusTo(int gridIndex, int txtboxIndex = 0)
+    private enum FocusToOptions { Default = 0, Head = 1, Tail = 2 }
+    private void FocusTo(int gridIndex, int txtboxIndex = 0, FocusToOptions options = FocusToOptions.Default, int cursor = 0)
     {
         if (gridIndex < 0) gridIndex = 0;
         if (gridIndex >= DictionaryView.Items.Count) gridIndex = DictionaryView.Items.Count - 1;
         var grid = DictionaryView.Items[gridIndex] as Grid;
-        grid.Children[txtboxIndex].Focus(FocusState.Keyboard);
+        var txtbox = grid.Children[txtboxIndex] as TextBox;
+        txtbox.Focus(FocusState.Keyboard);
+
+        switch (options)
+        {
+            case FocusToOptions.Head:
+                txtbox.SelectionStart = 0;
+                break;
+            case FocusToOptions.Tail:
+                txtbox.SelectionStart = txtbox.Text.Length;
+                break;
+            default:
+                if (cursor > txtbox.Text.Length) cursor = txtbox.Text.Length;
+                txtbox.SelectionStart = cursor;
+                break;
+        }
+
         DictionaryView.SelectedItem = grid;
     }
 
@@ -94,6 +112,7 @@ public sealed partial class DictionaryEditBox : UserControl
         var keyTxtBox = new TextBox()
         {
             Text = key,
+            Tag = false, /* bool isTouchedEdge */
             Margin = new(0, 0, 0, 0),
             IsSpellCheckEnabled = false,
             TextWrapping = TextWrapping.Wrap /* 设置这个属性以隐藏 “X” 清除按键 */
@@ -102,6 +121,7 @@ public sealed partial class DictionaryEditBox : UserControl
         var valTxtBox = new TextBox()
         {
             Text = val,
+            Tag = false, /* bool isTouchedEdge */
             Margin = new(10, 0, 0, 0),
             IsSpellCheckEnabled = false
         };
@@ -121,6 +141,7 @@ public sealed partial class DictionaryEditBox : UserControl
         void OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
             var txtbox = sender as TextBox;
+            bool isTouchedEdge = (bool)txtbox.Tag;
             var parentGrid = txtbox.Parent as Grid;
             int index = DictionaryView.Items.IndexOf(parentGrid);
             int cursorPosition = txtbox.SelectionStart;
@@ -129,32 +150,40 @@ public sealed partial class DictionaryEditBox : UserControl
                 switch (e.Key)
                 {
                     case VirtualKey.Left:
-                        if (cursorPosition == 0 && index > 0) FocusTo(index - 1, 1);
+                        if (cursorPosition == 0 && index > 0) FocusTo(index - 1, 1, FocusToOptions.Tail);
+                        txtbox.Tag = false;
                         return;
 
                     case VirtualKey.Right:
-                        if (cursorPosition == textLength) valTxtBox.Focus(FocusState.Keyboard);
+                        if (cursorPosition == textLength) FocusTo(index, 1, FocusToOptions.Head);
+                        txtbox.Tag = false;
                         return;
 
                     case VirtualKey.Up:
-                        FocusTo(index - 1, 0);
+                        FocusTo(index - 1, 0, FocusToOptions.Default, cursorPosition);
                         return;
 
                     case VirtualKey.Down:
-                        FocusTo(index + 1, 0);
+                        FocusTo(index + 1, 0, FocusToOptions.Default, cursorPosition);
                         return;
 
                     case VirtualKey.Back:
                         if (cursorPosition != 0 || index == 0) return;
-                        DeleteButton_Click(null, null);
-                        FocusTo(index - 1, 1);
+                        if (isTouchedEdge)
+                        {
+                            DeleteButton_Click(null, null);
+                            FocusTo(index - 1, 1, FocusToOptions.Tail);
+                        }
+                        else txtbox.Tag = true;
                         return;
 
                     case VirtualKey.Enter:
-                        valTxtBox.Focus(FocusState.Keyboard);
+                        txtbox.Tag = false;
+                        FocusTo(index, 1, FocusToOptions.Tail);
                         return;
 
                     default:
+                        txtbox.Tag = false;
                         return;
                 }
 
@@ -162,31 +191,48 @@ public sealed partial class DictionaryEditBox : UserControl
                 switch (e.Key)
                 {
                     case VirtualKey.Left:
-                        if (cursorPosition == 0) keyTxtBox.Focus(FocusState.Keyboard);
+                        if (cursorPosition == 0) FocusTo(index, 0, FocusToOptions.Tail);
+                        txtbox.Tag = false;
                         return;
 
                     case VirtualKey.Right:
-                        if (cursorPosition == textLength && parentGrid != DictionaryView.Items[^1] as Grid) FocusTo(index + 1, 0);
+                        if (cursorPosition == textLength && parentGrid != DictionaryView.Items[^1] as Grid) FocusTo(index + 1, 0, FocusToOptions.Head);
+                        txtbox.Tag = false;
                         return;
 
                     case VirtualKey.Up:
-                        FocusTo(index - 1, 1);
+                        FocusTo(index - 1, 1, FocusToOptions.Default, cursorPosition);
                         return;
 
                     case VirtualKey.Down:
-                        FocusTo(index + 1, 1);
+                        FocusTo(index + 1, 1, FocusToOptions.Default, cursorPosition);
                         return;
 
                     case VirtualKey.Back:
-                        if (cursorPosition == 0) keyTxtBox.Focus(FocusState.Keyboard);
+                        if (cursorPosition == 0)
+                        {
+                            if (isTouchedEdge)
+                            {
+                                txtbox.Tag = false;
+                                FocusTo(index, 0, FocusToOptions.Tail);
+                            }
+                            else txtbox.Tag = true;
+                        }
+                        else txtbox.Tag = false;
                         return;
 
                     case VirtualKey.Enter:
-                        if (parentGrid != DictionaryView.Items[^1] as Grid) { FocusTo(index + 1, 0); return; }
+                        if (parentGrid != DictionaryView.Items[^1] as Grid)
+                        {
+                            txtbox.Tag = false;
+                            FocusTo(index + 1, 0, FocusToOptions.Tail);
+                            return;
+                        }
                         AddNewItem();
                         return;
 
                     default:
+                        txtbox.Tag = false;
                         return;
                 }
         }
