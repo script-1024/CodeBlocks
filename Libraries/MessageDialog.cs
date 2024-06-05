@@ -16,7 +16,7 @@ public class MessageDialog
     private string activatedMsgId = "";
     private readonly ContentDialog dialog = new();
 
-    public bool IsDialogActivated { get; private set; } = false;
+    public static bool IsDialogActivated { get; private set; } = false;
     public XamlRoot XamlRoot { get => dialog.XamlRoot; set => dialog.XamlRoot = value; }
 
     private string GetLocalizedString(string key) => (Application.Current as App).Localizer.GetString(key);
