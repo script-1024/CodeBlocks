@@ -16,29 +16,16 @@ namespace CodeBlocks.Core
         public string Code;
         public int Slots;
         public Size Size;
-        public static readonly BlockMetaData Null = new() { Type = 0, Code = "", Variant = 0, Slots = 0, Size = Size.Zero };
-    }
-
-    public struct Size(int w, int h)
-    {
-        public static readonly Size Zero = new(0, 0);
-        public int Width = w;
-        public int Height = h;
-
-        public static implicit operator Point(Size size) => new(size.Width, size.Height);
-        public static implicit operator Size((int w, int h) size) => new(size.w, size.h);
-        public static implicit operator (int Width, int Height)(Size size) => (size.Width, size.Height);
-        public static implicit operator Windows.Foundation.Size(Size size) => new(size.Width, size.Height);
-        public static explicit operator Size(Windows.Foundation.Size size) => new((int)size.Width, (int)size.Height);
+        public static readonly BlockMetaData Null = new() { Type = 0, Code = "", Variant = 0, Slots = 0, Size = default };
     }
 
     public class CodeBlockPainter
     {
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
         public BlockMetaData MetaData;
 
-        private int x, y;
+        private double x, y;
         private readonly int w = CodeBlock.SlotWidth;
         private readonly int h = CodeBlock.SlotHeight;
         private PathFigure pathFigure;
@@ -69,7 +56,7 @@ namespace CodeBlocks.Core
             pathFigure.Segments.Add(line3);
         }
 
-        private void DrawLine(int dx = 0, int dy = 0, int? newX = null, int? newY = null, bool isRelative = true)
+        private void DrawLine(double dx = 0, double dy = 0, double? newX = null, double? newY = null, bool isRelative = true)
         {
             LineSegment line = new();
 
@@ -80,8 +67,8 @@ namespace CodeBlocks.Core
             }
             else
             {
-                if (newX != null) x = (int)newX;
-                if (newY != null) y = (int)newY;
+                if (newX != null) x = (double)newX;
+                if (newY != null) y = (double)newY;
             }
 
             line.Point = new Point(x, y);

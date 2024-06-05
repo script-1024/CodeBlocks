@@ -21,11 +21,11 @@ namespace CodeBlocks.Pages
         public CodingPage()
         {
             InitializeComponent();
-            InitializePage();
             this.Loaded += Page_Loaded;
             dragger = new(BlockCanvas, Scroller, ghostBlock);
             ToolBox.BlockDragger = dragger;
             InitializeBlockDragger();
+            InitializePage();
         }
 
         private void InitializePage()

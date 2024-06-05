@@ -105,7 +105,8 @@ public class CodeBlock : BlockControl
         if (string.IsNullOrEmpty(text)) return;
 
         var parts = text.Split('{', '}');
-        int slots = 0, maxWidth = 0, textWidth;
+        double maxWidth = 0;
+        int slots = 0;
         ValueIndex.Clear();
 
         // 移除所有 TextBlock
@@ -113,8 +114,8 @@ public class CodeBlock : BlockControl
         foreach (var block in blocks) { RootCanvas.Children.Remove(block); }
 
         // 作用中的文字框
-        TextBlock currentTextBlock;
-        int currentY = SlotWidth - 4; // 暫时不知为何会差+4像素，扣回去
+        TextBlock textBlock;
+        double currentY = SlotWidth - 4; // 暫时不知为何会差+4像素，扣回去
 
         foreach (var part in parts)
         {
@@ -127,25 +128,28 @@ public class CodeBlock : BlockControl
             }
             else
             {
-                currentTextBlock = new()
+                textBlock = new()
                 {
                     Text = str,
                     Foreground = Microsoft.UI.Colors.White.GetSolidColorBrush(),
                     FontFamily = CodeBlock.FontFamily,
-                    FontSize = CodeBlock.FontSize
+                    FontSize = CodeBlock.FontSize,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
                 };
 
-                textWidth = (int)(TextHelper.GetWidth(str) * FontSize);
+                textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                var textWidth = textBlock.DesiredSize.Width;
                 if (textWidth > maxWidth) maxWidth = textWidth;
-                RootCanvas.Children.Add(currentTextBlock);
+
+                RootCanvas.Children.Add(textBlock);
 
                 // 左边距
-                Canvas.SetLeft(currentTextBlock, SlotWidth);
+                Canvas.SetLeft(textBlock, SlotWidth);
 
                 // 上边距
-                Canvas.SetTop(currentTextBlock, currentY);
+                Canvas.SetTop(textBlock, currentY);
 
-                int newpartY = 0;
+                double newpartY = 0;
                 if (RightBlocks.TryGetValue(slots, out CodeBlock block) && block is not null)
                 {
                     newpartY += block.Size.Height;
@@ -153,16 +157,16 @@ public class CodeBlock : BlockControl
                 else newpartY += SlotWidth * 3;
                 
                 currentY += newpartY;
-                currentTextBlock = null;
+                textBlock = null;
             }
         }
 
         metaData.Slots = slots;
 
         // 调整方块宽度
-        (int w, int h) size = Size;
-        size.w = maxWidth + SlotWidth * 3;
-        size.w += metaData.Variant.CheckIfContain(0b_0100) ? SlotHeight : 0;
+        Size size = Size;
+        size.Width = maxWidth + SlotWidth * 3;
+        size.Width += metaData.Variant.CheckIfContain(0b_0100) ? SlotHeight : 0;
         Resize(size);
     }
 
@@ -213,7 +217,7 @@ public class CodeBlock : BlockControl
         }
     }
 
-    private void Resize(Core.Size size)
+    private void Resize(Size size)
     {
         // 确保方块高度合法
         var minHeight = (metaData.Slots > 1) ? SlotWidth * (metaData.Slots * 3) : SlotWidth * 3;
@@ -233,7 +237,7 @@ public class CodeBlock : BlockControl
 
     #region "Properties"
 
-    public Core.Size Size
+    public Size Size
     {
         get => metaData.Size;
         set => Resize(value);
@@ -343,13 +347,13 @@ public class CodeBlock : BlockControl
                 data.Slots = (int)value;
                 break;
             case BlockProperties.Size:
-                data.Size = (Core.Size)value;
+                data.Size = (Size)value;
                 break;
             case BlockProperties.Width:
-                data.Size.Width = (int)value;
+                data.Size.Width = (double)value;
                 break;
             case BlockProperties.Height:
-                data.Size.Height = (int)value;
+                data.Size.Height = (double)value;
                 break;
             default:
                 break;
@@ -537,8 +541,8 @@ public class CodeBlock : BlockControl
 
         Point self = new(Canvas.GetLeft(this), Canvas.GetTop(this));
         Point target = new(Canvas.GetLeft(targetBlock), Canvas.GetTop(targetBlock));
-        int targetW = targetBlock.Size.Width;
-        int targetH = targetBlock.Size.Height;
+        double targetW = targetBlock.Size.Width;
+        double targetH = targetBlock.Size.Height;
 
         if (self.X + SlotHeight > target.X + targetW - SlotHeight) rq.x = 1;
         if (self.X + Size.Width < target.X + SlotHeight) rq.x = -1;
@@ -562,7 +566,7 @@ public class CodeBlock : BlockControl
     public static readonly int SlotWidth = 16;
     public static readonly int SlotHeight = 8;
     public static readonly new FontFamily FontFamily = new("/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC");
-    public static readonly new int FontSize = 15;
+    public static readonly new int FontSize = 16;
 
     #endregion
 }
