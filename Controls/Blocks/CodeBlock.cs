@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
 using CodeBlocks.Core;
+using Microsoft.UI;
 
 namespace CodeBlocks.Controls;
 public class BlockCreatedEventArgs
@@ -30,23 +31,11 @@ public class BlockCreatedEventArgs
 
 public class CodeBlock : BlockControl
 {
-    private string id;
-    private string key;
-    private BlockMetaData metaData = BlockMetaData.Null;
-
-    private readonly CodeBlockPainter painter = new();
-    private readonly CommandBarFlyout ContextMenu = new();
-    private readonly App app = Application.Current as App;
+    #region "Constructor"
 
     // 方块被创建后要引发的事件，用于在 CodingPage 中初始化方块
     public delegate void BlockCreatedEventHandler(CodeBlock sender, BlockCreatedEventArgs e);
-
-    // Ignore warn CA1070
-    // Fix bug when ValueBlock was copied, it wasn't initialized correctly.
-    // It has a different behavior than the default (THIS base class).
-    #pragma warning disable CA1070
-    public virtual event BlockCreatedEventHandler OnBlockCreated;
-    #pragma warning restore CA1070
+    public event BlockCreatedEventHandler OnBlockCreated;
 
     public CodeBlock(BlockCreatedEventHandler createdEventHandler, BlockCreatedEventArgs args = null) : base()
     {
@@ -58,10 +47,20 @@ public class CodeBlock : BlockControl
         OnBlockCreated?.Invoke(this, args);
     }
 
-    public CodeBlock() : this(null, null) 
-    {
-        
-    }
+    public CodeBlock() : this(null, null) { }
+
+    #endregion
+
+    #region "PrivateField"
+
+    private string id;
+    private string key;
+    private bool isExpand = true;
+    private BlockMetaData metaData = BlockMetaData.Null;
+
+    private readonly CodeBlockPainter painter = new();
+    private readonly CommandBarFlyout ContextMenu = new();
+    private readonly App app = Application.Current as App;
 
     private void InitializeMenu()
     {
@@ -97,77 +96,234 @@ public class CodeBlock : BlockControl
         };
         ContextMenu.SecondaryCommands.Add(item_delAll);
 
+        var icon_changeExpand = new FontIcon() { Glyph = "\uE976" };
+        var item_changeExpand = new AppBarButton() { Tag = "ChangeExpandState.ToEmbedded", Icon = icon_changeExpand };
+        item_changeExpand.Click += (_, _) =>
+        {
+            IsExpand = !IsExpand;
+            if (IsExpand)
+            {
+                item_changeExpand.Label = app.Localizer.GetString("ContentMenu.CodeBlock.ChangeExpandState.ToEmbedded");
+                icon_changeExpand.Glyph = "\uE976";
+                item_changeExpand.Tag = "ChangeExpandState.ToEmbedded";
+            }
+            else
+            {
+                item_changeExpand.Label = app.Localizer.GetString("ContentMenu.CodeBlock.ChangeExpandState.ToExpanded");
+                icon_changeExpand.Glyph = "\uEA4E";
+                item_changeExpand.Tag = "ChangeExpandState.ToExpanded";
+            }
+        };
+        ContextMenu.SecondaryCommands.Add(item_changeExpand);
+
         LocalizeMenu();
+    }
+
+    private void ResizeTextBox()
+    {
+        if (IsExpand) return;
+
+        double x = SlotWidth;
+        foreach (var obj in RootCanvas.Children)
+        {
+            if (obj is TextBlock textBlock)
+            {
+                Canvas.SetLeft(textBlock, x);
+                textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                x += textBlock.DesiredSize.Width + 8;
+            }
+            else if (obj is TextBox textBox)
+            {
+                Canvas.SetLeft(textBox, x);
+                x += textBox.ActualWidth + 8;
+            }
+        }
+
+        SetData(BlockProperties.Width, x + SlotWidth);
     }
 
     private void SetText(string text)
     {
         if (string.IsNullOrEmpty(text)) return;
-
-        var parts = text.Split('{', '}');
         double maxWidth = 0;
-        int slots = 0;
-        ValueIndex.Clear();
+
+        // 移除所有 TextBox
+        var boxes = RootCanvas.Children.OfType<TextBox>().ToList();
+        foreach (var box in boxes) { RootCanvas.Children.Remove(box); }
 
         // 移除所有 TextBlock
         var blocks = RootCanvas.Children.OfType<TextBlock>().ToList();
         foreach (var block in blocks) { RootCanvas.Children.Remove(block); }
 
-        // 作用中的文字框
-        TextBlock textBlock;
-        double currentY = SlotWidth - 4; // 暫时不知为何会差+4像素，扣回去
+        List<BlockValueType> slotTypes = [];
+        ValueIndex.Clear();
 
-        foreach (var part in parts)
+        // 被括号框起来 --> 输入项
+        var parts = text.Split(['(', ')'], StringSplitOptions.RemoveEmptyEntries);
+        int slots = 0;
+
+        if (IsExpand)
         {
-            if (string.IsNullOrWhiteSpace(part)) continue;
+            // 作用中的文本框
+            TextBlock textBlock;
+            double currentY = SlotWidth - 4; // 暫时不知为何会差+4像素，扣回去
 
-            string str = part.Trim(); // 移除前后空格
-            if (str.StartsWith('%'))
+            foreach (var part in parts)
             {
-                ValueIndex.Add(str, slots++);
-            }
-            else
-            {
-                textBlock = new()
+                string str = part.Trim();
+
+                // (#int) (##double) (%text)
+                if (str.StartsWith('#'))
                 {
-                    Text = str,
-                    Foreground = Microsoft.UI.Colors.White.GetSolidColorBrush(),
-                    FontFamily = CodeBlock.FontFamily,
-                    FontSize = CodeBlock.FontSize,
-                    HorizontalAlignment = HorizontalAlignment.Stretch
-                };
-
-                textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                var textWidth = textBlock.DesiredSize.Width;
-                if (textWidth > maxWidth) maxWidth = textWidth;
-
-                RootCanvas.Children.Add(textBlock);
-
-                // 左边距
-                Canvas.SetLeft(textBlock, SlotWidth);
-
-                // 上边距
-                Canvas.SetTop(textBlock, currentY);
-
-                double newpartY = 0;
-                if (RightBlocks.TryGetValue(slots, out CodeBlock block) && block is not null)
-                {
-                    newpartY += block.Size.Height;
+                    ValueIndex.Add(str, slots++);
+                    if (str.StartsWith("##")) slotTypes.Add(BlockValueType.Double);
+                    else slotTypes.Add(BlockValueType.Int);
                 }
-                else newpartY += SlotWidth * 3;
-                
-                currentY += newpartY;
-                textBlock = null;
+                else if (str.StartsWith('%'))
+                {
+                    ValueIndex.Add(str, slots++);
+                    slotTypes.Add(BlockValueType.String);
+                }
+                else
+                {
+                    textBlock = new()
+                    {
+                        Text = str,
+                        FontSize = CodeBlock.FontSize,
+                        FontFamily = CodeBlock.FontFamily,
+                        Foreground = Colors.White.GetSolidColorBrush()
+                    };
+
+                    RootCanvas.Children.Add(textBlock);
+
+                    // 设置边距
+                    Canvas.SetLeft(textBlock, SlotWidth);
+                    Canvas.SetTop(textBlock, currentY);
+
+                    textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                    var textWidth = textBlock.DesiredSize.Width;
+                    if (textWidth > maxWidth) maxWidth = textWidth;
+
+                    double newpartY = 0;
+                    if (RightBlocks.TryGetValue(slots, out CodeBlock block) && block is not null)
+                    {
+                        newpartY += block.Size.Height;
+                    }
+                    else newpartY += SlotWidth * 3;
+
+                    currentY += newpartY;
+                }
             }
+
+            // 调整宽度
+            Size size = Size;
+            size.Width = maxWidth + SlotWidth * 2 + SlotHeight;
+            size.Width += (slots > 1) ? SlotHeight : 0;
+            metaData.Slots = slots;
+            Resize(size);
+        }
+        else
+        {
+            // 作用中的文本框
+            TextBox textBox;
+            TextBlock textBlock;
+            double currentX = SlotWidth;
+
+            foreach (var part in parts)
+            {
+                string str = part.Trim();
+
+                // (#int) (##double) (%text)
+                if (str.StartsWith('#'))
+                {
+                    ValueIndex.Add(str, slots++);
+                    BlockValueType type;
+                    if (str.StartsWith("##")) type = BlockValueType.Double;
+                    else type = BlockValueType.Int;
+                    slotTypes.Add(type);
+
+                    textBox = new()
+                    {
+                        CornerRadius = new(12),
+                        FontSize = CodeBlock.FontSize,
+                        FontFamily = CodeBlock.FontFamily,
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        BorderBrush = Colors.Transparent.GetSolidColorBrush(),
+                        PlaceholderText = app.Localizer.GetString("Blocks.ValueBlock.Number.PlaceholderText")
+                    };
+
+                    // 应用自定义样式
+                    if (app.Resources.TryGetValue("NoClearButtonTextBoxStyle", out var style))
+                    {
+                        textBox.Style = style as Style;
+                    }
+
+                    RootCanvas.Children.Add(textBox);
+
+                    textBox.TextChanged += (_, _) => CheckIllegalCharacter(textBox, type);
+                    textBox.TextChanged += (_, _) => ResizeTextBox();
+
+                    // 设置边距
+                    Canvas.SetTop(textBox, 6);
+                }
+                else if (str.StartsWith('%'))
+                {
+                    ValueIndex.Add(str, slots++);
+                    slotTypes.Add(BlockValueType.String);
+
+                    textBox = new()
+                    {
+                        CornerRadius = new(3),
+                        FontSize = CodeBlock.FontSize,
+                        FontFamily = CodeBlock.FontFamily,
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        BorderBrush = Colors.Transparent.GetSolidColorBrush(),
+                        PlaceholderText = app.Localizer.GetString("Blocks.ValueBlock.Text.PlaceholderText")
+                    };
+
+                    // 应用自定义样式
+                    if (app.Resources.TryGetValue("NoClearButtonTextBoxStyle", out var style))
+                    {
+                        textBox.Style = style as Style;
+                    }
+
+                    RootCanvas.Children.Add(textBox);
+
+                    textBox.TextChanged += (_, _) => ResizeTextBox();
+
+                    // 设置边距
+                    Canvas.SetTop(textBox, 6);
+                }
+                else
+                {
+                    textBlock = new()
+                    {
+                        Text = str,
+                        FontSize = CodeBlock.FontSize,
+                        FontFamily = CodeBlock.FontFamily,
+                        Foreground = Colors.White.GetSolidColorBrush()
+                    };
+
+                    RootCanvas.Children.Add(textBlock);
+
+                    // 设置边距
+                    Canvas.SetTop(textBlock, SlotWidth - 4);
+
+                    textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                    var textWidth = textBlock.DesiredSize.Width;
+
+                    currentX += textWidth;
+                }
+            }
+
+            metaData.Slots = slots;
+
+            // 调整宽度
+            // 得先等待控件被加入到画布中，否则取得 ActualWidth 时会得到 0
+            Task.Delay(50).ContinueWith(_ => ResizeTextBox(), TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        metaData.Slots = slots;
-
-        // 调整方块宽度
-        Size size = Size;
-        size.Width = maxWidth + SlotWidth * 3;
-        size.Width += metaData.Variant.CheckIfContain(0b_0100) ? SlotHeight : 0;
-        Resize(size);
+        SlotTypes = [..slotTypes];
     }
 
     // 旧方法，从全局翻译文件取得本地化字串
@@ -177,6 +333,121 @@ public class CodeBlock : BlockControl
         var text = app.Localizer.GetString(key);
         SetText(text);
     }
+
+    private void LocalizeMenu()
+    {
+        foreach (var item in ContextMenu.PrimaryCommands)
+        {
+            if (item is AppBarButton btn) btn.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + btn.Tag);
+        }
+
+        foreach (var item in ContextMenu.SecondaryCommands)
+        {
+            if (item is AppBarButton btn) btn.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + btn.Tag);
+        }
+    }
+
+    private void Resize(Size size)
+    {
+        // 计算方块高度
+        double height = SlotWidth * 3 + SlotHeight;
+
+        if (IsExpand)
+        {
+            if (metaData.Slots > 1) height += SlotWidth * ((metaData.Slots-1) * 3);
+            if (size.Height < height) size.Height = height;
+        }
+        else size.Height = height;
+
+        // 确保方块宽度合法
+        var minW = SlotHeight + SlotWidth * 3;
+        if (size.Width < minW) size.Width = minW;
+
+        metaData.Size = size;
+        this.Width = size.Width;
+        this.Height = size.Height;
+        painter.MetaData = metaData;
+        painter.IsExpand = IsExpand;
+        BlockBorder.Data = painter.DrawBlockBorder();
+        Array.Resize(ref RightBlocks, metaData.Slots);
+    }
+
+    private void CheckIllegalCharacter(TextBox txtbox, BlockValueType type)
+    {
+        BlockTip.Target = txtbox;
+
+        if (type.HasFlag(BlockValueType.Decimal) && double.TryParse(txtbox.Text, out _))
+        {
+            if (BlockTip.IsOpen) BlockTip.IsOpen = false;
+        }
+        else if (type.HasFlag(BlockValueType.Integer) && int.TryParse(txtbox.Text, out _))
+        {
+            if (BlockTip.IsOpen) BlockTip.IsOpen = false;
+        }
+        else
+        {
+            BlockTip.Title = app.Localizer.GetString("Tips.IllegalCharacters");
+            BlockTip.Subtitle = app.Localizer.GetString("Tips.UnableToConvertType");
+            if (!BlockTip.IsOpen) BlockTip.IsOpen = true;
+        }
+    }
+
+    #endregion
+
+    #region "Properties"
+
+    public Size Size
+    {
+        get => metaData.Size;
+        set => Resize(value);
+    }
+
+    public BlockMetaData MetaData
+    {
+        get => metaData;
+        set
+        {
+            metaData = value;
+            Resize(value.Size);
+        }
+    }
+
+    public bool IsExpand
+    {
+        get => isExpand;
+        set
+        {
+            isExpand = value;
+            RefreshBlockText();
+        }
+    }
+
+    public string Identifier
+    {
+        get => id;
+        set { id = value; RefreshBlockText(); } 
+    }
+
+    public string TranslationKey
+    {
+        get => key;
+        set { key = value; LocalizeBlock(); }
+    }
+
+    public BlockValueType[] SlotTypes;
+    public Dictionary<string, string> TranslationsDict;
+    public Dictionary<string, int> ValueIndex { get; private set; } = new();
+
+    public int DependentSlot;
+    public CodeBlock ParentBlock;
+    public CodeBlock BottomBlock;
+    public CodeBlock[] RightBlocks = [];
+
+    public bool HasBeenRemoved = false;
+
+    #endregion
+
+    #region "Methods"
 
     /// <summary>
     /// 刷新方块的本地化文本
@@ -204,81 +475,6 @@ public class CodeBlock : BlockControl
         else SetText(id);
     }
 
-    private void LocalizeMenu()
-    {
-        foreach (var item in ContextMenu.PrimaryCommands)
-        {
-            if (item is AppBarButton btn) btn.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + btn.Tag);
-        }
-
-        foreach (var item in ContextMenu.SecondaryCommands)
-        {
-            if (item is AppBarButton btn) btn.Label = app.Localizer.GetString("ContentMenu.CodeBlock." + btn.Tag);
-        }
-    }
-
-    private void Resize(Size size)
-    {
-        // 确保方块高度合法
-        var minHeight = (metaData.Slots > 1) ? SlotWidth * (metaData.Slots * 3) : SlotWidth * 3;
-        if (metaData.Variant.CheckIfContain(0b_1000)) minHeight += SlotHeight;
-        if (size.Height < minHeight) size.Height = minHeight;
-
-        // 确保方块宽度合法
-        if (size.Width < 100) size.Width = 100;
-
-        metaData.Size = size;
-        this.Width = size.Width;
-        this.Height = size.Height;
-        painter.MetaData = metaData;
-        BlockBorder.Data = painter.DrawBlockBorder();
-        Array.Resize(ref RightBlocks, metaData.Slots);
-    }
-
-    #region "Properties"
-
-    public Size Size
-    {
-        get => metaData.Size;
-        set => Resize(value);
-    }
-
-    public BlockMetaData MetaData
-    {
-        get => metaData;
-        set
-        {
-            metaData = value;
-            Resize(value.Size);
-        }
-    }
-
-    public string Identifier
-    {
-        get => id;
-        set { id = value; RefreshBlockText(); } 
-    }
-
-    public string TranslationKey
-    {
-        get => key;
-        set { key = value; LocalizeBlock(); }
-    }
-
-    public Dictionary<string, string> TranslationsDict;
-
-    public int DependentSlot;
-    public CodeBlock ParentBlock;
-    public CodeBlock BottomBlock;
-    public CodeBlock[] RightBlocks = [];
-    public Dictionary<string, int> ValueIndex { get; private set; } = new();
-
-    public bool HasBeenRemoved = false;
-
-    #endregion
-
-    #region "Methods"
-
     public int GetRelatedBlockCount()
     {
         int count = 0;
@@ -295,8 +491,9 @@ public class CodeBlock : BlockControl
         var block = new CodeBlock(eventHandler, args)
         {
             MetaData = this.MetaData,
+            IsExpand = this.IsExpand,
             BlockColor = this.BlockColor,
-            Identifier = this.Identifier
+            Identifier = this.Identifier,
         };
 
         if (TranslationsDict is null) block.TranslationKey = this.TranslationKey;
@@ -328,16 +525,18 @@ public class CodeBlock : BlockControl
     /// <summary>
     /// 更改方块数据
     /// </summary>
-    public void SetData(BlockProperties key, object value)
+    public void SetData(BlockProperties key, object value, bool updateBorder = true)
     {
         BlockMetaData data = this.MetaData;
         switch (key)
         {
             case BlockProperties.Type:
                 data.Type = (BlockType)value;
+                if (data.Type == BlockType.Value && IsExpand) IsExpand = false;
                 break;
             case BlockProperties.Code:
                 data.Code = (string)value;
+                updateBorder = false;
                 break;
             case BlockProperties.Variant:
                 if (value is int n) data.Variant = (byte)n; // 若value为int类型，直接object转byte会崩溃
@@ -358,7 +557,9 @@ public class CodeBlock : BlockControl
             default:
                 break;
         }
-        this.MetaData = data;
+
+        if (updateBorder) MetaData = data;
+        else metaData = data;
     }
 
     /// <summary>
@@ -429,8 +630,10 @@ public class CodeBlock : BlockControl
         // 移动右侧方块
         for (int i = 0; i < metaData.Slots; i++)
         {
-            var block = RightBlocks[i];
-            block?.SetPosition(x + Size.Width - SlotHeight, y + i * 48);
+            if (RightBlocks.TryGetValue(i, out var block))
+            {
+                block?.SetPosition(x + Size.Width - SlotHeight, y + i * 48);
+            }
         }
     }
 
@@ -557,6 +760,21 @@ public class CodeBlock : BlockControl
         else if (rq.y < 0) rq.dy = target.Y - self.Y;
 
         return rq;
+    }
+
+    public string GetCode()
+    {
+        string code = metaData.Code;
+        foreach (string variable in ValueIndex.Keys)
+        {
+            int index = ValueIndex[variable];
+            if (RightBlocks.TryGetValue(index, out var block))
+            {
+                string value = block.GetCode();
+                code = code.Replace(variable, value);
+            }
+        }
+        return code;
     }
     
     #endregion
