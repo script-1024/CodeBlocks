@@ -54,6 +54,8 @@ public class MessageDialog
 
     public async Task<ContentDialogResult> ShowAsync(string msgId, DialogVariant variant = DialogVariant.Confirm)
     {
+        if (XamlRoot is null) return ContentDialogResult.None;
+
         // 阻止重复呼叫
         if (IsDialogActivated && activatedMsgId == msgId) return ContentDialogResult.None;
 
@@ -65,6 +67,30 @@ public class MessageDialog
         
         dialog.Title = GetLocalizedString($"Messages.{msgId}.Title");
         dialog.Content = GetLocalizedString($"Messages.{msgId}.Description");
+
+        SetDialogButtons(variant);
+
+        var result = await dialog.ShowAsync();
+        IsDialogActivated = false;
+        activatedMsgId = "";
+        return result;
+    }
+
+    public async Task<ContentDialogResult> ShowAsync(string msgId, object content, DialogVariant variant = DialogVariant.Confirm)
+    {
+        if (XamlRoot is null) return ContentDialogResult.None;
+
+        // 阻止重复呼叫
+        if (IsDialogActivated && activatedMsgId == msgId) return ContentDialogResult.None;
+
+        // 若对话框处于激活状态 等待其退出
+        while (IsDialogActivated) await Task.Delay(200);
+
+        activatedMsgId = msgId;
+        IsDialogActivated = true;
+
+        dialog.Title = GetLocalizedString($"Messages.{msgId}.Title");
+        dialog.Content = content;
 
         SetDialogButtons(variant);
 
