@@ -108,6 +108,7 @@ BlockEditor:
     TranslationsDictionary:
         Header: Translations
         Buttons:
+            Refresh: Refresh
             Add: Add
             Delete: Delete
             Clear: Clear

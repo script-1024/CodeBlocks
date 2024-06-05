@@ -108,6 +108,7 @@ BlockEditor:
     TranslationsDictionary:
         Header: 翻译字典
         Buttons:
+            Refresh: 刷新
             Add: 新增
             Delete: 删除
             Clear: 清空
