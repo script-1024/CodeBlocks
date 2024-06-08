@@ -91,6 +91,16 @@ namespace CodeBlocks.Core
             return Encoding.Unicode.GetBytes(value, charIndex, charCount);
         }
 
+        public static byte[] ToUTF8Bytes(this string value, int charIndex = 0, int charCount = -1)
+        {
+            if (value.Length == 0 || charCount == 0) return [];
+            if (charIndex < 0 || charIndex >= value.Length) throw new ArgumentOutOfRangeException(paramName: nameof(charIndex), message: "string.ToUTF8Bytes(): An invalid index was specified.");
+
+            // 若呼叫时不想指定特定长度或设置了非法值，则将 count 设为字串长度
+            if (charCount < 0) charCount = value.Length;
+            return Encoding.UTF8.GetBytes(value, charIndex, charCount);
+        }
+
         public static byte[] ToBytes(this long value, int length = 8) => IntegerToBytes((ulong)value, length);
         public static byte[] ToBytes(this int value, int length = 4) => IntegerToBytes((ulong)value, length);
         public static byte[] ToBytes(this short value, int length = 2) => IntegerToBytes((ulong)value, length);

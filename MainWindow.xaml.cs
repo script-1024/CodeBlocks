@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Windowing;
 using CodeBlocks.Pages;
 using CodeBlocks.Core;
+using System.Diagnostics;
 
 namespace CodeBlocks
 {
@@ -31,6 +32,8 @@ namespace CodeBlocks
             app.ThemeChanged += () => fe.RequestedTheme = (ElementTheme)app.CurrentThemeId;
             if (fe.RequestedTheme != (ElementTheme)app.CurrentThemeId)
                 fe.RequestedTheme = (ElementTheme)app.CurrentThemeId;
+
+            Tab.Loaded += (_, _) => dialog.XamlRoot = Tab.XamlRoot;
 
             this.SizeChanged += (_, _) => UpdateDragRects();
             Tab.AddTabButtonClick += (_, _) => AddNewTab(typeof(CodingPage));
@@ -82,9 +85,10 @@ namespace CodeBlocks
         private async void Window_Closed(object sender, WindowEventArgs args)
         {
             args.Handled = true;
-            var result = await FileNotSavedDialogShowAsync();
-            if (result == ContentDialogResult.Primary) { /* 保存文件 */ }
-            if (result != ContentDialogResult.None) { args.Handled = false; Close(true); }
+            foreach (var obj in Tab.TabItems)
+            {
+                if (obj is TabViewItem item) await TabItem_CloseRequested(item, args);
+            }
         }
 
         private void AddNewTab(Type page, string header = "")
@@ -108,13 +112,27 @@ namespace CodeBlocks
             if (split == 0) split = 240;
             UpdateDragRects();
 
-            item.CloseRequested += TabItem_CloseRequested;
+            item.CloseRequested += async (s, _) => await TabItem_CloseRequested(s);
         }
 
-        private void TabItem_CloseRequested(TabViewItem sender, TabViewTabCloseRequestedEventArgs args)
+        private async Task TabItem_CloseRequested(TabViewItem sender, WindowEventArgs args = null)
         {
+            var frame = sender.Content as Frame;
+            var page = frame.Content as CodingPage;
+
+            if (!page.IsSaved)
+            {
+                var result = await dialog.ShowAsync("WindowClosing", DialogVariant.SaveGiveupCancel);
+                if (result == ContentDialogResult.None) return;
+                else if (result == ContentDialogResult.Primary)
+                {
+                    var isSaved = await page.ExportDatapack();
+                    if (!isSaved) return; // 用户取消操作 或 保存文件时出错
+                }
+            }
+
             Tab.TabItems.Remove(sender);
-            if (Tab.TabItems.Count == 0) Close(true);
+            if (Tab.TabItems.Count == 0) { args.Handled = false; Close(true); }
             else UpdateDragRects();
         }
     }

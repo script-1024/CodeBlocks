@@ -1,10 +1,21 @@
 ﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Controls;
+
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using Windows.Storage.Provider;
 using Windows.Foundation;
-using CodeBlocks.Controls;
+
 using CodeBlocks.Core;
+using CodeBlocks.Controls;
+using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace CodeBlocks.Pages
 {
@@ -38,6 +49,8 @@ namespace CodeBlocks.Pages
 
         private void InitializeBlockDragger()
         {
+            dragger.Parent = this;
+
             dragger.GetTrashCanPosition = () => new Point()
             {
                 X = Canvas.GetLeft(TrashCan) + TrashCan.ActualWidth / 2,
@@ -126,6 +139,128 @@ namespace CodeBlocks.Pages
             }
             await thisBlock.RemoveAsync(BlockCanvas);
             canCanvasScroll = true;
+        }
+
+        public async Task<bool> ExportDatapack()
+        {
+            var mainPanel = new StackPanel();
+
+            var panel_packInfo = new StackPanel()
+            {
+                Margin = new(4),
+                Orientation = Orientation.Horizontal
+            };
+
+            var label_packName = new TextBlock()
+            {
+                Text = "数据包名称",
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var txtbox_packName = new TextBox()
+            {
+                Margin = new(12, 0, 0, 0),
+                Width = 150
+            };
+
+            var label_packformat = new TextBlock()
+            {
+                Text = "版本",
+                Margin = new(12, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var txtbox_packformat = new TextBox()
+            {
+                Margin = new(12, 0, 0, 0),
+                Width = 75
+            };
+
+            panel_packInfo.Children.Add(label_packName);
+            panel_packInfo.Children.Add(txtbox_packName);
+            panel_packInfo.Children.Add(label_packformat);
+            panel_packInfo.Children.Add(txtbox_packformat);
+            mainPanel.Children.Add(panel_packInfo);
+
+            var panel_description = new StackPanel()
+            {
+                Margin = new(-8, 8, 0, 0),
+                Orientation = Orientation.Horizontal
+            };
+
+            var label_description = new TextBlock()
+            {
+                Text = "数据包简介",
+                Margin = new(12, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var txtbox_description = new TextBox()
+            {
+                Margin = new(12, 0, 0, 0),
+                Width = 280
+            };
+
+            panel_description.Children.Add(label_description);
+            panel_description.Children.Add(txtbox_description);
+            mainPanel.Children.Add(panel_description);
+
+            var result = await dialog.ShowAsync("ExportDatapack", mainPanel, DialogVariant.ConfirmCancel);
+            if (result == ContentDialogResult.Primary)
+            {
+                IsSaved = (bool) await ExportFileAsync(txtbox_packName.Text, txtbox_packformat.Text, txtbox_description.Text);
+                return IsSaved;
+            }
+            else return false;
+        }
+
+        private async Task<bool?> ExportFileAsync(string name, string format, string description)
+        {
+            FileSavePicker savePicker = new();
+
+            // 取得当前窗口句柄，将选择器的拥有者设为此窗口
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(app.MainWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+
+            // 选择器的预设路径
+            savePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+
+            // 文件类型
+            string fileDescription = GetLocalizedString("Misc.MCFFile");
+            savePicker.FileTypeChoices.Add(fileDescription, [".mcf"]);
+
+            StorageFile file = await savePicker.PickSaveFileAsync();
+            if (file != null)
+            {
+                // 写入文件
+                File.WriteAllText(file.Path, ""); // 建立新文件，或重置文件内容
+                File_WriteLine(file.Path, $"#> rmdir {name}");
+                File_WriteLine(file.Path, $"#> init {name} {format} {description}");
+                foreach (var entryBlock in dragger.FunctionEntry)
+                {
+                    File_WriteLine(file.Path, entryBlock.GetCode());
+
+                    var block = entryBlock.BottomBlock;
+                    while (block != null)
+                    {
+                        File_WriteLine(file.Path, block.GetCode());
+                        block = block.BottomBlock;
+                    }
+                }
+                File_WriteLine(file.Path, $"#> close");
+
+                // 成功
+                return IsSaved = true;
+            }
+
+            // 操作被用户取消
+            return false;
+        }
+
+        private void File_WriteLine(string path, string line)
+        {
+            line += Environment.NewLine;
+            File.AppendAllText(path, line);
         }
     }
 }

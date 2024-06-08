@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.Storage;
 using CodeBlocks.Core;
+using Microsoft.UI.Xaml.Documents;
+using System.Runtime.InteropServices;
 
 namespace CodeBlocks.Controls
 {
@@ -223,6 +225,11 @@ namespace CodeBlocks.Controls
             var thisBlock = sender as CodeBlock;
             var clonedBlock = thisBlock.Tag as CodeBlock;
             BlockDragger.BlockManipulationCompleted(clonedBlock, e);
+
+            if (clonedBlock.MetaData.Type == BlockType.Event)
+            {
+                BlockDragger.FunctionEntry.Add(clonedBlock);
+            }
 
             thisBlock.Tag = null;
             canScroll = true;

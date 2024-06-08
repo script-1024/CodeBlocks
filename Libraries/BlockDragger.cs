@@ -4,6 +4,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using CodeBlocks.Controls;
+using CodeBlocks.Pages;
+using System.Collections.Generic;
 
 namespace CodeBlocks.Core;
 
@@ -18,6 +20,10 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         get => focusBlock;
         set { focusBlock = value; FocusChanged?.Invoke(); }
     }
+
+    public object Parent { get; set; }
+
+    public List<CodeBlock> FunctionEntry = new();
 
     #endregion
 
@@ -103,11 +109,11 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
 
         var distance = Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
 
-        // 距离小于 取较大值(宽, 高) 的三分之一 --> 方块已和垃圾桶重叠;
-        var threshold = Utils.GetBigger(size.Width, size.Height) / 3;
-        if (distance < threshold)
+        if (distance < 60)
         {
             FocusBlock = null;
+            if (FunctionEntry.Contains(thisBlock)) FunctionEntry.Remove(thisBlock);
+
             RemoveBlock(thisBlock);
             return true;
         }
@@ -238,6 +244,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         ResetGhostBlock();
         var thisBlock = sender as CodeBlock;
         ghostBlock.CopyDataFrom(thisBlock);
+        ghostBlock.IsExpand = thisBlock.IsExpand;
         thisBlock.SetZIndex(+5, true);
 
         FocusBlock = thisBlock;

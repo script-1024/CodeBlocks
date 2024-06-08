@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
 using CodeBlocks.Core;
 using Microsoft.UI;
+using Microsoft.UI.Xaml.Documents;
 
 namespace CodeBlocks.Controls;
 public class BlockCreatedEventArgs
@@ -135,14 +136,18 @@ public class CodeBlock : BlockControl
             else if (obj is TextBox textBox)
             {
                 Canvas.SetLeft(textBox, x);
-                x += textBox.ActualWidth + 8;
+                x += (textBox.ActualWidth != 0) ? textBox.ActualWidth : textBox.MinWidth;
+                x += 8; // Margin
             }
         }
 
         SetData(BlockProperties.Width, x + SlotWidth);
+
+        // 使后续方块重新连接上
+        if (BottomBlock is not null) SetPosition(0, 0, true);
     }
 
-    private void SetText(string text)
+    private async Task SetText(string text)
     {
         if (string.IsNullOrEmpty(text)) return;
         double maxWidth = 0;
@@ -221,11 +226,48 @@ public class CodeBlock : BlockControl
             size.Width += (slots > 1) ? SlotHeight : 0;
             metaData.Slots = slots;
             Resize(size);
+
+            SlotTypes = [.. slotTypes];
+
+            if (ValueDictionary.Count != 0)
+            {
+                foreach (var key in ValueDictionary.Keys)
+                {
+                    var value = ValueDictionary[key];
+                    var index = ValueIndex[key];
+                    var type = SlotTypes[index];
+
+                    CodeBlock tempBlock;
+                    switch(type)
+                    {
+                        case BlockValueType.Int:
+                            tempBlock = ToolBox.CreateBlockFromID("minecraft:int");
+                            break;
+                        case BlockValueType.Double:
+                            tempBlock = ToolBox.CreateBlockFromID("minecraft:decimal");
+                            break;
+                        case BlockValueType.String:
+                            tempBlock = ToolBox.CreateBlockFromID("minecraft:string");
+                            break;
+                        default:
+                            continue;
+                    }
+
+                    BlockCreatedEventArgs args = new(source: this);
+                    var block = tempBlock.Clone(OnBlockCreated, args);
+                    block.IsExpand = false;
+                    block.SetValue(0, value);
+                    RightBlocks.TrySetValue(index, block);
+                }
+
+                // 使复制出的方块被放置到画布中
+                this.SetPosition(0, 0, true);
+                ValueDictionary.Clear();
+            }
         }
         else
         {
             // 作用中的文本框
-            TextBox textBox;
             TextBlock textBlock;
             double currentX = SlotWidth;
 
@@ -242,9 +284,9 @@ public class CodeBlock : BlockControl
                     else type = BlockValueType.Int;
                     slotTypes.Add(type);
 
-                    textBox = new()
+                    TextBox textBox = new()
                     {
-                        CornerRadius = new(12),
+                        CornerRadius = new(18),
                         FontSize = CodeBlock.FontSize,
                         FontFamily = CodeBlock.FontFamily,
                         VerticalContentAlignment = VerticalAlignment.Center,
@@ -260,8 +302,16 @@ public class CodeBlock : BlockControl
 
                     RootCanvas.Children.Add(textBox);
 
-                    textBox.TextChanged += (_, _) => CheckIllegalCharacter(textBox, type);
-                    textBox.TextChanged += (_, _) => ResizeTextBox();
+                    textBox.TextChanged += (_, _) =>
+                    {
+                        ResizeTextBox();
+                        CheckIllegalCharacter(textBox, type);
+                        if (ValueDictionary.TryGetValue(str, out var _))
+                        {
+                            ValueDictionary[str] = textBox.Text;
+                        }
+                        else ValueDictionary.Add(str, textBox.Text);
+                    };
 
                     // 设置边距
                     Canvas.SetTop(textBox, 6);
@@ -271,7 +321,7 @@ public class CodeBlock : BlockControl
                     ValueIndex.Add(str, slots++);
                     slotTypes.Add(BlockValueType.String);
 
-                    textBox = new()
+                    TextBox textBox = new()
                     {
                         CornerRadius = new(3),
                         FontSize = CodeBlock.FontSize,
@@ -289,7 +339,15 @@ public class CodeBlock : BlockControl
 
                     RootCanvas.Children.Add(textBox);
 
-                    textBox.TextChanged += (_, _) => ResizeTextBox();
+                    textBox.TextChanged += (_, _) =>
+                    {
+                        ResizeTextBox();
+                        if (ValueDictionary.TryGetValue(str, out var _))
+                        {
+                            ValueDictionary[str] = textBox.Text;
+                        }
+                        else ValueDictionary.Add(str, textBox.Text);
+                    };
 
                     // 设置边距
                     Canvas.SetTop(textBox, 6);
@@ -317,13 +375,38 @@ public class CodeBlock : BlockControl
             }
 
             metaData.Slots = slots;
+            SlotTypes = [.. slotTypes];
 
             // 调整宽度
             // 得先等待控件被加入到画布中，否则取得 ActualWidth 时会得到 0
-            Task.Delay(50).ContinueWith(_ => ResizeTextBox(), TaskScheduler.FromCurrentSynchronizationContext());
-        }
+            await Task.Delay(50);
+            ResizeTextBox();
 
-        SlotTypes = [..slotTypes];
+            if (ValueDictionary.Count != 0)
+            {
+                foreach (var key in ValueDictionary.Keys)
+                {
+                    var value = ValueDictionary[key];
+                    var index = ValueIndex[key];
+                    SetValue(index, value);
+                }
+            }
+            else if (RightBlocks.Length != 0)
+            {
+                foreach (var key in ValueIndex.Keys)
+                {
+                    var index = ValueIndex[key];
+                    if (RightBlocks.TryGetValue(index, out var block) && block is not null)
+                    {
+                        var value = block.GetValue(0);
+                        ValueDictionary.Add(key, value);
+                        RightBlocks[index] = null;
+                        SetValue(index, value);
+                        await block.RemoveAsync(block.Parent as Canvas, showAnimation: false);
+                    }
+                }
+            }
+        }
     }
 
     // 旧方法，从全局翻译文件取得本地化字串
@@ -437,6 +520,7 @@ public class CodeBlock : BlockControl
     public BlockValueType[] SlotTypes;
     public Dictionary<string, string> TranslationsDict;
     public Dictionary<string, int> ValueIndex { get; private set; } = new();
+    public Dictionary<string, string> ValueDictionary { get; private set; } = new();
 
     public int DependentSlot;
     public CodeBlock ParentBlock;
@@ -452,19 +536,19 @@ public class CodeBlock : BlockControl
     /// <summary>
     /// 刷新方块的本地化文本
     /// </summary>
-    public virtual void RefreshBlockText()
+    public async void RefreshBlockText()
     {
         if (TranslationsDict != null)
         {
             if (TranslationsDict.TryGetValue(App.CurrentLanguageId, out string text))
             {
-                SetText(text);
+                await SetText(text);
                 return;
             }
             else if (TranslationsDict.Count > 0)
             {
                 text = TranslationsDict.First().Value;
-                SetText(text);
+                await SetText(text);
                 return;
             }
         }
@@ -472,7 +556,7 @@ public class CodeBlock : BlockControl
         // fallback
         if (IsInteractionDisabled) return; // 若已禁用交互，并且没有指定翻译字典，则该方块不需要翻译，例如:  GhostBlock
         if (string.IsNullOrEmpty(id)) TranslationKey = "Blocks.Demo";
-        else SetText(id);
+        else await SetText(id);
     }
 
     public int GetRelatedBlockCount()
@@ -706,13 +790,13 @@ public class CodeBlock : BlockControl
     /// <param name="rootCanvas">方块所在的画布</param>
     /// <param name="deleteAll">(可选) 是否删除依附自身的所有方块</param>
     /// <returns></returns>
-    public async Task RemoveAsync(Canvas rootCanvas, bool deleteAll = true)
+    public async Task RemoveAsync(Canvas rootCanvas, bool deleteAll = true, bool showAnimation = true)
     {
         if (rootCanvas == null || HasBeenRemoved) return;
         if (ContextMenu.IsOpen) ContextMenu.Hide();
 
         // 删除方块的缩小动画
-        await PlayScaleAnimation(1.0, 0.0);
+        if (showAnimation) await PlayScaleAnimation(1.0, 0.0);
 
         if (deleteAll) BottomBlock?.RemoveAsync(rootCanvas);
         else if(this.DependentSlot == -1)
@@ -762,15 +846,85 @@ public class CodeBlock : BlockControl
         return rq;
     }
 
+    public void SetValue(int index, string value)
+    {
+        if (IsExpand) return;
+        var txtboxes = RootCanvas.Children.OfType<TextBox>().ToArray();
+        if (txtboxes.TryGetValue(index, out var txtbox)) txtbox.Text = value;
+    }
+
+    public void SetValue(string[] values)
+    {
+        if (IsExpand) return;
+        var txtboxes = RootCanvas.Children.OfType<TextBox>().ToArray();
+
+        int index = 0;
+        foreach (var txtbox in txtboxes)
+        {
+            if (values.TryGetValue(index, out var value)) txtbox.Text = value;
+            else break;
+        }
+    }
+
+    public string GetValue(int index)
+    {
+        string result = string.Empty;
+        if (IsExpand)
+        {
+            if (RightBlocks.TryGetValue(index, out var block) && block is not null)
+            {
+                result = block.GetValue(0);
+            }
+            else
+            {
+                switch(SlotTypes[index])
+                {
+                    case BlockValueType.Int:
+                        result = "0";
+                        break;
+                    case BlockValueType.Double:
+                        result = "0.0";
+                        break;
+                    default:
+                        result = "";
+                        break;
+                }
+            }
+        }
+        else
+        {
+            var txtboxes = RootCanvas.Children.OfType<TextBox>().ToArray();
+            if (txtboxes.TryGetValue(index, out var txtbox)) result = txtbox.Text;
+            else return result;
+        }
+
+        if (SlotTypes[index].HasFlag(BlockValueType.Number))
+        {
+            if (!double.TryParse(result, out var temp)) temp = 0.0;
+
+            if (SlotTypes[index] == BlockValueType.Int) result = ((int)temp).ToString();
+            else result = temp.ToString();
+        }
+        return result;
+    }
+
     public string GetCode()
     {
         string code = metaData.Code;
         foreach (string variable in ValueIndex.Keys)
         {
             int index = ValueIndex[variable];
-            if (RightBlocks.TryGetValue(index, out var block))
+            if (IsExpand)
             {
-                string value = block.GetCode();
+                if (RightBlocks.TryGetValue(index, out var block) && block is not null)
+                {
+                    string value = block.GetValue(0);
+                    code = code.Replace(variable, value);
+                }
+            }
+            else
+            {
+                string value = this.GetValue(index);
                 code = code.Replace(variable, value);
             }
         }
