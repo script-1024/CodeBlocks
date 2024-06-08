@@ -6,6 +6,7 @@ Profile:
 
 Misc:
     CBDFile: Code Block Definition File
+    MCFFile: Minecraft Datapack Project File
     
 Settings:
     Title: Settings
@@ -142,14 +143,5 @@ Blocks:
             Tip: Number
             PlaceholderText: 0
         Boolean:
-            Tip: Boolean
-
-    EventBlock:
-        FunctionEntry:
-            Tip: The entry point of the function, where commands will be executed.
-            Text: When function called
-
-    ActionBlock:
-        Say:
-            Tip: Broadcasts message in the chat as the current executor to all players.
-            Text: Say {%text}
+            True: "True"
+            False: "False"

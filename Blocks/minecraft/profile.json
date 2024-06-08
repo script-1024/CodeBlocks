@@ -21,7 +21,8 @@
             },
             "blocks": {
                 "minecraft:say": "command\\say",
-                "minecraft:summon": "command\\summon"
+                "minecraft:summon": "command\\summon",
+                "minecraft:execute": "command\\execute"
             }
         },
         "text": {

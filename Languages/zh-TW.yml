@@ -6,6 +6,7 @@ Profile:
 
 Misc:
     CBDFile: 程式塊定義檔案
+    MCFFile: Minecraft 資料包工作檔案
 
 Settings:
     Title: 設定
@@ -136,29 +137,11 @@ Tips:
 Blocks:
     Demo: 文字樣式
 
-    ValueBlock:
+    ValueTypes:
         Text: 
-            Tip: 文字
             PlaceholderText: 空字串
         Number:
-            Tip: 數值
             PlaceholderText: 0
         Boolean:
-            Tip: 邏輯
-
-    EventBlock:
-        FunctionEntry:
-            Tip: 函數的進入點，指令將從此處開始執行。
-            Text: 當函數被呼叫
-
-    ActionBlock:
-        Execute:
-            Tip: 以指定的身份、位置、朝向、條件執行任意指令，並儲存執行結果。所有的分支子命令皆為可選項。
-            Run: 執行指令 {%cmd}
-            As: 將執行者設為 {%executor}
-            At: 在 {%location}
-            Conditons: 條件 {%condition}
-
-        Say:
-            Tip: 作為當前執行者在聊天中向所有玩家廣播訊息。
-            Text: 說出 {%text}
+            True: 真
+            False: 假

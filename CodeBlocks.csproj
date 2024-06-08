@@ -17,6 +17,7 @@
     <PublishAot>False</PublishAot>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Blocks\minecraft\command\execute.cbd" />
     <None Remove="Blocks\minecraft\command\say.cbd" />
     <None Remove="Blocks\minecraft\command\summon.cbd" />
     <None Remove="Blocks\minecraft\event\when_datapack_loaded.cbd" />
@@ -27,6 +28,9 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Content Include="Blocks\minecraft\command\execute.cbd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Blocks\minecraft\command\say.cbd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

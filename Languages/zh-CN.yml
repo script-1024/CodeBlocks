@@ -6,6 +6,7 @@ Profile:
 
 Misc:
     CBDFile: 代码块定义文件
+    MCFFile: Minecraft 数据包工程文件
 
 Settings:
     Title: 设置
@@ -138,29 +139,11 @@ Tips:
 Blocks:
     Demo: 文字样式
 
-    ValueBlock:
+    ValueTypes:
         Text: 
-            Tip: 文本
             PlaceholderText: 空文本
         Number:
-            Tip: 数值
             PlaceholderText: 0
         Boolean:
-            Tip: 逻辑
-
-    EventBlock:
-        FunctionEntry:
-            Tip: 函数的进入点，命令将从此处开始执行。
-            Text: 当函数被呼叫
-
-    ActionBlock:
-        Execute:
-            Tip: 以指定的身份、位置、朝向、条件执行任意命令，并保存执行结果。所有的分支子命令皆为可选项。
-            Run: 执行命令 {%cmd}
-            As: 将执行者设为 {%executor}
-            At: 在 {%location}
-            Conditons: 条件 {%condition}
-
-        Say:
-            Tip: 作为当前执行者在聊天中向所有玩家广播信息。
-            Text: 说出 {%text}
+            True: 真
+            False: 假
