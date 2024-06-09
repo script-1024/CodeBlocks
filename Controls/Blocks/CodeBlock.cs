@@ -8,7 +8,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml;
 using CodeBlocks.Core;
 using Microsoft.UI;
-using Microsoft.UI.Xaml.Documents;
 
 namespace CodeBlocks.Controls;
 public class BlockCreatedEventArgs
@@ -291,7 +290,7 @@ public class CodeBlock : BlockControl
                         FontFamily = CodeBlock.FontFamily,
                         VerticalContentAlignment = VerticalAlignment.Center,
                         BorderBrush = Colors.Transparent.GetSolidColorBrush(),
-                        PlaceholderText = app.Localizer.GetString("Blocks.ValueBlock.Number.PlaceholderText")
+                        PlaceholderText = app.Localizer.GetString("Blocks.ValueTypes.Number.PlaceholderText")
                     };
 
                     // 应用自定义样式
@@ -328,7 +327,7 @@ public class CodeBlock : BlockControl
                         FontFamily = CodeBlock.FontFamily,
                         VerticalContentAlignment = VerticalAlignment.Center,
                         BorderBrush = Colors.Transparent.GetSolidColorBrush(),
-                        PlaceholderText = app.Localizer.GetString("Blocks.ValueBlock.Text.PlaceholderText")
+                        PlaceholderText = app.Localizer.GetString("Blocks.ValueTypes.Text.PlaceholderText")
                     };
 
                     // 应用自定义样式
