@@ -10,8 +10,6 @@ using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.Storage;
 using CodeBlocks.Core;
-using Microsoft.UI.Xaml.Documents;
-using System.Runtime.InteropServices;
 
 namespace CodeBlocks.Controls
 {
@@ -48,7 +46,7 @@ namespace CodeBlocks.Controls
             
             RootGrid.Loaded += (_, _) =>
             {
-                ReloadBlocks();
+                ReloadBlocksAsync();
                 lastWindowWidth = app.MainWindow.AppWindow.Size.Width;
                 app.MainWindow.SizeChanged += (_, e) =>
                 {
@@ -60,7 +58,7 @@ namespace CodeBlocks.Controls
             };
         }
 
-        private async void ReloadBlocks()
+        private async void ReloadBlocksAsync()
         {
             PositioningTags.Children.Clear();
             BlocksDepot.Children.Clear();
@@ -97,7 +95,14 @@ namespace CodeBlocks.Controls
                                 BlocksDepot.Children.Add(block);
                                 block.RefreshBlockText();
 
-                                if (block.MetaData.Type == BlockType.Value) Task.Delay(50).ContinueWith(_ => { if (block.IsExpand) block.IsExpand = false; }, TaskScheduler.FromCurrentSynchronizationContext());
+                                if (block.MetaData.Type == BlockType.Value)
+                                {
+                                    await Task.Delay(10);
+                                    if (block.IsExpand) block.IsExpand = false;
+                                }
+
+                                // 工具箱中的方块不可显示右键选单
+                                block.CanContextMenuShow = false;
                             }
 
                             TextBlock blank = new() { Margin = new(24) };
