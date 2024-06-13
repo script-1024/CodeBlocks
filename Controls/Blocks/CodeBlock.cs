@@ -209,7 +209,7 @@ public class CodeBlock : BlockControl
                     if (textWidth > maxWidth) maxWidth = textWidth;
 
                     double newpartY = 0;
-                    if (RightBlocks.TryGetValue(slots, out CodeBlock block) && block is not null)
+                    if (RightBlocks.TryGetValue(slots, out var block, isNullAllowed: false))
                     {
                         newpartY += block.Size.Height;
                     }
@@ -395,7 +395,7 @@ public class CodeBlock : BlockControl
                 foreach (var key in ValueIndex.Keys)
                 {
                     var index = ValueIndex[key];
-                    if (RightBlocks.TryGetValue(index, out var block) && block is not null)
+                    if (RightBlocks.TryGetValue(index, out var block, isNullAllowed: false))
                     {
                         var value = block.GetValue(0);
                         ValueDictionary.Add(key, value);
@@ -587,16 +587,14 @@ public class CodeBlock : BlockControl
 
         for (int i = 0; i < this.RightBlocks.Length; i++)
         {
-            if (this.RightBlocks.TryGetValue(i, out var thisBlock))
+            if (RightBlocks.TryGetValue(i, out var thisBlock, isNullAllowed: false))
             {
-                if (thisBlock is null) continue;
                 var left = Canvas.GetLeft(thisBlock) + 30;
                 var top = Canvas.GetTop(thisBlock) + 30;
                 var newArgs = new BlockCreatedEventArgs(left, top, block);
                 var newBlock = thisBlock.Clone(eventHandler, newArgs);
                 block.RightBlocks.TrySetValue(i, newBlock);
             }
-            else block.RightBlocks.TrySetValue(i, null);
         }
 
         block.RefreshBlockText();
@@ -716,9 +714,9 @@ public class CodeBlock : BlockControl
         // 移动右侧方块
         for (int i = 0; i < metaData.Slots; i++)
         {
-            if (RightBlocks.TryGetValue(i, out var block))
+            if (RightBlocks.TryGetValue(i, out var block, isNullAllowed: false))
             {
-                block?.SetPosition(x + Size.Width, y + i * 48);
+                block.SetPosition(x + Size.Width, y + i * 48);
             }
         }
     }

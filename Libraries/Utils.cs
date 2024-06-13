@@ -28,10 +28,10 @@ namespace CodeBlocks.Core
     {
         public static Visibility ToVisibility(this bool value) => (value) ? Visibility.Visible : Visibility.Collapsed;
 
-        public static bool TryGetValue<T>(this T[] array, int index, out T value)
+        public static bool TryGetValue<T>(this T[] array, int index, out T value, bool isNullAllowed = true)
         {
             if (array is null || index < 0 || index >= array.Length) { value = default; return false; }
-            value = array[index]; return true;
+            value = array[index]; return (isNullAllowed || value != null);
         }
 
         public static bool TrySetValue<T>(this T[] array, int index, T value)
