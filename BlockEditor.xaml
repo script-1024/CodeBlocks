@@ -71,7 +71,7 @@
                         </Grid.RowDefinitions>
 
                         <ScrollViewer x:Name="Scroller" Grid.Row="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
-                            <Canvas x:Name="DisplayCanvas" Width="1200" Height="600" Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}">
+                            <Canvas x:Name="DisplayCanvas" Width="2000" Height="2000" Background="{ThemeResource FlatBackgroundFillColorPrimaryBrush}">
                                 <ctrl:CodeBlock x:Name="DemoBlock"/>
                             </Canvas>
                         </ScrollViewer>
@@ -89,7 +89,7 @@
                                 <ComboBox.Items>
                                     <ComboBoxItem Tag="Tip" IsEnabled="False"/>
                                     <ComboBoxItem Tag="Event"/>
-                                    <ComboBoxItem Tag="Control" IsEnabled="False"/>
+                                    <ComboBoxItem Tag="Process"/>
                                     <ComboBoxItem Tag="Action"/>
                                     <ComboBoxItem Tag="Value"/>
                                 </ComboBox.Items>

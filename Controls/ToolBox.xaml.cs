@@ -87,7 +87,7 @@ namespace CodeBlocks.Controls
                                 if (!File.Exists(blockFilePath)) continue;
 
                                 var block = await CreateBlockFromPathAsync(blockFilePath);
-                                block.Margin = new(20, 20, 12, 0);
+                                block.Margin = new(20, 20, 20 - CodeBlock.SlotHeight, 20 - CodeBlock.SlotHeight);
                                 block.HorizontalAlignment = HorizontalAlignment.Left;
                                 block.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
 

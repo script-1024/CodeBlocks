@@ -244,8 +244,8 @@ namespace CodeBlocks
                     NotchCheckBox.IsChecked = false;
                     BumpCheckBox.IsEnabled = true;
                     break;
-                case "Control":
-                    type = BlockType.Control;
+                case "Process":
+                    type = BlockType.Process;
                     PlugCheckBox.IsEnabled = true;
                     NotchCheckBox.IsEnabled = true;
                     BumpCheckBox.IsEnabled = true;

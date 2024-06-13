@@ -102,7 +102,7 @@ BlockEditor:
     BlockType:
         Tip: 外觀類型
         Event: 事件
-        Control: 控制
+        Process: 流程
         Action: 操作
         Value: 數值
     BlockData:

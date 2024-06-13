@@ -102,7 +102,7 @@ BlockEditor:
     BlockType:
         Tip: Type
         Event: Event
-        Control: Control
+        Process: Process
         Action: Action
         Value: Value
     BlockData:
