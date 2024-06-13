@@ -135,7 +135,7 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         // 碰撞检查
         foreach (var uiElement in workspace.Children)
         {
-            if (uiElement == ghostBlock || uiElement == thisBlock ) continue; // 跳过特定目标
+            if (uiElement == ghostBlock || uiElement == thisBlock) continue; // 跳过特定目标
 
             var target = new Point(Canvas.GetLeft(uiElement), Canvas.GetTop(uiElement));
             if (uiElement is CodeBlock targetBlock)
@@ -171,6 +171,9 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
                 int slot = (int)((self.Y - target.Y) / (CodeBlock.SlotWidth * 3));
                 if (dx > 0 && (dx - size.Width) < threshold)
                 {
+                    // 方块内嵌输入项时不可吸附
+                    if (!targetBlock.IsExpand) continue;
+
                     self.X -= (dx - size.Width) * x;
                     self.Y = target.Y + slot * (CodeBlock.SlotWidth * 3);
                     thisBlock.DependentSlot = slot + 1;
@@ -186,6 +189,9 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
 
                 if (isAligned)
                 {
+                    // 如果宽度异常过小，再尝试修改一次尺寸
+                    if (ghostBlock.Size.Width < CodeBlock.SlotWidth * 3) SetGhostBlockSize(thisBlock);
+
                     thisBlock.ParentBlock = targetBlock;
                     ghostBlock.SetPosition(self.X, self.Y);
                     ghostBlock.Visibility = Visibility.Visible;
@@ -204,6 +210,30 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
                 }
             }
         }
+    }
+
+    private void SetGhostBlockSize(CodeBlock target)
+    {
+        ghostBlock.CopyDataFrom(target);
+        ghostBlock.IsExpand = target.IsExpand;
+
+        Size size = target.Size;
+        var endBlock = target.BottomBlock;
+        while (endBlock != null)
+        {
+            size.Height += endBlock.Size.Height;
+            endBlock = endBlock.BottomBlock;
+        }
+
+        double maxWidth = 0;
+        foreach (var block in target.RightBlocks)
+        {
+            if (block is null) continue;
+            if (block.Size.Width > maxWidth) maxWidth = block.Size.Width;
+        }
+        size.Width += maxWidth;
+        ghostBlock.SetData(BlockProperties.Slots, 0, false);
+        ghostBlock.Size = size;
     }
 
     public void ResetGhostBlock(bool hide = true)
@@ -243,29 +273,9 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
     {
         ResetGhostBlock();
         var thisBlock = sender as CodeBlock;
-        ghostBlock.CopyDataFrom(thisBlock);
-        ghostBlock.IsExpand = thisBlock.IsExpand;
         thisBlock.SetZIndex(+5, true);
 
         FocusBlock = thisBlock;
-
-        Size size = thisBlock.Size;
-        var endBlock = thisBlock.BottomBlock;
-        while (endBlock != null)
-        {
-            size.Height += endBlock.Size.Height;
-            endBlock = endBlock.BottomBlock;
-        }
-
-        double maxWidth = 0;
-        foreach (var block in thisBlock.RightBlocks)
-        {
-            if (block is null) continue;
-            if (block.Size.Width > maxWidth) maxWidth = block.Size.Width;
-        }
-        size.Width += maxWidth;
-        ghostBlock.SetData(BlockProperties.Slots, 0, false);
-        ghostBlock.Resize(size, true);
 
         var parentBlock = thisBlock.ParentBlock;
         if (parentBlock != null)
@@ -276,6 +286,8 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
         }
 
         thisBlock.DependentSlot = 0;
+
+        SetGhostBlockSize(thisBlock);
     }
 
     public void BlockManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
