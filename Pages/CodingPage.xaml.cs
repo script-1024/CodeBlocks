@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
@@ -9,13 +8,10 @@ using Microsoft.UI.Xaml.Controls;
 
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Provider;
 using Windows.Foundation;
 
 using CodeBlocks.Core;
 using CodeBlocks.Controls;
-using System.Xml.Linq;
-using System.Diagnostics;
 
 namespace CodeBlocks.Pages
 {
