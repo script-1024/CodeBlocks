@@ -121,7 +121,7 @@ namespace CodeBlocks.Core
                     DrawTopOrDownCurve(1); // 凹口
                 }
             }
-            DrawLine(newX: blockWidth - h); // 其余部分
+            DrawLine(newX: blockWidth); // 其余部分
 
             // 右边
             if (MetaData.Type == BlockType.Process)
@@ -157,7 +157,7 @@ namespace CodeBlocks.Core
                     DrawLine(dy: innerH); // 下半部分
 
                     // 内部下边
-                    DrawLine(newX: blockWidth - h);
+                    DrawLine(newX: blockWidth);
                 }
 
                 // 右侧下方其余部分

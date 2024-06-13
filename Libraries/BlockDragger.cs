@@ -169,16 +169,16 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
                 // 开始尝试自动吸附
                 int threshold = 30;
                 int slot = (int)((self.Y - target.Y) / (CodeBlock.SlotWidth * 3));
-                if (dx > 0 && (dx - size.Width + CodeBlock.SlotHeight) < threshold)
+                if (dx > 0 && (dx - size.Width) < threshold)
                 {
-                    self.X -= (dx - size.Width + CodeBlock.SlotHeight) * x;
+                    self.X -= (dx - size.Width) * x;
                     self.Y = target.Y + slot * (CodeBlock.SlotWidth * 3);
                     thisBlock.DependentSlot = slot + 1;
                     isAligned = true;
                 }
-                else if (dy > 0 && (dy - size.Height + CodeBlock.SlotHeight) < threshold)
+                else if (dy > 0 && (dy - size.Height) < threshold)
                 {
-                    self.Y -= (dy - size.Height + CodeBlock.SlotHeight) * y;
+                    self.Y -= (dy - size.Height) * y;
                     self.X = target.X;
                     thisBlock.DependentSlot = -1;
                     isAligned = true;
@@ -249,24 +249,23 @@ public class BlockDragger(Canvas workspace, ScrollViewer scroller, CodeBlock gho
 
         FocusBlock = thisBlock;
 
-        ghostBlock.Size = thisBlock.Size;
+        Size size = thisBlock.Size;
         var endBlock = thisBlock.BottomBlock;
         while (endBlock != null)
         {
-            ghostBlock.SetData(BlockProperties.Height, ghostBlock.Size.Height + endBlock.Size.Height - CodeBlock.SlotHeight);
+            size.Height += endBlock.Size.Height;
             endBlock = endBlock.BottomBlock;
         }
 
+        double maxWidth = 0;
         foreach (var block in thisBlock.RightBlocks)
         {
-            if (block != null)
-            {
-                // 第一个非null的方块
-                ghostBlock.SetData(BlockProperties.Width, ghostBlock.Size.Width + block.Size.Width - CodeBlock.SlotHeight);
-                ghostBlock.SetData(BlockProperties.Variant, ghostBlock.MetaData.Variant ^ 0b0100);
-                break;
-            }
+            if (block is null) continue;
+            if (block.Size.Width > maxWidth) maxWidth = block.Size.Width;
         }
+        size.Width += maxWidth;
+        ghostBlock.SetData(BlockProperties.Slots, 0, false);
+        ghostBlock.Resize(size, true);
 
         var parentBlock = thisBlock.ParentBlock;
         if (parentBlock != null)

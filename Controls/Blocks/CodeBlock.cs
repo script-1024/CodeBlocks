@@ -130,17 +130,17 @@ public class CodeBlock : BlockControl
             {
                 Canvas.SetLeft(textBlock, x);
                 textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                x += textBlock.DesiredSize.Width + 8;
+                x += textBlock.DesiredSize.Width + CtrlMargin;
             }
             else if (obj is TextBox textBox)
             {
                 Canvas.SetLeft(textBox, x);
                 x += (textBox.ActualWidth != 0) ? textBox.ActualWidth : textBox.MinWidth;
-                x += 8; // Margin
+                x += CtrlMargin;
             }
         }
 
-        SetData(BlockProperties.Width, x + SlotWidth);
+        SetData(BlockProperties.Width, x + CtrlMargin);
 
         // 使后续方块重新连接上
         if (BottomBlock is not null) SetPosition(0, 0, true);
@@ -221,8 +221,8 @@ public class CodeBlock : BlockControl
 
             // 调整宽度
             Size size = Size;
-            size.Width = maxWidth + SlotWidth * 2 + SlotHeight;
-            size.Width += (slots > 1) ? SlotHeight : 0;
+            size.Width = maxWidth + SlotWidth * 2;
+            size.Width += (slots > 0) ? SlotHeight : 0;
             metaData.Slots = slots;
             Resize(size);
 
@@ -429,21 +429,24 @@ public class CodeBlock : BlockControl
         }
     }
 
-    private void Resize(Size size)
+    public void Resize(Size size, bool forceResize = false)
     {
-        // 计算方块高度
-        double height = SlotWidth * 3 + SlotHeight;
-
-        if (IsExpand)
+        if (!forceResize)
         {
-            if (metaData.Slots > 1) height += SlotWidth * ((metaData.Slots-1) * 3);
-            if (size.Height < height) size.Height = height;
-        }
-        else size.Height = height;
+            // 计算方块高度
+            double height = SlotWidth * 3;
 
-        // 确保方块宽度合法
-        var minW = SlotHeight + SlotWidth * 3;
-        if (size.Width < minW) size.Width = minW;
+            if (IsExpand)
+            {
+                if (metaData.Slots > 1) height += SlotWidth * ((metaData.Slots - 1) * 3);
+                if (size.Height < height) size.Height = height;
+            }
+            else size.Height = height;
+
+            // 确保方块宽度合法
+            var minW = SlotHeight + SlotWidth * 3;
+            if (size.Width < minW) size.Width = minW;
+        }
 
         metaData.Size = size;
         this.Width = size.Width;
@@ -708,14 +711,14 @@ public class CodeBlock : BlockControl
         Canvas.SetTop(this, y);
 
         // 移动下方方块
-        BottomBlock?.SetPosition(x, y + Size.Height - SlotHeight);
+        BottomBlock?.SetPosition(x, y + Size.Height);
 
         // 移动右侧方块
         for (int i = 0; i < metaData.Slots; i++)
         {
             if (RightBlocks.TryGetValue(i, out var block))
             {
-                block?.SetPosition(x + Size.Width - SlotHeight, y + i * 48);
+                block?.SetPosition(x + Size.Width, y + i * 48);
             }
         }
     }
@@ -749,7 +752,7 @@ public class CodeBlock : BlockControl
             endBlock.BottomBlock = this;
             this.ParentBlock = endBlock;
         }
-        this.MoveToBlock(endBlock, 0, endBlock.Size.Height - SlotHeight);
+        this.MoveToBlock(endBlock, 0, endBlock.Size.Height);
     }
 
     /// <summary>
@@ -821,7 +824,7 @@ public class CodeBlock : BlockControl
 
     public (int x, int y, double dx, double dy) GetRelativeQuadrant(CodeBlock targetBlock)
     {
-        //  x,  y 定义: 右下为正，左上为负，中间为零
+        //  x,  y 定义: 右下为+1，左上为-1，中间为0
         // dx, dy 定义: 相同边的距离
         (int x, int y, double dx, double dy) rq = (0, 0, 0, 0);
 
@@ -929,13 +932,14 @@ public class CodeBlock : BlockControl
         }
         return code;
     }
-    
+
     #endregion
 
     #region "Static"
 
     public static readonly int SlotWidth = 16;
     public static readonly int SlotHeight = 8;
+    public static readonly int CtrlMargin = 8;
     public static readonly new FontFamily FontFamily = new("/Fonts/HarmonyOS_Sans_B.ttf#HarmonyOS Sans SC");
     public static readonly new int FontSize = 16;
 
