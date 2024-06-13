@@ -21,6 +21,7 @@
         <ScrollViewer x:Name="Scroller" Grid.Column="1">
             <StackPanel x:Name="BlocksDepot"
                         BorderThickness="0,0,1,0"
+                        Padding="0, 0, 20, 0"
                         BorderBrush="{ThemeResource FlatBorderColorBrush}"
                         Background="{ThemeResource FlatBackgroundFillColorTertiaryBrush}"
                         ManipulationDelta="BlocksDepot_ManipulationDelta"

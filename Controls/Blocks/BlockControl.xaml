@@ -8,8 +8,7 @@
         <Path x:Name="BlockBorder" x:FieldModifier="public" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
 
         <TeachingTip
-            x:Name="BlockTip"
-            x:FieldModifier="public"
+            x:Name="BlockTip" x:FieldModifier="public"
             PreferredPlacement="Auto">
         </TeachingTip>
     </Canvas>
