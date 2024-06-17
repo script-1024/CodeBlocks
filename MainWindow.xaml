@@ -23,7 +23,7 @@
 
             <TabView.TabStripHeader>
                 <StackPanel x:Name="TitleBar" Orientation="Horizontal">
-                    <BitmapIcon Margin="16,0,8,-8" UriSource="Assets\StoreLogo.png" Height="24"/>
+                    <BitmapIcon Margin="16,0,8,-8" UriSource="Assets\StoreLogo.png" Height="24" ShowAsMonochrome="False"/>
                 </StackPanel>
             </TabView.TabStripHeader>
 

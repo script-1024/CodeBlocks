@@ -208,6 +208,7 @@ public class CodeBlock : BlockControl
                 {
                     TextBox textBox = new()
                     {
+                        IsSpellCheckEnabled = false,
                         FontSize = CodeBlock.FontSize,
                         FontFamily = CodeBlock.FontFamily,
                         Margin = new(0, -6, CtrlMargin, 0),
@@ -718,9 +719,9 @@ public class CodeBlock : BlockControl
         double dx, dy;
         if (isRelative)
         {
+            dx = x; dy = y;
             x += Canvas.GetLeft(this);
             y += Canvas.GetTop(this);
-            dx = x; dy = y;
         }
         else
         {

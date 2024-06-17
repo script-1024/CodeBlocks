@@ -10,7 +10,7 @@
     <StackPanel x:Name="RootPanel">
         <StackPanel x:Name="TitleBar" Orientation="Horizontal">
             <AppBarButton Icon="Back" Margin="10,2,0,0" LabelPosition="Collapsed" Width="42" Click="BackButton_Click"/>
-            <BitmapIcon Margin="10,2,0,0" UriSource="Assets\StoreLogo.png" Height="24"/>
+            <BitmapIcon Margin="10,2,0,0" UriSource="Assets\StoreLogoGray.png" Height="24" ShowAsMonochrome="False"/>
             <TextBlock x:Name="TitleBar_Name" Margin="16,16,0,0" Text="Code Blocks" FontSize="12"/>
             <TextBlock x:Name="TitleBar_VersionTag" Margin="8,16,0,0" Text="Beta" FontSize="12" Foreground="Gray"/>
         </StackPanel>

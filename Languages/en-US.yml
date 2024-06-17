@@ -135,6 +135,8 @@ Tips:
     UnableToConvertType: Unable to convert type
 
 Blocks:
+    Demo: Sample Text
+
     ValueBlock:
         Text: 
             Tip: Text
